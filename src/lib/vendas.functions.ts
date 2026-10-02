@@ -148,9 +148,12 @@ export const statusPagamento = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!p) throw new Error("Pedido não encontrado.");
 
+    let pixQr: string | null = null;
     if (p.pagarme_order_id && (p.status === "aguardando_pagamento" || p.status === "reservado")) {
       try {
-        const order = await pagarmeGet<{ status: string }>(`/orders/${p.pagarme_order_id}`);
+        const order = await pagarmeGet<{ status: string; charges?: Array<{ payment_method?: string; status?: string; last_transaction?: { qr_code?: string } }> }>(`/orders/${p.pagarme_order_id}`);
+        const c = order.charges?.[0];
+        if (order.status === "pending" && c?.payment_method === "pix") pixQr = c.last_transaction?.qr_code ?? null;
         if (order.status === "paid") await rpcAdmin("finalizar_pedido_pago", { p_pagarme_order_id: p.pagarme_order_id });
         else if (order.status === "failed" || order.status === "canceled")
           await rpcAdmin("marcar_pagamento_falhou", { p_pagarme_order_id: p.pagarme_order_id });
@@ -159,7 +162,8 @@ export const statusPagamento = createServerFn({ method: "POST" })
         // Falha de rede com a Pagar.me: o estado do banco prevalece.
       }
     }
-    return rpcAdmin<Record<string, Json> | null>("pedido_publico", { p_acesso: data.acesso });
+    const pub = await rpcAdmin<Record<string, Json> | null>("pedido_publico", { p_acesso: data.acesso });
+    return pub ? { ...pub, pix_qr_code: pixQr } : null;
   });
 
 /** Fecha o pedido no banco e cria a cobrança na Pagar.me. Só o servidor calcula valores. */
@@ -227,31 +231,32 @@ export const iniciarPagamento = createServerFn({ method: "POST" })
     const { data: ev } = await supabase.from("eventos").select("nome").eq("id", (await donoEvento(pedidoId)) as string).maybeSingle();
     const descriptor = await descriptorDe(ev?.nome ?? null);
 
-    const celular = (data.pagador.celular ?? "").replace(/\D/g, "");
+    if (data.forma === "cartao" && (!data.cidade?.trim() || !data.estado?.trim() || !data.cep?.trim() || !data.numero?.trim()))
+      throw new Error("Preencha CEP, número, cidade e estado do endereço de cobrança.");
+
+    // Celular já normalizado pelo banco: 55 + DDD + 9 dígitos.
+    const { data: pg } = await supabase.from("pedidos").select("pagador_celular").eq("id", pedidoId).maybeSingle();
+    const celular = (pg?.pagador_celular ?? "").replace(/\D/g, "");
     const area = celular.slice(2, 4);
     const numero = celular.slice(4);
+    const endereco = {
+      line_1: `${data.numero ?? ""}, ${data.referencia ?? ""}`.trim(),
+      zip_code: (data.cep ?? "").replace(/\D/g, ""),
+      city: data.cidade ?? "",
+      state: data.estado ?? "",
+      country: "BR",
+    };
     const pagamentos =
       data.forma === "pix"
-        ? [
-            {
-              payment_method: "pix",
-              pix: { expires_in: Math.max(60, Number(comp["segundos_restantes"] ?? 600)) },
-            },
-          ]
+        ? [{ payment_method: "pix", pix: { expires_in: Math.max(60, Number(comp["segundos_restantes"] ?? 600)) } }]
         : [
             {
               payment_method: "credit_card",
               credit_card: {
                 installments: data.parcelas,
                 statement_descriptor: descriptor,
-                card: { card_token: data.cartaoToken },
-                billing_address: {
-                  line_1: `${data.referencia ?? ""} ${data.numero ?? ""}`.trim(),
-                  zip_code: (data.cep ?? "").replace(/\D/g, ""),
-                  city: data.cidade ?? "Belém",
-                  state: data.estado ?? "PA",
-                  country: "BR",
-                },
+                card_token: data.cartaoToken,
+                card: { billing_address: endereco },
               },
             },
           ];

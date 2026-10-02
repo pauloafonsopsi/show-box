@@ -82,9 +82,9 @@ export function PagamentoOnline({
     queryKey: ["status-pagamento", acesso],
     queryFn: async () => {
       const r = await buscarStatus({ data: { acesso } });
-      return r as { status: string } | null;
+      return r as { status: string; pix_qr_code?: string | null } | null;
     },
-    refetchInterval: 4000,
+    refetchInterval: 5000,
   });
 
   useEffect(() => {
@@ -126,7 +126,7 @@ export function PagamentoOnline({
     );
 
   if (modoPos || st === "aguardando_pagamento")
-    return <AposEnviar modo={modoPos ?? "esperando"} pix={pix} conteudos={conteudos} voltar={voltarAosLugares} />;
+    return <AposEnviar modo={modoPos ?? (status.data?.pix_qr_code ? "pix" : "esperando")} pix={pix ?? (status.data?.pix_qr_code ? { qr: "", copia: status.data.pix_qr_code } : null)} conteudos={conteudos} voltar={voltarAosLugares} />;
 
   return (
     <FormularioDePagamento

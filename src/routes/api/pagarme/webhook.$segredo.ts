@@ -12,10 +12,11 @@ interface OrderPagar {
 }
 
 function corpoDoEvento(c: unknown): { tipo: string; idEvento: string; idPedido: string | null } | null {
-  const e = c as { type?: string; data?: { id?: string; order?: { id?: string } } } | null;
-  if (!e?.type) return null;
-  const idPedido = e.data?.id ?? e.data?.order?.id ?? null;
-  return { tipo: e.type, idEvento: e.data?.id ?? "", idPedido };
+  const e = c as { id?: string; type?: string; data?: { id?: string; order?: { id?: string } } } | null;
+  if (!e?.type || !e.id) return null;
+  // order.*: data.id é o pedido. charge.*: data.id é a cobrança e o pedido está em data.order.id.
+  const idPedido = e.type.startsWith("charge.") ? (e.data?.order?.id ?? null) : (e.data?.id ?? null);
+  return { tipo: e.type, idEvento: e.id, idPedido };
 }
 
 function segredoIgual(recebido: string, esperado: string): boolean {
@@ -57,14 +58,22 @@ export const Route = createFileRoute("/api/pagarme/webhook/$segredo")({
 
           if (status === "paid") {
             const supabase = await comChaveServico();
-            const { data: ja } = await supabase
+            // Duplicado só se o nosso pedido já estava pago por OUTRO pedido da Pagar.me.
+            const { data: outro } = await supabase
               .from("pedidos")
-              .select("status")
+              .select("id")
+              .in("status", ["pago", "pago_sem_lugar"])
               .eq("pagarme_order_id", order.id)
               .maybeSingle();
-            resultado = ja && (ja.status === "pago" || ja.status === "pago_sem_lugar") ? "pagamento duplicado" : "";
-            await rpcAdmin("finalizar_pedido_pago", { p_pagarme_order_id: order.id });
-            if (!resultado) resultado = "pedido pago";
+            const { data: hist } = await supabase
+              .from("pedidos")
+              .select("status, pagarme_order_id")
+              .eq("codigo", (order as OrderPagar & { code?: string }).code ?? "")
+              .maybeSingle();
+            const duplicado =
+              !outro && hist && (hist.status === "pago" || hist.status === "pago_sem_lugar") && hist.pagarme_order_id !== order.id;
+            if (!duplicado) await rpcAdmin("finalizar_pedido_pago", { p_pagarme_order_id: order.id });
+            resultado = duplicado ? "pagamento duplicado" : "pedido pago";
           } else if (status === "failed" || status === "canceled") {
             await rpcAdmin("marcar_pagamento_falhou", { p_pagarme_order_id: order.id });
             resultado = `pagamento ${status}`;
