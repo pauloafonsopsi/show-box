@@ -4,9 +4,11 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 
+import type { MapaSessao } from "@/vendas/tipos";
 import { ErroPagarme, comChaveServico, mensagemBanco, pagarmeDelete, pagarmeGet, pagarmePost, rpcAdmin } from "./vendas.server";
 
 const Acesso = z.string().trim().min(10).max(64);
+type MapaDaSessao = MapaSessao | null;
 
 export interface RespostaReserva {
   ok: boolean;
