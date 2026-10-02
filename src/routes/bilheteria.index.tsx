@@ -105,7 +105,7 @@ function Busca() {
                     to="/bilheteria/familia/$familiaId"
                     params={{ familiaId: f.id }}
                     search={{ evento: evento.id }}
-                    className="block min-h-11 px-4 py-3 hover:bg-secondary"
+                    className="block min-h-11 px-4 py-3"
                   >
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-medium text-foreground">{f.responsavel_nome}</span>

@@ -18,6 +18,7 @@ import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminAuditoriaRouteImport } from './routes/admin.auditoria'
 import { Route as AdminConfiguracoesRouteImport } from './routes/admin.configuracoes'
 import { Route as AdminEquipeRouteImport } from './routes/admin.equipe'
+import { Route as BilheteriaIndexRouteImport } from './routes/bilheteria.index'
 import { Route as ESlugRouteImport } from './routes/e.$slug'
 import { Route as FCodigoRouteImport } from './routes/f.$codigo'
 import { Route as PAcessoRouteImport } from './routes/p.$acesso'
@@ -86,6 +87,11 @@ const AdminEquipeRoute = AdminEquipeRouteImport.update({
   id: '/equipe',
   path: '/equipe',
   getParentRoute: () => AdminRoute,
+} as any)
+const BilheteriaIndexRoute = BilheteriaIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => BilheteriaRoute,
 } as any)
 const ESlugRoute = ESlugRouteImport.update({
   id: '/e/$slug',
@@ -216,7 +222,7 @@ const AdminLocaisLocalIdMapasMapaIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
-  '/bilheteria': typeof BilheteriaRoute
+  '/bilheteria': typeof BilheteriaRouteWithChildren
   '/entrar': typeof EntrarRoute
   '/privacidade': typeof PrivacidadeRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
@@ -227,6 +233,7 @@ export interface FileRoutesByFullPath {
   '/p/$acesso': typeof PAcessoRoute
   '/termos/$slug': typeof TermosSlugRoute
   '/admin/': typeof AdminIndexRoute
+  '/bilheteria/': typeof BilheteriaIndexRoute
   '/admin/eventos/$eventoId': typeof AdminEventosEventoIdRouteWithChildren
   '/e/$slug/$sessaoId': typeof ESlugSessaoIdRoute
   '/f/$codigo/$sessaoId': typeof FCodigoSessaoIdRoute
@@ -249,7 +256,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/bilheteria': typeof BilheteriaRoute
   '/entrar': typeof EntrarRoute
   '/privacidade': typeof PrivacidadeRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
@@ -258,6 +264,7 @@ export interface FileRoutesByTo {
   '/p/$acesso': typeof PAcessoRoute
   '/termos/$slug': typeof TermosSlugRoute
   '/admin': typeof AdminIndexRoute
+  '/bilheteria': typeof BilheteriaIndexRoute
   '/e/$slug/$sessaoId': typeof ESlugSessaoIdRoute
   '/f/$codigo/$sessaoId': typeof FCodigoSessaoIdRoute
   '/admin/eventos': typeof AdminEventosIndexRoute
@@ -281,7 +288,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
-  '/bilheteria': typeof BilheteriaRoute
+  '/bilheteria': typeof BilheteriaRouteWithChildren
   '/entrar': typeof EntrarRoute
   '/privacidade': typeof PrivacidadeRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
@@ -292,6 +299,7 @@ export interface FileRoutesById {
   '/p/$acesso': typeof PAcessoRoute
   '/termos/$slug': typeof TermosSlugRoute
   '/admin/': typeof AdminIndexRoute
+  '/bilheteria/': typeof BilheteriaIndexRoute
   '/admin/eventos/$eventoId': typeof AdminEventosEventoIdRouteWithChildren
   '/e/$slug/$sessaoId': typeof ESlugSessaoIdRoute
   '/f/$codigo/$sessaoId': typeof FCodigoSessaoIdRoute
@@ -328,6 +336,7 @@ export interface FileRouteTypes {
     | '/p/$acesso'
     | '/termos/$slug'
     | '/admin/'
+    | '/bilheteria/'
     | '/admin/eventos/$eventoId'
     | '/e/$slug/$sessaoId'
     | '/f/$codigo/$sessaoId'
@@ -350,7 +359,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/bilheteria'
     | '/entrar'
     | '/privacidade'
     | '/admin/auditoria'
@@ -359,6 +367,7 @@ export interface FileRouteTypes {
     | '/p/$acesso'
     | '/termos/$slug'
     | '/admin'
+    | '/bilheteria'
     | '/e/$slug/$sessaoId'
     | '/f/$codigo/$sessaoId'
     | '/admin/eventos'
@@ -392,6 +401,7 @@ export interface FileRouteTypes {
     | '/p/$acesso'
     | '/termos/$slug'
     | '/admin/'
+    | '/bilheteria/'
     | '/admin/eventos/$eventoId'
     | '/e/$slug/$sessaoId'
     | '/f/$codigo/$sessaoId'
@@ -416,7 +426,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
-  BilheteriaRoute: typeof BilheteriaRoute
+  BilheteriaRoute: typeof BilheteriaRouteWithChildren
   EntrarRoute: typeof EntrarRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   ESlugRoute: typeof ESlugRouteWithChildren
@@ -490,6 +500,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/equipe'
       preLoaderRoute: typeof AdminEquipeRouteImport
       parentRoute: typeof AdminRoute
+    }
+    '/bilheteria/': {
+      id: '/bilheteria/'
+      path: '/'
+      fullPath: '/bilheteria/'
+      preLoaderRoute: typeof BilheteriaIndexRouteImport
+      parentRoute: typeof BilheteriaRoute
     }
     '/e/$slug': {
       id: '/e/$slug'
@@ -704,6 +721,18 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
+interface BilheteriaRouteChildren {
+  BilheteriaIndexRoute: typeof BilheteriaIndexRoute
+}
+
+const BilheteriaRouteChildren: BilheteriaRouteChildren = {
+  BilheteriaIndexRoute: BilheteriaIndexRoute,
+}
+
+const BilheteriaRouteWithChildren = BilheteriaRoute._addFileChildren(
+  BilheteriaRouteChildren,
+)
+
 interface ESlugRouteChildren {
   ESlugSessaoIdRoute: typeof ESlugSessaoIdRoute
   ESlugIndexRoute: typeof ESlugIndexRoute
@@ -736,7 +765,7 @@ const FCodigoRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
-  BilheteriaRoute: BilheteriaRoute,
+  BilheteriaRoute: BilheteriaRouteWithChildren,
   EntrarRoute: EntrarRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   ESlugRoute: ESlugRouteWithChildren,
