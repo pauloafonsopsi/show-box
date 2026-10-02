@@ -91,8 +91,6 @@ export function PagamentoOnline({
     if (status.data && (status.data.status === "pago" || status.data.status === "pago_sem_lugar")) vaiParaPedido();
   }, [status.data, vaiParaPedido]);
 
-  // Pago ou encerrado por outro caminho (webhook): segue direto para o pedido.
-  const st = (consulta.data?.pedido as { status: string } | null)?.status;
   useEffect(() => {
     if (st === "pago" || st === "pago_sem_lugar") vaiParaPedido();
   }, [st, vaiParaPedido]);
