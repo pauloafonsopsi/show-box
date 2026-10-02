@@ -196,13 +196,13 @@ function Falha({ mensagem, voltar, rotuloVoltar }: { mensagem: string; voltar: (
 }
 
 function FormularioDePagamento({
+  acesso,
   estado,
   conteudos,
   produtos,
   sessoesEntrega,
   onPix,
   onCartao,
-  pagar,
   liberar,
   rotuloVoltar,
 }: {
@@ -213,11 +213,11 @@ function FormularioDePagamento({
   sessoesEntrega: Array<{ id: string; nome: string }>;
   onPix: (p: { qr: string; copia: string }) => void;
   onCartao: () => void;
-  pagar: typeof iniciarPagamento;
   liberar: () => Promise<void>;
-  buscarChave: typeof chavePublicaPagarme;
   rotuloVoltar: string;
 }) {
+  const pagar = useServerFn(iniciarPagamento);
+  const buscarChave = useServerFn(chavePublicaPagarme);
   const pedido = estado.pedido!;
   const evento = estado.evento!;
   const categorias = evento?.meia_categorias ?? [];
