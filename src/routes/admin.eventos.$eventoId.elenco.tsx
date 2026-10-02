@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState, type ChangeEvent } from "react";
-import { FileSpreadsheet } from "lucide-react";
+import { FileSpreadsheet, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -399,6 +399,7 @@ function Familias({ eventoId }: { eventoId: string }) {
   const navigate = useNavigate({ from: Route.fullPath });
   const sessoes = useQuery(sessoesQuery(eventoId));
   const [novoLink, setNovoLink] = useState<Familia | null>(null);
+  const [nova, setNova] = useState<{ familia: Familia | null } | null>(null);
   const qc = useQueryClient();
 
   const q = useQuery({
@@ -474,7 +475,13 @@ function Familias({ eventoId }: { eventoId: string }) {
 
   return (
     <section>
-      <h2 className="mb-3 text-lg font-semibold text-foreground">Famílias</h2>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-lg font-semibold text-foreground">Famílias</h2>
+        <Button className="min-h-11" onClick={() => setNova({ familia: null })}>
+          <UserPlus aria-hidden="true" />
+          Adicionar bailarina
+        </Button>
+      </div>
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div className="space-y-1.5">
           <Label htmlFor="busca">Buscar</Label>
@@ -572,9 +579,15 @@ function Familias({ eventoId }: { eventoId: string }) {
                       )}
                     </div>
                   </div>
-                  <Button variant="outline" className="min-h-11" onClick={() => setNovoLink(f)}>
-                    Gerar novo link
-                  </Button>
+                  <div className="flex flex-wrap gap-2">
+                    <Button variant="outline" className="min-h-11" onClick={() => setNova({ familia: f })}>
+                      <UserPlus aria-hidden="true" />
+                      Adicionar irmã
+                    </Button>
+                    <Button variant="outline" className="min-h-11" onClick={() => setNovoLink(f)}>
+                      Gerar novo link
+                    </Button>
+                  </div>
                 </div>
                 <ul className="mt-3 divide-y divide-border">
                   {f.bailarinas.map((b) => (
@@ -656,6 +669,12 @@ function Familias({ eventoId }: { eventoId: string }) {
         eventoId={eventoId}
         familia={familiaAberta}
         onFechar={() => navigate({ search: (a) => ({ ...a, familia: undefined }) })}
+      />
+      <NovaBailarina
+        eventoId={eventoId}
+        aberto={nova}
+        sessoes={(sessoes.data ?? []).map((s) => ({ id: s.id, nome: s.nome }))}
+        onFechar={() => setNova(null)}
       />
 
       <AlertDialog open={novoLink !== null} onOpenChange={(o) => !o && setNovoLink(null)}>
