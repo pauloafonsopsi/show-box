@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SeloStatus } from "@/design/palco";
-import { mascaraCep, mascaraCelular, celularValido, cpfValido, enderecoDoCep, precoDe, tiposDisponiveis, rotuloTipo, type LugarEscolhido, type MapaSessao, type TipoIngresso } from "./tipos";
+import { mascaraCep, mascaraCelular, mascaraCpf, celularValido, cpfValido, enderecoDoCep, precoDe, tiposDisponiveis, rotuloTipo, type LugarEscolhido, type MapaSessao, type TipoIngresso } from "./tipos";
 import { dinheiro } from "@/lib/formato";
 
 /* ------------------------------------------------------------------ */
