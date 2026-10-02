@@ -901,6 +901,7 @@ export type Database = {
         Row: {
           aceite_em: string | null
           aceite_ip: unknown
+          acesso_token: string
           atendente_id: string | null
           canal: string
           codigo: string
@@ -910,6 +911,7 @@ export type Database = {
           familia_id: string | null
           forma_pagamento: string | null
           id: string
+          ingressos_previstos: Json
           motivo: string | null
           pagador_celular: string | null
           pagador_cpf: string | null
@@ -917,15 +919,18 @@ export type Database = {
           pagador_nome: string | null
           pagarme_charge_id: string | null
           pagarme_order_id: string | null
+          pagarme_pedidos: Json
           pago_em: string | null
           parcelas: number
           status: string
           termos_versao_id: string | null
+          valor_recebido_centavos: number | null
           valor_total_centavos: number
         }
         Insert: {
           aceite_em?: string | null
           aceite_ip?: unknown
+          acesso_token?: string
           atendente_id?: string | null
           canal: string
           codigo?: string
@@ -935,6 +940,7 @@ export type Database = {
           familia_id?: string | null
           forma_pagamento?: string | null
           id?: string
+          ingressos_previstos?: Json
           motivo?: string | null
           pagador_celular?: string | null
           pagador_cpf?: string | null
@@ -942,15 +948,18 @@ export type Database = {
           pagador_nome?: string | null
           pagarme_charge_id?: string | null
           pagarme_order_id?: string | null
+          pagarme_pedidos?: Json
           pago_em?: string | null
           parcelas?: number
           status?: string
           termos_versao_id?: string | null
+          valor_recebido_centavos?: number | null
           valor_total_centavos?: number
         }
         Update: {
           aceite_em?: string | null
           aceite_ip?: unknown
+          acesso_token?: string
           atendente_id?: string | null
           canal?: string
           codigo?: string
@@ -960,6 +969,7 @@ export type Database = {
           familia_id?: string | null
           forma_pagamento?: string | null
           id?: string
+          ingressos_previstos?: Json
           motivo?: string | null
           pagador_celular?: string | null
           pagador_cpf?: string | null
@@ -967,10 +977,12 @@ export type Database = {
           pagador_nome?: string | null
           pagarme_charge_id?: string | null
           pagarme_order_id?: string | null
+          pagarme_pedidos?: Json
           pago_em?: string | null
           parcelas?: number
           status?: string
           termos_versao_id?: string | null
+          valor_recebido_centavos?: number | null
           valor_total_centavos?: number
         }
         Relationships: [
@@ -1345,8 +1357,73 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _compor: {
+        Args: {
+          p_adicionais: Json
+          p_ingressos: Json
+          p_pedido: string
+          p_presencial: boolean
+        }
+        Returns: Json
+      }
       _congelar_mapa: { Args: { p_sessao: string }; Returns: number }
+      _eh_servidor: { Args: never; Returns: boolean }
+      _exigir_equipe: { Args: never; Returns: undefined }
+      _exigir_servidor: { Args: never; Returns: undefined }
+      _finalizar: { Args: { p_pedido: string }; Returns: Json }
+      _janela_aberta: {
+        Args: { p_evento: string; p_tipo: string }
+        Returns: boolean
+      }
+      _liberar: {
+        Args: { p_pedido: string; p_status: string }
+        Returns: undefined
+      }
+      _liberar_lugares_da_sessao: {
+        Args: { p_pedido: string; p_sessao: string }
+        Returns: undefined
+      }
+      _lugares_do_pedido: {
+        Args: { p_pedido: string }
+        Returns: {
+          assento_id: string
+          numero: number
+          sessao_id: string
+          setor_id: string
+        }[]
+      }
+      _modo_preco: {
+        Args: { p_evento: string; p_quando?: string }
+        Returns: string
+      }
+      _pedido_por_acesso: { Args: { p_acesso: string }; Returns: string }
+      _preco: {
+        Args: {
+          p_evento: string
+          p_quando?: string
+          p_setor: string
+          p_tipo: string
+        }
+        Returns: number
+      }
+      _reservar: {
+        Args: {
+          p_atendente: string
+          p_canal: string
+          p_familia: string
+          p_numeros: number[]
+          p_pedido: string
+          p_sessao: string
+        }
+        Returns: Json
+      }
+      _validar_parcelas: {
+        Args: { p_forma: string; p_parcelas: number; p_pedido: string }
+        Returns: undefined
+      }
       abrir_proximo_lote: { Args: { p_estoque: string }; Returns: number }
+      apagar_contatos: { Args: never; Returns: number }
+      aprovar_desistencia: { Args: { p_pedido: string }; Returns: Json }
       bloquear_lugares: {
         Args: {
           p_bloquear: boolean
@@ -1356,13 +1433,51 @@ export type Database = {
         }
         Returns: number
       }
+      buscar_para_retirada: { Args: { p_codigo: string }; Returns: Json }
+      caixa_do_dia: {
+        Args: { p_atendente?: string; p_data: string; p_evento: string }
+        Returns: Json
+      }
+      cancelar_venda: {
+        Args: { p_motivo: string; p_pedido: string }
+        Returns: undefined
+      }
+      concluir_estorno: { Args: { p_pedido: string }; Returns: undefined }
       congelar_mapa_da_sessao: { Args: { p_sessao: string }; Returns: number }
       definir_escalacao: {
         Args: { p_bailarina: string; p_sessoes: string[] }
         Returns: number
       }
+      emitir_cortesia: {
+        Args: {
+          p_familia?: string
+          p_motivo: string
+          p_numeros: number[]
+          p_sessao: string
+        }
+        Returns: Json
+      }
       estoque_disponivel: { Args: { p_estoque: string }; Returns: number }
       existe_admin: { Args: never; Returns: boolean }
+      expirar_reservas: { Args: never; Returns: number }
+      familia_painel: { Args: { p_token: string }; Returns: Json }
+      fechar_pedido_online: {
+        Args: {
+          p_acesso: string
+          p_adicionais: Json
+          p_forma: string
+          p_ingressos: Json
+          p_ip?: string
+          p_pagador: Json
+          p_parcelas: number
+          p_termos_versao: string
+        }
+        Returns: Json
+      }
+      finalizar_pedido_pago: {
+        Args: { p_pagarme_order_id: string }
+        Returns: Json
+      }
       gerar_link_familia: { Args: { p_familia: string }; Returns: string }
       gerar_links_do_evento: { Args: { p_evento: string }; Returns: number }
       has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
@@ -1377,14 +1492,73 @@ export type Database = {
       }
       is_admin: { Args: never; Returns: boolean }
       is_equipe: { Args: never; Returns: boolean }
+      liberar_reserva: { Args: { p_pedido: string }; Returns: undefined }
+      liberar_reserva_online: { Args: { p_acesso: string }; Returns: undefined }
+      mapa_da_sessao: { Args: { p_sessao: string }; Returns: Json }
+      marcar_entregues: {
+        Args: { p_entregue?: boolean; p_ingressos: string[] }
+        Returns: number
+      }
       marcar_link_enviado: {
         Args: { p_enviado?: boolean; p_familia: string }
         Returns: undefined
       }
+      marcar_pagamento_falhou: {
+        Args: { p_pagarme_order_id: string }
+        Returns: undefined
+      }
+      meias_disponiveis: { Args: { p_sessao: string }; Returns: number }
       normalizar_texto: { Args: { p: string }; Returns: string }
       normalizar_whatsapp: { Args: { p: string }; Returns: string }
       novo_codigo: { Args: { p_bytes?: number }; Returns: string }
+      pedido_publico: { Args: { p_acesso: string }; Returns: Json }
+      previa_pedido: {
+        Args: { p_adicionais: Json; p_ingressos: Json; p_pedido: string }
+        Returns: Json
+      }
+      primeiro_nome: { Args: { p: string }; Returns: string }
+      registrar_evento_pagamento: {
+        Args: { p_evento_id: string; p_payload: Json; p_tipo: string }
+        Returns: boolean
+      }
+      registrar_pagarme: {
+        Args: { p_acesso: string; p_charge_id: string; p_order_id: string }
+        Returns: undefined
+      }
+      registrar_venda_presencial: {
+        Args: {
+          p_adicionais: Json
+          p_forma: string
+          p_ingressos: Json
+          p_parcelas?: number
+          p_pedido: string
+          p_valor_recebido_centavos?: number
+        }
+        Returns: Json
+      }
       reivindicar_admin: { Args: never; Returns: undefined }
+      reservar_online: {
+        Args: {
+          p_acesso_pedido?: string
+          p_numeros: number[]
+          p_sessao: string
+          p_token_familia?: string
+        }
+        Returns: Json
+      }
+      reservar_presencial: {
+        Args: {
+          p_familia?: string
+          p_numeros: number[]
+          p_pedido?: string
+          p_sessao: string
+        }
+        Returns: Json
+      }
+      resultado_evento_pagamento: {
+        Args: { p_evento_id: string; p_resultado: string }
+        Returns: undefined
+      }
       saldo_familia: {
         Args: { p_familia: string; p_sessao: string }
         Returns: number
@@ -1407,6 +1581,14 @@ export type Database = {
           p_filas: number
           p_mapa: string
         }
+        Returns: Json
+      }
+      solicitar_desistencia: {
+        Args: { p_acesso: string; p_motivo?: string }
+        Returns: undefined
+      }
+      trocar_lugar: {
+        Args: { p_ingresso: string; p_motivo?: string; p_novo_numero: number }
         Returns: Json
       }
       vagas_disponiveis: { Args: { p_produto_data: string }; Returns: number }
