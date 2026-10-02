@@ -1,5 +1,5 @@
 // Escolha de ingressos e adicionais: usada pela página da família, pelo público e pela Bilheteria.
-import { Fragment } from "react";
+import { useState } from "react";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -264,7 +264,7 @@ export function pagadorValido(p: Pagador): string | null {
 
 /** Campos do pagador, com busca de endereço pelo CEP. */
 export function CamposPagador({ pagador, aoMudar }: { pagador: Pagador; aoMudar: (p: Pagador) => void }) {
-  const [buscando, setBuscando] = useStateSafe(false);
+  const [buscando, setBuscando] = useState(false);
 
   const campo = (mudanca: Partial<Pagador>) => aoMudar({ ...pagador, ...mudanca });
 
@@ -326,8 +326,3 @@ export function CamposPagador({ pagador, aoMudar }: { pagador: Pagador; aoMudar:
   );
 }
 
-function useStateSafe<T>(inicial: T): [T, (v: T) => void] {
-  return Fragment ? useStateReal(inicial) : ([inicial, () => {}] as unknown as [T, (v: T) => void]);
-}
-
-import { useState as useStateReal } from "react";
