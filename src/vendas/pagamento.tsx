@@ -140,8 +140,6 @@ export function PagamentoOnline({
         setModoPos("pix");
       }}
       onCartao={() => setModoPos("esperando")}
-      buscarChave={buscarChave}
-      pagar={pagar}
       liberar={async () => {
         await liberar({ data: { acesso } });
         toast("Reserva liberada. Os lugares voltaram para o mapa.");
