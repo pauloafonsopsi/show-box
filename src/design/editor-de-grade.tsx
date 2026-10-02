@@ -17,6 +17,9 @@ import {
 import {
   Accessibility,
   Ban,
+  Hand,
+  Trash2,
+  X,
   Download,
   Eraser,
   Grid3x3,
@@ -56,7 +59,7 @@ import {
 } from "./grade";
 
 type Pincel = "assento" | "corredor" | "palco" | "borracha" | "setor" | "acessivel" | "bloqueio";
-type Modo = "livre" | "area" | "fila" | "inspecionar";
+type Modo = "livre" | "area" | "fila" | "mover" | "inspecionar";
 
 const PINCEIS: Array<{ id: Pincel; nome: string; Icone: typeof Square }> = [
   { id: "assento", nome: "Assento", Icone: Square },
@@ -72,6 +75,7 @@ const MODOS: Array<{ id: Modo; nome: string; dica: string }> = [
   { id: "livre", nome: "Livre", dica: "Clique ou arraste sobre os quadrados" },
   { id: "area", nome: "Área", dica: "Arraste de um canto ao outro" },
   { id: "fila", nome: "Fila", dica: "Clique no começo e no fim da mesma fila" },
+  { id: "mover", nome: "Mover e editar", dica: "Arraste um assento para um quadrado vazio, ou toque nele para ver as opções" },
   { id: "inspecionar", nome: "Inspecionar", dica: "Clique num assento para editar" },
 ];
 
@@ -112,6 +116,10 @@ export function EditorDeGrade({
   const pintando = useRef(false);
   const valorArraste = useRef<boolean | null>(null);
   const arquivoRef = useRef<HTMLInputElement>(null);
+  const origemArraste = useRef<string | null>(null);
+  const [alvoArraste, setAlvoArraste] = useState<string | null>(null);
+  const [menu, setMenu] = useState<{ k: string; x: number; y: number } | null>(null);
+  const gradeRef = useRef<HTMLDivElement>(null);
 
   const setorPorId = useMemo(() => new Map(setores.map((s) => [s.id, s])), [setores]);
   const grade: Grade = useMemo(
@@ -170,6 +178,7 @@ export function EditorDeGrade({
     const teclas = (e: KeyboardEvent) => {
       const alvo = e.target as HTMLElement | null;
       if (alvo && ["INPUT", "SELECT", "TEXTAREA"].includes(alvo.tagName)) return;
+      if (e.key === "Escape") setMenu(null);
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "z") {
         e.preventDefault();
         if (e.shiftKey) refazer();
@@ -259,6 +268,15 @@ export function EditorDeGrade({
     if (!pos) return;
     setMensagem(null);
 
+    if (modo === "mover") {
+      const k = chave(pos[0], pos[1]);
+      if (celulas.get(k)?.tipo === "assento") {
+        origemArraste.current = k;
+        setAlvoArraste(k);
+        (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId);
+      } else setMenu(null);
+      return;
+    }
     if (modo === "inspecionar") {
       const k = chave(pos[0], pos[1]);
       setSelecionada(celulas.get(k)?.tipo === "assento" ? k : null);
@@ -297,6 +315,10 @@ export function EditorDeGrade({
       setAreaAtual(pos);
       return;
     }
+    if (modo === "mover") {
+      if (origemArraste.current) setAlvoArraste(chave(pos[0], pos[1]));
+      return;
+    }
     if (!pintando.current) return;
     const k = chave(pos[0], pos[1]);
     const atual = celulas.get(k);
@@ -312,6 +334,34 @@ export function EditorDeGrade({
   };
 
   const aoSoltar = () => {
+    if (modo === "mover" && origemArraste.current) {
+      const origem = origemArraste.current;
+      const alvo = alvoArraste;
+      origemArraste.current = null;
+      setAlvoArraste(null);
+      if (!alvo || alvo === origem) {
+        const el = gradeRef.current?.querySelector<HTMLElement>(
+          `[data-l="${origem.split(":")[0]}"][data-c="${origem.split(":")[1]}"]`,
+        );
+        setSelecionada(origem);
+        if (el) setMenu({ k: origem, x: el.offsetLeft + el.offsetWidth / 2, y: el.offsetTop + el.offsetHeight });
+        return;
+      }
+      if (celulas.has(alvo)) {
+        setMensagem({ tom: "aviso", texto: "Solte o assento num quadrado vazio." });
+        return;
+      }
+      const atual = celulas.get(origem);
+      if (!atual) return;
+      const [l, c] = alvo.split(":").map(Number) as [number, number];
+      const novo = new Map(celulas);
+      novo.delete(origem);
+      novo.set(alvo, { ...atual, linha: l, coluna: c });
+      registrar(novo);
+      setSelecionada(alvo);
+      setMenu(null);
+      return;
+    }
     if (modo === "area" && ancora && areaAtual) {
       registrar(
         aplicar(celulas, retangulo(ancora, areaAtual), valorInicialAlternado(ancora[0], ancora[1])),
