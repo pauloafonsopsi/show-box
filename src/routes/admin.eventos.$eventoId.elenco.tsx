@@ -29,6 +29,8 @@ import { mensagemDeErro, primeiroNome, whatsappExibir } from "@/lib/formato";
 import {
   linhasParaImportar,
   lerPlanilha,
+  CAMPOS,
+  camposFaltando,
   normalizar,
   sessaoPelaData,
   type PlanilhaLida,
@@ -132,12 +134,36 @@ function Importar({ eventoId }: { eventoId: string }) {
     onError: (e) => toast.error(mensagemDeErro(e)),
   });
 
-  const faltaLigar = planilha?.dancas.some((d) => !ligacao[d.indice]) ?? true;
+  const faltaLigar =
+    !planilha ||
+    planilha.dancas.length === 0 ||
+    planilha.dancas.some((d) => !ligacao[d.indice]) ||
+    camposFaltando(planilha).length > 0;
+
+  function escolherColuna(campo: (typeof CAMPOS)[number]["id"], indice: number) {
+    setPlanilha((p) => (p ? { ...p, colunas: { ...p.colunas, [campo]: indice } } : p));
+    setResumo(null);
+  }
+
+  function alternarDanca(indice: number) {
+    if (!planilha) return;
+    const tem = planilha.dancas.some((d) => d.indice === indice);
+    const dancas = tem
+      ? planilha.dancas.filter((d) => d.indice !== indice)
+      : [...planilha.dancas, { indice, titulo: planilha.cabecalhos[indice] ?? "" }].sort(
+          (a, b) => a.indice - b.indice,
+        );
+    setPlanilha({ ...planilha, dancas });
+    setResumo(null);
+  }
 
   return (
     <section>
       <h2 className="mb-1 text-lg font-semibold text-foreground">Importar planilha</h2>
-      <p className="mb-3 text-muted-foreground">Arquivo .xlsx ou .csv com a aba "Bailarinas".</p>
+      <p className="mb-3 text-muted-foreground">
+        Arquivo .xlsx ou .csv. O sistema reconhece nomes parecidos (Aluna, Mãe, Celular...) e você
+        confere qual coluna é qual antes de gravar.
+      </p>
       <div className="rounded-lg border border-border p-4">
         <Label
           htmlFor="arquivo"
@@ -162,7 +188,74 @@ function Importar({ eventoId }: { eventoId: string }) {
               cabeçalho.
             </p>
             <div>
-              <p className="mb-2 font-medium text-foreground">Cada coluna "Dança" é qual sessão?</p>
+              <p className="mb-1 font-medium text-foreground">Qual coluna é qual?</p>
+              <p className="mb-2 text-sm text-muted-foreground">
+                Já deixamos sugerido. Ajuste se alguma estiver errada.
+              </p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {CAMPOS.map((c) => {
+                  const v = planilha.colunas[c.id];
+                  return (
+                    <div key={c.id} className="space-y-1.5">
+                      <Label htmlFor={`campo-${c.id}`}>{c.nome}</Label>
+                      <select
+                        id={`campo-${c.id}`}
+                        className={classeCampo}
+                        aria-invalid={v < 0}
+                        value={v}
+                        onChange={(e) => escolherColuna(c.id, Number(e.target.value))}
+                      >
+                        <option value={-1}>Escolha a coluna</option>
+                        {planilha.cabecalhos.map((h, i) => (
+                          <option key={i} value={i}>
+                            {h}
+                          </option>
+                        ))}
+                      </select>
+                      {v >= 0 ? (
+                        <p className="truncate text-sm text-muted-foreground">
+                          Ex.: {String(planilha.linhas[0]?.celulas[v] ?? "vazio")}
+                        </p>
+                      ) : (
+                        <p className="text-sm text-destructive">Não encontrei esta coluna.</p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            <div>
+              <p className="mb-1 font-medium text-foreground">Colunas que marcam os dias de dança</p>
+              <p className="mb-2 text-sm text-muted-foreground">
+                Na linha da bailarina, vale S, Sim, X ou 1.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {planilha.cabecalhos.map((h, i) => {
+                  if (Object.values(planilha.colunas).includes(i)) return null;
+                  const ativo = planilha.dancas.some((d) => d.indice === i);
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      aria-pressed={ativo}
+                      onClick={() => alternarDanca(i)}
+                      className={
+                        ativo
+                          ? "min-h-11 rounded-md border border-primary bg-primary px-3 text-sm text-primary-foreground"
+                          : "min-h-11 rounded-md border border-input px-3 text-sm text-muted-foreground"
+                      }
+                    >
+                      {h}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <div>
+              <p className="mb-2 font-medium text-foreground">Cada coluna de dança é qual sessão?</p>
+              {planilha.dancas.length === 0 && (
+                <p className="text-sm text-destructive">Marque acima pelo menos uma coluna de dança.</p>
+              )}
               <div className="grid gap-3 sm:grid-cols-2">
                 {planilha.dancas.map((d) => (
                   <div key={d.indice} className="space-y-1.5">

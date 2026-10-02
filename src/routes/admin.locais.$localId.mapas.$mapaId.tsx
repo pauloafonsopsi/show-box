@@ -175,7 +175,7 @@ function TelaMapa() {
           </div>
         </div>
       ) : (
-        <div className="grid gap-6 lg:grid-cols-[16rem_1fr]">
+        <div className="grid gap-6 2xl:grid-cols-[16rem_1fr]">
           <aside className="space-y-3">
             <h2 className="font-semibold text-foreground">Setores</h2>
             {[...setores, null].map((s) => (

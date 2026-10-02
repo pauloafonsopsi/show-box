@@ -5,13 +5,9 @@ export type Celula = string | number | boolean | Date | null;
 export interface PlanilhaLida {
   aba: string;
   linhaCabecalho: number; // 1-based na planilha
-  colunas: {
-    nome: number;
-    turma: number;
-    pacote: number;
-    responsavel: number;
-    whatsapp: number;
-  };
+  cabecalhos: string[];
+  colunas: Record<Campo, number>; // -1 quando não achou
+
   dancas: { indice: number; titulo: string }[];
   linhas: { numero: number; celulas: Celula[] }[];
 }
@@ -25,19 +21,76 @@ export function normalizar(t: unknown): string {
     .trim();
 }
 
-const CABECALHOS = {
-  nome: "nome completo da bailarina",
-  turma: "turma",
-  pacote: "pacote",
-  responsavel: "responsavel (primeiro nome)",
-  whatsapp: "whatsapp do responsavel",
-} as const;
+export type Campo = "nome" | "turma" | "pacote" | "responsavel" | "whatsapp";
 
-function acharCabecalho(dados: Celula[][]): number {
-  for (let i = 0; i < Math.min(10, dados.length); i++) {
-    if ((dados[i] ?? []).some((c) => normalizar(c) === CABECALHOS.nome)) return i;
+export const CAMPOS: { id: Campo; nome: string }[] = [
+  { id: "nome", nome: "Nome da bailarina" },
+  { id: "turma", nome: "Turma" },
+  { id: "pacote", nome: "Pacote" },
+  { id: "responsavel", nome: "Responsável (primeiro nome)" },
+  { id: "whatsapp", nome: "WhatsApp do responsável" },
+];
+
+/** Sinônimos aceitos em cada coluna, já normalizados. O primeiro é o nome oficial. */
+const SINONIMOS: Record<Campo, string[]> = {
+  nome: [
+    "nome completo da bailarina", "nome da bailarina", "bailarina", "nome completo da aluna",
+    "nome da aluna", "aluna", "aluno", "estudante", "crianca", "nome completo", "nome",
+  ],
+  turma: ["turma", "classe", "nivel", "sala", "horario", "grupo"],
+  pacote: ["pacote", "plano", "cota", "categoria", "pacote de ingressos"],
+  responsavel: [
+    "responsavel (primeiro nome)", "responsavel", "nome do responsavel", "primeiro nome do responsavel",
+    "mae", "pai", "nome da mae", "nome do pai", "mae/pai", "mae ou pai",
+  ],
+  whatsapp: [
+    "whatsapp do responsavel", "whatsapp", "whats", "zap", "celular", "telefone", "tel",
+    "fone", "contato", "celular do responsavel", "telefone do responsavel", "whatsapp da mae",
+  ],
+};
+
+const PREFIXOS_DANCA = ["danca", "apresentacao", "apresenta", "sessao", "dia "];
+
+export function pareceDanca(cabecalhoNormalizado: string): boolean {
+  return PREFIXOS_DANCA.some((p) => cabecalhoNormalizado.startsWith(p));
+}
+
+/** Acha a coluna de cada campo: primeiro nome exato, depois começo do texto. */
+export function sugerirColunas(cab: string[]): Record<Campo, number> {
+  const usados = new Set<number>();
+  const r = {} as Record<Campo, number>;
+  for (const { id } of CAMPOS) {
+    let achado = -1;
+    for (const sin of SINONIMOS[id]) {
+      achado = cab.findIndex((c, i) => !usados.has(i) && c === sin);
+      if (achado >= 0) break;
+    }
+    if (achado < 0)
+      for (const sin of SINONIMOS[id]) {
+        if (sin.length < 4) continue;
+        achado = cab.findIndex((c, i) => !usados.has(i) && !pareceDanca(c) && c.startsWith(sin));
+        if (achado >= 0) break;
+      }
+    if (achado >= 0) usados.add(achado);
+    r[id] = achado;
   }
-  return -1;
+  return r;
+}
+
+/** Linha de cabeçalho: entre as 10 primeiras, a que reconhece mais campos (pelo menos 2). */
+function acharCabecalho(dados: Celula[][]): number {
+  let melhor = -1;
+  let pontos = 1;
+  for (let i = 0; i < Math.min(10, dados.length); i++) {
+    const cab = (dados[i] ?? []).map(normalizar);
+    const s = sugerirColunas(cab);
+    const p = Object.values(s).filter((x) => x >= 0).length + (cab.some(pareceDanca) ? 1 : 0);
+    if (p > pontos) {
+      pontos = p;
+      melhor = i;
+    }
+  }
+  return melhor;
 }
 
 /** CSV com vírgula ou ponto e vírgula, aspas duplas e quebras de linha dentro de aspas. */
@@ -89,50 +142,43 @@ export async function lerPlanilha(arquivo: File): Promise<PlanilhaLida> {
     const abas = await readXlsxFile(arquivo);
     const escolhida =
       abas.find((a) => normalizar(a.sheet) === "bailarinas") ??
-      abas.find((a) => acharCabecalho(a.data as Celula[][]) >= 0);
-    if (!escolhida) {
-      throw new Error('Não encontrei a aba "Bailarinas" nem uma aba com a coluna "Nome completo da bailarina".');
-    }
+      abas.find((a) => acharCabecalho(a.data as Celula[][]) >= 0) ??
+      abas[0];
+    if (!escolhida) throw new Error("A planilha está vazia.");
     aba = escolhida.sheet;
     dados = escolhida.data as Celula[][];
   } else {
     throw new Error("Envie um arquivo .xlsx ou .csv.");
   }
 
-  const ic = acharCabecalho(dados);
-  if (ic < 0) throw new Error(`A aba "${aba}" não tem a coluna "Nome completo da bailarina" nas 10 primeiras linhas.`);
-  const cab = (dados[ic] ?? []).map(normalizar);
-  const idx = (k: keyof typeof CABECALHOS) => cab.indexOf(CABECALHOS[k]);
-  const faltando = (Object.keys(CABECALHOS) as (keyof typeof CABECALHOS)[]).filter((k) => idx(k) < 0);
-  if (faltando.length > 0) {
-    const nomes: Record<string, string> = {
-      nome: "Nome completo da bailarina",
-      turma: "Turma",
-      pacote: "Pacote",
-      responsavel: "Responsável (primeiro nome)",
-      whatsapp: "WhatsApp do responsável",
-    };
-    throw new Error(`Faltam colunas na planilha: ${faltando.map((k) => nomes[k]).join(", ")}.`);
-  }
+  let ic = acharCabecalho(dados);
+  if (ic < 0) ic = dados.findIndex((l) => (l ?? []).some((c) => textoCelula(c)));
+  if (ic < 0) throw new Error(`A aba "${aba}" está vazia.`);
+  const cabecalhos = (dados[ic] ?? []).map((c, i) => textoCelula(c) || `Coluna ${i + 1}`);
+  const cab = cabecalhos.map(normalizar);
   const dancas = cab
-    .map((c, i) => ({ indice: i, titulo: String(dados[ic]?.[i] ?? "").trim(), norm: c }))
-    .filter((c) => c.norm.startsWith("danca"))
+    .map((c, i) => ({ indice: i, titulo: cabecalhos[i] as string, norm: c }))
+    .filter((c) => pareceDanca(c.norm))
     .map(({ indice, titulo }) => ({ indice, titulo }));
-  if (dancas.length === 0) throw new Error('A planilha não tem nenhuma coluna "Dança ...".');
 
   return {
     aba,
     linhaCabecalho: ic + 1,
-    colunas: {
-      nome: idx("nome"),
-      turma: idx("turma"),
-      pacote: idx("pacote"),
-      responsavel: idx("responsavel"),
-      whatsapp: idx("whatsapp"),
-    },
+    cabecalhos,
+    colunas: sugerirColunas(cab),
     dancas,
     linhas: dados.slice(ic + 1).map((celulas, i) => ({ numero: ic + 2 + i, celulas })),
   };
+}
+
+/** Campos que ainda não têm coluna escolhida. */
+export function camposFaltando(p: PlanilhaLida): Campo[] {
+  return CAMPOS.filter((c) => p.colunas[c.id] < 0).map((c) => c.id);
+}
+
+/** Valores que contam como "dança nesta sessão". */
+export function marcado(v: unknown): boolean {
+  return ["s", "sim", "x", "1", "true", "verdadeiro", "ok"].includes(normalizar(v));
 }
 
 export function textoCelula(c: Celula | undefined): string {
@@ -152,7 +198,7 @@ export function linhasParaImportar(p: PlanilhaLida, sessaoPorDanca: Record<numbe
       responsavel: textoCelula(celulas[p.colunas.responsavel]),
       whatsapp: textoCelula(celulas[p.colunas.whatsapp]),
       sessoes: p.dancas
-        .filter((d) => normalizar(celulas[d.indice]) === "s" && sessaoPorDanca[d.indice])
+        .filter((d) => marcado(celulas[d.indice]) && sessaoPorDanca[d.indice])
         .map((d) => sessaoPorDanca[d.indice] as string),
     }))
     .filter((l) => l.nome || l.responsavel || l.whatsapp);

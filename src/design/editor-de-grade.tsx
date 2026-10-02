@@ -17,6 +17,9 @@ import {
 import {
   Accessibility,
   Ban,
+  Hand,
+  Trash2,
+  X,
   Download,
   Eraser,
   Grid3x3,
@@ -56,7 +59,7 @@ import {
 } from "./grade";
 
 type Pincel = "assento" | "corredor" | "palco" | "borracha" | "setor" | "acessivel" | "bloqueio";
-type Modo = "livre" | "area" | "fila" | "inspecionar";
+type Modo = "livre" | "area" | "fila" | "mover" | "inspecionar";
 
 const PINCEIS: Array<{ id: Pincel; nome: string; Icone: typeof Square }> = [
   { id: "assento", nome: "Assento", Icone: Square },
@@ -72,6 +75,7 @@ const MODOS: Array<{ id: Modo; nome: string; dica: string }> = [
   { id: "livre", nome: "Livre", dica: "Clique ou arraste sobre os quadrados" },
   { id: "area", nome: "Área", dica: "Arraste de um canto ao outro" },
   { id: "fila", nome: "Fila", dica: "Clique no começo e no fim da mesma fila" },
+  { id: "mover", nome: "Mover e editar", dica: "Arraste um assento para um quadrado vazio, ou toque nele para ver as opções" },
   { id: "inspecionar", nome: "Inspecionar", dica: "Clique num assento para editar" },
 ];
 
@@ -112,6 +116,10 @@ export function EditorDeGrade({
   const pintando = useRef(false);
   const valorArraste = useRef<boolean | null>(null);
   const arquivoRef = useRef<HTMLInputElement>(null);
+  const origemArraste = useRef<string | null>(null);
+  const [alvoArraste, setAlvoArraste] = useState<string | null>(null);
+  const [menu, setMenu] = useState<{ k: string; x: number; y: number } | null>(null);
+  const gradeRef = useRef<HTMLDivElement>(null);
 
   const setorPorId = useMemo(() => new Map(setores.map((s) => [s.id, s])), [setores]);
   const grade: Grade = useMemo(
@@ -170,6 +178,7 @@ export function EditorDeGrade({
     const teclas = (e: KeyboardEvent) => {
       const alvo = e.target as HTMLElement | null;
       if (alvo && ["INPUT", "SELECT", "TEXTAREA"].includes(alvo.tagName)) return;
+      if (e.key === "Escape") setMenu(null);
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "z") {
         e.preventDefault();
         if (e.shiftKey) refazer();
@@ -259,6 +268,15 @@ export function EditorDeGrade({
     if (!pos) return;
     setMensagem(null);
 
+    if (modo === "mover") {
+      const k = chave(pos[0], pos[1]);
+      if (celulas.get(k)?.tipo === "assento") {
+        origemArraste.current = k;
+        setAlvoArraste(k);
+        (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId);
+      } else setMenu(null);
+      return;
+    }
     if (modo === "inspecionar") {
       const k = chave(pos[0], pos[1]);
       setSelecionada(celulas.get(k)?.tipo === "assento" ? k : null);
@@ -297,6 +315,10 @@ export function EditorDeGrade({
       setAreaAtual(pos);
       return;
     }
+    if (modo === "mover") {
+      if (origemArraste.current) setAlvoArraste(chave(pos[0], pos[1]));
+      return;
+    }
     if (!pintando.current) return;
     const k = chave(pos[0], pos[1]);
     const atual = celulas.get(k);
@@ -312,6 +334,34 @@ export function EditorDeGrade({
   };
 
   const aoSoltar = () => {
+    if (modo === "mover" && origemArraste.current) {
+      const origem = origemArraste.current;
+      const alvo = alvoArraste;
+      origemArraste.current = null;
+      setAlvoArraste(null);
+      if (!alvo || alvo === origem) {
+        const el = gradeRef.current?.querySelector<HTMLElement>(
+          `[data-l="${origem.split(":")[0]}"][data-c="${origem.split(":")[1]}"]`,
+        );
+        setSelecionada(origem);
+        if (el) setMenu({ k: origem, x: el.offsetLeft + el.offsetWidth / 2, y: el.offsetTop + el.offsetHeight });
+        return;
+      }
+      if (celulas.has(alvo)) {
+        setMensagem({ tom: "aviso", texto: "Solte o assento num quadrado vazio." });
+        return;
+      }
+      const atual = celulas.get(origem);
+      if (!atual) return;
+      const [l, c] = alvo.split(":").map(Number) as [number, number];
+      const novo = new Map(celulas);
+      novo.delete(origem);
+      novo.set(alvo, { ...atual, linha: l, coluna: c });
+      registrar(novo);
+      setSelecionada(alvo);
+      setMenu(null);
+      return;
+    }
     if (modo === "area" && ancora && areaAtual) {
       registrar(
         aplicar(celulas, retangulo(ancora, areaAtual), valorInicialAlternado(ancora[0], ancora[1])),
@@ -505,7 +555,7 @@ export function EditorDeGrade({
       ) : null}
       {mensagem ? <SeloStatus tom={mensagem.tom}>{mensagem.texto}</SeloStatus> : null}
 
-      <div className="grid min-h-0 gap-4 lg:grid-cols-[13rem_minmax(0,1fr)_17rem]">
+      <div className="grid min-h-0 gap-4 lg:grid-cols-[13rem_minmax(0,1fr)] 2xl:grid-cols-[13rem_minmax(0,1fr)_17rem]">
         {/* Ferramentas */}
         <aside
           className="flex flex-col gap-4 rounded-md border bg-card p-3"
@@ -567,6 +617,7 @@ export function EditorDeGrade({
                   modo === m.id ? "bg-secondary font-semibold" : "hover:bg-accent",
                 )}
               >
+                {m.id === "mover" ? <Hand aria-hidden="true" className="h-4 w-4" /> : null}
                 {m.id === "inspecionar" ? (
                   <MousePointerClick aria-hidden="true" className="h-4 w-4" />
                 ) : null}
@@ -607,9 +658,17 @@ export function EditorDeGrade({
               </p>
             </div>
           ) : null}
+          <div className="relative w-max" ref={gradeRef}>
+          <div
+            className="proscenio mb-4 h-12 text-sm"
+            style={{ width: colunas * (tamanho + 2) - 2 }}
+            aria-label="Palco fica deste lado"
+          >
+            PALCO
+          </div>
           <div
             role="presentation"
-            className="grid w-max touch-none select-none"
+            className={cn("grid w-max touch-none select-none", modo === "mover" && "cursor-grab")}
             style={{
               gridTemplateColumns: `repeat(${colunas}, ${tamanho}px)`,
               gridTemplateRows: `repeat(${filas}, ${tamanho}px)`,
@@ -637,8 +696,10 @@ export function EditorDeGrade({
                     className={cn(
                       "relative flex items-center justify-center rounded-[3px]",
                       !c && "border border-dashed border-border/70",
-                      c?.tipo === "palco" && "bg-ouro/30",
+                      c?.tipo === "palco" && "bg-ouro/45 shadow-[0_0_12px_var(--luz-palco)]",
                       c?.tipo === "corredor" && "bg-muted/60",
+                      alvoArraste === k && !c && "ring-2 ring-primary bg-primary/20",
+                      origemArraste.current === k && alvoArraste !== k && "opacity-40",
                       marcada && "ring-2 ring-ring",
                       selecionada === k && "ring-2 ring-primary",
                     )}
@@ -659,6 +720,39 @@ export function EditorDeGrade({
                 );
               }),
             )}
+          </div>
+          {menu && celulas.get(menu.k)?.tipo === "assento" ? (
+            <MenuAssento
+              x={menu.x}
+              y={menu.y}
+              celula={celulas.get(menu.k) as Celula}
+              setores={setores}
+              aoMudar={(m) => {
+                const atual = celulas.get(menu.k);
+                if (!atual) return;
+                const novo = new Map(celulas);
+                novo.set(menu.k, { ...atual, ...m });
+                registrar(novo);
+              }}
+              aoCorredor={() => {
+                const atual = celulas.get(menu.k);
+                if (!atual) return;
+                const novo = new Map(celulas);
+                novo.set(menu.k, novaCelula(atual.linha, atual.coluna, "corredor"));
+                registrar(novo);
+                setMenu(null);
+                setSelecionada(null);
+              }}
+              aoApagar={() => {
+                const novo = new Map(celulas);
+                novo.delete(menu.k);
+                registrar(novo);
+                setMenu(null);
+                setSelecionada(null);
+              }}
+              aoFechar={() => setMenu(null)}
+            />
+          ) : null}
           </div>
         </section>
 
@@ -815,6 +909,129 @@ export function EditorDeGrade({
             </div>
           </section>
         </aside>
+      </div>
+    </div>
+  );
+}
+
+function MenuAssento({
+  x,
+  y,
+  celula,
+  setores,
+  aoMudar,
+  aoCorredor,
+  aoApagar,
+  aoFechar,
+}: {
+  x: number;
+  y: number;
+  celula: Celula;
+  setores: Setor[];
+  aoMudar: (m: Partial<Celula>) => void;
+  aoCorredor: () => void;
+  aoApagar: () => void;
+  aoFechar: () => void;
+}) {
+  return (
+    <div
+      role="dialog"
+      aria-label={`Assento ${celula.rotuloFila ?? ""}${celula.numero ?? ""}`}
+      className="absolute z-20 mt-2 flex w-64 -translate-x-1/2 flex-col gap-3 rounded-xl border bg-popover p-3 text-popover-foreground"
+      style={{ left: Math.max(136, x), top: y, boxShadow: "var(--sombra-janela)" }}
+      onPointerDown={(e) => e.stopPropagation()}
+    >
+      <div className="flex items-center justify-between">
+        <p className="text-sm font-semibold">
+          Fila {celula.rotuloFila ?? celula.linha}, assento {celula.numero ?? "sem número"}
+        </p>
+        <button
+          type="button"
+          onClick={aoFechar}
+          aria-label="Fechar"
+          className="flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <label className="flex flex-col gap-1 text-xs text-muted-foreground">
+          Fila
+          <input
+            className="min-h-11 rounded-md border bg-background px-2 text-base text-foreground"
+            value={celula.rotuloFila ?? ""}
+            onChange={(e) => aoMudar({ rotuloFila: e.target.value || null })}
+          />
+        </label>
+        <label className="flex flex-col gap-1 text-xs text-muted-foreground">
+          Número
+          <input
+            type="number"
+            inputMode="numeric"
+            min={1}
+            className="min-h-11 rounded-md border bg-background px-2 text-base text-foreground"
+            value={celula.numero ?? ""}
+            onChange={(e) => aoMudar({ numero: e.target.value ? Number(e.target.value) : null })}
+          />
+        </label>
+      </div>
+      <div className="flex flex-col gap-1">
+        <p className="text-xs text-muted-foreground">Setor</p>
+        <div className="flex flex-wrap gap-1.5">
+          {setores.map((s) => (
+            <button
+              key={s.id}
+              type="button"
+              aria-pressed={celula.setorId === s.id}
+              onClick={() => aoMudar({ setorId: s.id })}
+              className={cn(
+                "flex min-h-11 items-center gap-1.5 rounded-md border px-2 text-sm",
+                celula.setorId === s.id ? "border-primary bg-accent" : "border-border",
+              )}
+            >
+              <span aria-hidden="true" className="h-3 w-3 rounded-sm" style={{ background: s.cor }} />
+              {s.nome}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-1.5">
+        <button
+          type="button"
+          aria-pressed={celula.acessivel}
+          onClick={() => aoMudar({ acessivel: !celula.acessivel })}
+          className={cn(
+            "flex min-h-11 items-center gap-1.5 rounded-md border px-2 text-sm",
+            celula.acessivel ? "border-primary bg-accent" : "border-border",
+          )}
+        >
+          <Accessibility className="h-4 w-4" /> Acessível
+        </button>
+        <button
+          type="button"
+          aria-pressed={celula.bloqueadoPadrao}
+          onClick={() => aoMudar({ bloqueadoPadrao: !celula.bloqueadoPadrao })}
+          className={cn(
+            "flex min-h-11 items-center gap-1.5 rounded-md border px-2 text-sm",
+            celula.bloqueadoPadrao ? "border-primary bg-accent" : "border-border",
+          )}
+        >
+          <Ban className="h-4 w-4" /> Bloqueado
+        </button>
+        <button
+          type="button"
+          onClick={aoCorredor}
+          className="flex min-h-11 items-center gap-1.5 rounded-md border border-border px-2 text-sm"
+        >
+          <SquareDashed className="h-4 w-4" /> Corredor
+        </button>
+        <button
+          type="button"
+          onClick={aoApagar}
+          className="flex min-h-11 items-center gap-1.5 rounded-md border border-destructive/50 px-2 text-sm text-destructive"
+        >
+          <Trash2 className="h-4 w-4" /> Apagar
+        </button>
       </div>
     </div>
   );

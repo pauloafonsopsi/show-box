@@ -76,58 +76,60 @@
   --color-poltrona-texto: var(--poltrona-texto);
 }
 
-/* Coxia: equipe e admin */
+/* Coxia: equipe e admin. Escuro grafite, acabamento discreto, dourado como ação. */
 :root {
-  --radius: 0.625rem;
+  color-scheme: dark;
+  --radius: 0.75rem;
 
-  --background: oklch(0.962 0.014 84.6); /* Marfim */
-  --foreground: oklch(0.193 0.02 73.1); /* Tinta */
-  --card: oklch(0.994 0.007 88.6); /* Papel */
-  --card-foreground: oklch(0.193 0.02 73.1);
-  --popover: oklch(0.994 0.007 88.6);
-  --popover-foreground: oklch(0.193 0.02 73.1);
-  --primary: oklch(0.193 0.02 73.1); /* Tinta: ação principal na Coxia */
-  --primary-foreground: oklch(0.962 0.014 84.6);
-  --secondary: oklch(0.928 0.023 82.1);
-  --secondary-foreground: oklch(0.193 0.02 73.1);
-  --muted: oklch(0.928 0.023 82.1);
-  --muted-foreground: oklch(0.501 0.021 72.9); /* Grafite */
-  --accent: oklch(0.927 0.036 87.8);
-  --accent-foreground: oklch(0.193 0.02 73.1);
-  --destructive: oklch(0.443 0.128 10); /* Veludo */
-  --destructive-foreground: oklch(0.994 0.007 88.6);
-  --border: oklch(0.897 0.029 84.6);
-  --input: oklch(0.858 0.037 83.8);
-  --ring: oklch(0.572 0.102 76.3); /* Bronze */
+  --background: oklch(0.155 0.006 75); /* Grafite profundo */
+  --foreground: oklch(0.93 0.012 85); /* Marfim suave */
+  --card: oklch(0.195 0.007 75); /* Superfície */
+  --card-foreground: oklch(0.93 0.012 85);
+  --popover: oklch(0.225 0.008 75);
+  --popover-foreground: oklch(0.93 0.012 85);
+  --primary: oklch(0.78 0.105 82); /* Dourado */
+  --primary-foreground: oklch(0.17 0.01 75);
+  --secondary: oklch(0.255 0.008 75);
+  --secondary-foreground: oklch(0.93 0.012 85);
+  --muted: oklch(0.235 0.007 75);
+  --muted-foreground: oklch(0.72 0.014 80);
+  --accent: oklch(0.27 0.012 78);
+  --accent-foreground: oklch(0.95 0.012 85);
+  --destructive: oklch(0.68 0.15 25);
+  --destructive-foreground: oklch(0.15 0.01 75);
+  --border: oklch(1 0 0 / 0.09);
+  --input: oklch(1 0 0 / 0.16);
+  --ring: oklch(0.78 0.105 82);
 
-  --ouro: oklch(0.735 0.098 81.2);
-  --bronze: oklch(0.572 0.102 76.3);
-  --veludo: oklch(0.443 0.128 10);
-  --sucesso: oklch(0.485 0.078 147.5);
-  --aviso: oklch(0.572 0.102 76.3);
-  --erro: oklch(0.496 0.138 28.1);
+  --ouro: oklch(0.78 0.105 82);
+  --bronze: oklch(0.64 0.1 72);
+  --veludo: oklch(0.55 0.14 15);
+  --sucesso: oklch(0.74 0.12 160); /* Esmeralda */
+  --aviso: oklch(0.8 0.12 80);
+  --erro: oklch(0.68 0.15 25);
 
-  --poltrona-livre: oklch(0.572 0.102 76.3);
-  --poltrona-escolhida: oklch(0.735 0.098 81.2);
-  --poltrona-ocupada: oklch(0.824 0.029 81.5);
-  --poltrona-texto: oklch(0.193 0.02 73.1);
+  --poltrona-livre: oklch(0.64 0.1 72);
+  --poltrona-escolhida: oklch(0.82 0.11 84);
+  --poltrona-ocupada: oklch(0.32 0.008 75);
+  --poltrona-texto: oklch(0.15 0.01 75);
 
-  --chart-1: oklch(0.572 0.102 76.3);
-  --chart-2: oklch(0.443 0.128 10);
-  --chart-3: oklch(0.485 0.078 147.5);
-  --chart-4: oklch(0.501 0.021 72.9);
-  --chart-5: oklch(0.735 0.098 81.2);
+  --chart-1: oklch(0.78 0.105 82);
+  --chart-2: oklch(0.55 0.14 15);
+  --chart-3: oklch(0.74 0.12 160);
+  --chart-4: oklch(0.72 0.014 80);
+  --chart-5: oklch(0.64 0.1 72);
 
-  --sidebar: oklch(0.994 0.007 88.6);
-  --sidebar-foreground: oklch(0.193 0.02 73.1);
-  --sidebar-primary: oklch(0.193 0.02 73.1);
-  --sidebar-primary-foreground: oklch(0.962 0.014 84.6);
-  --sidebar-accent: oklch(0.927 0.036 87.8);
-  --sidebar-accent-foreground: oklch(0.193 0.02 73.1);
-  --sidebar-border: oklch(0.897 0.029 84.6);
-  --sidebar-ring: oklch(0.572 0.102 76.3);
+  --sidebar: oklch(0.175 0.006 75);
+  --sidebar-foreground: oklch(0.93 0.012 85);
+  --sidebar-primary: oklch(0.78 0.105 82);
+  --sidebar-primary-foreground: oklch(0.17 0.01 75);
+  --sidebar-accent: oklch(0.255 0.008 75);
+  --sidebar-accent-foreground: oklch(0.95 0.012 85);
+  --sidebar-border: oklch(1 0 0 / 0.08);
+  --sidebar-ring: oklch(0.78 0.105 82);
 
-  --sombra-janela: 0 12px 32px -12px oklch(0.193 0.02 73.1 / 0.28);
+  --sombra-janela: 0 24px 48px -16px oklch(0 0 0 / 0.6), 0 0 0 1px oklch(1 0 0 / 0.06);
+  --luz-palco: oklch(0.82 0.11 84 / 0.35);
 }
 
 /* Palco: família e público. Aplicar a classe .palco no contêiner da página. */
@@ -234,6 +236,24 @@
 }
 
 /* Cortina: só na primeira visita, até 900 ms, nunca segura o conteúdo. */
+/* Proscênio do editor de mapa: faixa dourada com luz para baixo, marca onde fica o palco. */
+@layer components {
+  .proscenio {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--ouro);
+    border-radius: 0 0 50% 50% / 0 0 100% 100%;
+    background: oklch(0.78 0.105 82 / 0.14);
+    color: var(--ouro);
+    box-shadow: 0 18px 40px -12px var(--luz-palco);
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: 0.3em;
+  }
+}
+
 @keyframes cortina-abre-esquerda {
   to {
     transform: translateX(-101%);
