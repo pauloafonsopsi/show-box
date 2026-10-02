@@ -41,6 +41,8 @@ import { Route as AdminEventosEventoIdAdicionaisRouteImport } from './routes/adm
 import { Route as AdminEventosEventoIdConteudosRouteImport } from './routes/admin.eventos.$eventoId.conteudos'
 import { Route as AdminEventosEventoIdElencoRouteImport } from './routes/admin.eventos.$eventoId.elenco'
 import { Route as AdminEventosEventoIdEnvioRouteImport } from './routes/admin.eventos.$eventoId.envio'
+import { Route as AdminEventosEventoIdImpressaoRouteImport } from './routes/admin.eventos.$eventoId.impressao'
+import { Route as AdminEventosEventoIdPedidosRouteImport } from './routes/admin.eventos.$eventoId.pedidos'
 import { Route as AdminEventosEventoIdPrecosRouteImport } from './routes/admin.eventos.$eventoId.precos'
 import { Route as AdminEventosEventoIdSessoesRouteImport } from './routes/admin.eventos.$eventoId.sessoes'
 import { Route as AdminEventosEventoIdVisaoGeralRouteImport } from './routes/admin.eventos.$eventoId.visao-geral'
@@ -215,6 +217,18 @@ const AdminEventosEventoIdEnvioRoute =
     path: '/envio',
     getParentRoute: () => AdminEventosEventoIdRoute,
   } as any)
+const AdminEventosEventoIdImpressaoRoute =
+  AdminEventosEventoIdImpressaoRouteImport.update({
+    id: '/impressao',
+    path: '/impressao',
+    getParentRoute: () => AdminEventosEventoIdRoute,
+  } as any)
+const AdminEventosEventoIdPedidosRoute =
+  AdminEventosEventoIdPedidosRouteImport.update({
+    id: '/pedidos',
+    path: '/pedidos',
+    getParentRoute: () => AdminEventosEventoIdRoute,
+  } as any)
 const AdminEventosEventoIdPrecosRoute =
   AdminEventosEventoIdPrecosRouteImport.update({
     id: '/precos',
@@ -288,6 +302,8 @@ export interface FileRoutesByFullPath {
   '/admin/eventos/$eventoId/conteudos': typeof AdminEventosEventoIdConteudosRoute
   '/admin/eventos/$eventoId/elenco': typeof AdminEventosEventoIdElencoRoute
   '/admin/eventos/$eventoId/envio': typeof AdminEventosEventoIdEnvioRoute
+  '/admin/eventos/$eventoId/impressao': typeof AdminEventosEventoIdImpressaoRoute
+  '/admin/eventos/$eventoId/pedidos': typeof AdminEventosEventoIdPedidosRoute
   '/admin/eventos/$eventoId/precos': typeof AdminEventosEventoIdPrecosRoute
   '/admin/eventos/$eventoId/sessoes': typeof AdminEventosEventoIdSessoesRoute
   '/admin/eventos/$eventoId/visao-geral': typeof AdminEventosEventoIdVisaoGeralRoute
@@ -324,6 +340,8 @@ export interface FileRoutesByTo {
   '/admin/eventos/$eventoId/conteudos': typeof AdminEventosEventoIdConteudosRoute
   '/admin/eventos/$eventoId/elenco': typeof AdminEventosEventoIdElencoRoute
   '/admin/eventos/$eventoId/envio': typeof AdminEventosEventoIdEnvioRoute
+  '/admin/eventos/$eventoId/impressao': typeof AdminEventosEventoIdImpressaoRoute
+  '/admin/eventos/$eventoId/pedidos': typeof AdminEventosEventoIdPedidosRoute
   '/admin/eventos/$eventoId/precos': typeof AdminEventosEventoIdPrecosRoute
   '/admin/eventos/$eventoId/sessoes': typeof AdminEventosEventoIdSessoesRoute
   '/admin/eventos/$eventoId/visao-geral': typeof AdminEventosEventoIdVisaoGeralRoute
@@ -366,6 +384,8 @@ export interface FileRoutesById {
   '/admin/eventos/$eventoId/conteudos': typeof AdminEventosEventoIdConteudosRoute
   '/admin/eventos/$eventoId/elenco': typeof AdminEventosEventoIdElencoRoute
   '/admin/eventos/$eventoId/envio': typeof AdminEventosEventoIdEnvioRoute
+  '/admin/eventos/$eventoId/impressao': typeof AdminEventosEventoIdImpressaoRoute
+  '/admin/eventos/$eventoId/pedidos': typeof AdminEventosEventoIdPedidosRoute
   '/admin/eventos/$eventoId/precos': typeof AdminEventosEventoIdPrecosRoute
   '/admin/eventos/$eventoId/sessoes': typeof AdminEventosEventoIdSessoesRoute
   '/admin/eventos/$eventoId/visao-geral': typeof AdminEventosEventoIdVisaoGeralRoute
@@ -409,6 +429,8 @@ export interface FileRouteTypes {
     | '/admin/eventos/$eventoId/conteudos'
     | '/admin/eventos/$eventoId/elenco'
     | '/admin/eventos/$eventoId/envio'
+    | '/admin/eventos/$eventoId/impressao'
+    | '/admin/eventos/$eventoId/pedidos'
     | '/admin/eventos/$eventoId/precos'
     | '/admin/eventos/$eventoId/sessoes'
     | '/admin/eventos/$eventoId/visao-geral'
@@ -445,6 +467,8 @@ export interface FileRouteTypes {
     | '/admin/eventos/$eventoId/conteudos'
     | '/admin/eventos/$eventoId/elenco'
     | '/admin/eventos/$eventoId/envio'
+    | '/admin/eventos/$eventoId/impressao'
+    | '/admin/eventos/$eventoId/pedidos'
     | '/admin/eventos/$eventoId/precos'
     | '/admin/eventos/$eventoId/sessoes'
     | '/admin/eventos/$eventoId/visao-geral'
@@ -486,6 +510,8 @@ export interface FileRouteTypes {
     | '/admin/eventos/$eventoId/conteudos'
     | '/admin/eventos/$eventoId/elenco'
     | '/admin/eventos/$eventoId/envio'
+    | '/admin/eventos/$eventoId/impressao'
+    | '/admin/eventos/$eventoId/pedidos'
     | '/admin/eventos/$eventoId/precos'
     | '/admin/eventos/$eventoId/sessoes'
     | '/admin/eventos/$eventoId/visao-geral'
@@ -735,6 +761,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminEventosEventoIdEnvioRouteImport
       parentRoute: typeof AdminEventosEventoIdRoute
     }
+    '/admin/eventos/$eventoId/impressao': {
+      id: '/admin/eventos/$eventoId/impressao'
+      path: '/impressao'
+      fullPath: '/admin/eventos/$eventoId/impressao'
+      preLoaderRoute: typeof AdminEventosEventoIdImpressaoRouteImport
+      parentRoute: typeof AdminEventosEventoIdRoute
+    }
+    '/admin/eventos/$eventoId/pedidos': {
+      id: '/admin/eventos/$eventoId/pedidos'
+      path: '/pedidos'
+      fullPath: '/admin/eventos/$eventoId/pedidos'
+      preLoaderRoute: typeof AdminEventosEventoIdPedidosRouteImport
+      parentRoute: typeof AdminEventosEventoIdRoute
+    }
     '/admin/eventos/$eventoId/precos': {
       id: '/admin/eventos/$eventoId/precos'
       path: '/precos'
@@ -792,6 +832,8 @@ interface AdminEventosEventoIdRouteChildren {
   AdminEventosEventoIdConteudosRoute: typeof AdminEventosEventoIdConteudosRoute
   AdminEventosEventoIdElencoRoute: typeof AdminEventosEventoIdElencoRoute
   AdminEventosEventoIdEnvioRoute: typeof AdminEventosEventoIdEnvioRoute
+  AdminEventosEventoIdImpressaoRoute: typeof AdminEventosEventoIdImpressaoRoute
+  AdminEventosEventoIdPedidosRoute: typeof AdminEventosEventoIdPedidosRoute
   AdminEventosEventoIdPrecosRoute: typeof AdminEventosEventoIdPrecosRoute
   AdminEventosEventoIdSessoesRoute: typeof AdminEventosEventoIdSessoesRoute
   AdminEventosEventoIdVisaoGeralRoute: typeof AdminEventosEventoIdVisaoGeralRoute
@@ -803,6 +845,8 @@ const AdminEventosEventoIdRouteChildren: AdminEventosEventoIdRouteChildren = {
   AdminEventosEventoIdConteudosRoute: AdminEventosEventoIdConteudosRoute,
   AdminEventosEventoIdElencoRoute: AdminEventosEventoIdElencoRoute,
   AdminEventosEventoIdEnvioRoute: AdminEventosEventoIdEnvioRoute,
+  AdminEventosEventoIdImpressaoRoute: AdminEventosEventoIdImpressaoRoute,
+  AdminEventosEventoIdPedidosRoute: AdminEventosEventoIdPedidosRoute,
   AdminEventosEventoIdPrecosRoute: AdminEventosEventoIdPrecosRoute,
   AdminEventosEventoIdSessoesRoute: AdminEventosEventoIdSessoesRoute,
   AdminEventosEventoIdVisaoGeralRoute: AdminEventosEventoIdVisaoGeralRoute,
