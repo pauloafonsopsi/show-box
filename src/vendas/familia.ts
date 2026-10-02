@@ -8,13 +8,25 @@ import type { ProdutoVenda } from "./selecao";
 
 export interface PainelFamilia {
   familia: { id: string; responsavel: string };
-  evento: { id: string; nome: string; slug: string; status: string; meia_categorias: string[] | null };
+  evento: {
+    id: string;
+    nome: string;
+    slug: string;
+    status: string;
+    meia_categorias: string[] | null;
+  };
   bailarinas: Array<{ nome: string; sessoes: string[] }>;
   sessoes: Array<{ id: string; nome: string; data_hora: string; saldo: number; dancam: number }>;
   janelas: Array<{ tipo: string; inicio: string; fim: string | null }>;
   pode_comprar_agora: boolean;
   ingressos: Array<IngressoCarteira & { sessao_id: string }>;
-  pedidos: Array<{ codigo: string; acesso: string; status: string; valor_total_centavos: number; expira_em: string | null }>;
+  pedidos: Array<{
+    codigo: string;
+    acesso: string;
+    status: string;
+    valor_total_centavos: number;
+    expira_em: string | null;
+  }>;
   produtos: Array<{
     id: string;
     nome: string;
@@ -49,5 +61,10 @@ export function produtosParaVenda(p: PainelFamilia): ProdutoVenda[] {
 
 export function janelaAberta(janelas: PainelFamilia["janelas"], tipo: string): boolean {
   const agora = Date.now();
-  return janelas.some((j) => j.tipo === tipo && new Date(j.inicio).getTime() <= agora && (!j.fim || new Date(j.fim).getTime() > agora));
+  return janelas.some(
+    (j) =>
+      j.tipo === tipo &&
+      new Date(j.inicio).getTime() <= agora &&
+      (!j.fim || new Date(j.fim).getTime() > agora),
+  );
 }

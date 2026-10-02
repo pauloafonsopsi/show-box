@@ -20,7 +20,8 @@ const TIPO: Record<string, string> = {
 };
 
 export function Carteira({ ingressos }: { ingressos: IngressoCarteira[] }) {
-  if (ingressos.length === 0) return <p className="text-muted-foreground">Nenhum ingresso ainda.</p>;
+  if (ingressos.length === 0)
+    return <p className="text-muted-foreground">Nenhum ingresso ainda.</p>;
   return (
     <ul className="grid gap-4 sm:grid-cols-2">
       {ingressos.map((i) => (

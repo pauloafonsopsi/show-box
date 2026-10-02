@@ -28,7 +28,12 @@ export const Route = createFileRoute("/admin/eventos/$eventoId/pedidos")({
 });
 
 const POR_PAGINA = 50;
-const CANAL: Record<string, string> = { presencial: "Recepção", online: "Família online", publico: "Público", cortesia: "Cortesia" };
+const CANAL: Record<string, string> = {
+  presencial: "Recepção",
+  online: "Família online",
+  publico: "Público",
+  cortesia: "Cortesia",
+};
 const STATUS: Record<string, string> = {
   reservado: "Reservado",
   aguardando_pagamento: "Aguardando pagamento",
@@ -49,15 +54,32 @@ function Pendencias({ eventoId }: { eventoId: string }) {
       const [desist, semLugar, dup] = await Promise.all([
         supabase
           .from("desistencias")
-          .select("id, motivo, solicitada_em, pedidos!inner(id, codigo, valor_total_centavos, evento_id, pagador_nome)")
+          .select(
+            "id, motivo, solicitada_em, pedidos!inner(id, codigo, valor_total_centavos, evento_id, pagador_nome)",
+          )
           .is("estornada_em", null)
           .eq("pedidos.evento_id", eventoId),
-        supabase.from("pedidos").select("id, codigo, valor_total_centavos, pagador_nome").eq("evento_id", eventoId).eq("status", "pago_sem_lugar"),
-        supabase.from("eventos_pagamento").select("id, evento_gateway_id, tipo, recebido_em, payload").eq("resultado", "pagamento duplicado").order("recebido_em", { ascending: false }).limit(50),
+        supabase
+          .from("pedidos")
+          .select("id, codigo, valor_total_centavos, pagador_nome")
+          .eq("evento_id", eventoId)
+          .eq("status", "pago_sem_lugar"),
+        supabase
+          .from("eventos_pagamento")
+          .select("id, evento_gateway_id, tipo, recebido_em, payload")
+          .eq("resultado", "pagamento duplicado")
+          .order("recebido_em", { ascending: false })
+          .limit(50),
       ]);
       if (desist.error) throw desist.error;
       if (semLugar.error) throw semLugar.error;
-      return { desist: desist.data ?? [], semLugar: (semLugar.data ?? []).filter((p) => !(desist.data ?? []).some((d) => d.pedidos?.id === p.id)), dup: dup.data ?? [] };
+      return {
+        desist: desist.data ?? [],
+        semLugar: (semLugar.data ?? []).filter(
+          (p) => !(desist.data ?? []).some((d) => d.pedidos?.id === p.id),
+        ),
+        dup: dup.data ?? [],
+      };
     },
   });
   const aprovar = async (pedido: string) => {
@@ -86,10 +108,15 @@ function Pendencias({ eventoId }: { eventoId: string }) {
           <li key={x.id} className="flex flex-wrap items-center gap-3 py-2">
             <SeloStatus tom="aviso">Desistência</SeloStatus>
             <span className="flex-1 text-foreground">
-              {x.pedidos?.codigo}, {x.pedidos?.pagador_nome}, {dinheiro(x.pedidos?.valor_total_centavos)}. Pedida em {dataHora(x.solicitada_em)}
+              {x.pedidos?.codigo}, {x.pedidos?.pagador_nome},{" "}
+              {dinheiro(x.pedidos?.valor_total_centavos)}. Pedida em {dataHora(x.solicitada_em)}
               {x.motivo ? `: ${x.motivo}` : ""}
             </span>
-            <Button className="min-h-11" disabled={enviando === x.pedidos?.id} onClick={() => aprovar(x.pedidos!.id)}>
+            <Button
+              className="min-h-11"
+              disabled={enviando === x.pedidos?.id}
+              onClick={() => aprovar(x.pedidos!.id)}
+            >
               Aprovar e estornar
             </Button>
           </li>
@@ -112,7 +139,8 @@ function Pendencias({ eventoId }: { eventoId: string }) {
           <li key={e.id} className="flex flex-wrap items-center gap-3 py-2">
             <SeloStatus tom="erro">Pagamento duplicado</SeloStatus>
             <span className="flex-1 text-foreground">
-              Evento {e.evento_gateway_id} ({e.tipo}) em {dataHora(e.recebido_em)}. Estorne a cobrança extra no painel da Pagar.me.
+              Evento {e.evento_gateway_id} ({e.tipo}) em {dataHora(e.recebido_em)}. Estorne a
+              cobrança extra no painel da Pagar.me.
             </span>
           </li>
         ))}
@@ -126,18 +154,25 @@ function PedidosAdmin() {
   const busca = Route.useSearch();
   const navigate = Route.useNavigate();
   const pagina = busca.pagina ?? 0;
-  const mudar = (s: Partial<typeof busca>) => navigate({ search: (a) => ({ ...a, pagina: undefined, ...s }) });
+  const mudar = (s: Partial<typeof busca>) =>
+    navigate({ search: (a) => ({ ...a, pagina: undefined, ...s }) });
 
   const sessoes = useQuery({
     queryKey: ["admin-ped-sessoes", eventoId],
-    queryFn: async () => (await supabase.from("sessoes").select("id, nome").eq("evento_id", eventoId).order("ordem")).data ?? [],
+    queryFn: async () =>
+      (await supabase.from("sessoes").select("id, nome").eq("evento_id", eventoId).order("ordem"))
+        .data ?? [],
   });
   const q = useQuery({
     queryKey: ["admin-pedidos", eventoId, busca],
     queryFn: async () => {
       let c = supabase
         .from("pedidos")
-        .select(busca.sessao ? "id, codigo, canal, status, forma_pagamento, valor_total_centavos, criado_em, pagador_nome, familias(responsavel_nome), ingressos!inner(sessao_id)" : "id, codigo, canal, status, forma_pagamento, valor_total_centavos, criado_em, pagador_nome, familias(responsavel_nome)")
+        .select(
+          busca.sessao
+            ? "id, codigo, canal, status, forma_pagamento, valor_total_centavos, criado_em, pagador_nome, familias(responsavel_nome), ingressos!inner(sessao_id)"
+            : "id, codigo, canal, status, forma_pagamento, valor_total_centavos, criado_em, pagador_nome, familias(responsavel_nome)",
+        )
         .eq("evento_id", eventoId)
         .order("criado_em", { ascending: false })
         .range(pagina * POR_PAGINA, pagina * POR_PAGINA + POR_PAGINA - 1);
@@ -167,7 +202,12 @@ function PedidosAdmin() {
     <div>
       <Pendencias eventoId={eventoId} />
       <div className="mb-4 flex flex-wrap gap-2">
-        <select aria-label="Canal" className={sel} value={busca.canal ?? ""} onChange={(e) => mudar({ canal: e.target.value || undefined })}>
+        <select
+          aria-label="Canal"
+          className={sel}
+          value={busca.canal ?? ""}
+          onChange={(e) => mudar({ canal: e.target.value || undefined })}
+        >
           <option value="">Todos os canais</option>
           {Object.entries(CANAL).map(([k, v]) => (
             <option key={k} value={k}>
@@ -175,7 +215,12 @@ function PedidosAdmin() {
             </option>
           ))}
         </select>
-        <select aria-label="Situação" className={sel} value={busca.status ?? ""} onChange={(e) => mudar({ status: e.target.value || undefined })}>
+        <select
+          aria-label="Situação"
+          className={sel}
+          value={busca.status ?? ""}
+          onChange={(e) => mudar({ status: e.target.value || undefined })}
+        >
           <option value="">Todas as situações</option>
           {Object.entries(STATUS).map(([k, v]) => (
             <option key={k} value={k}>
@@ -183,7 +228,12 @@ function PedidosAdmin() {
             </option>
           ))}
         </select>
-        <select aria-label="Sessão" className={sel} value={busca.sessao ?? ""} onChange={(e) => mudar({ sessao: e.target.value || undefined })}>
+        <select
+          aria-label="Sessão"
+          className={sel}
+          value={busca.sessao ?? ""}
+          onChange={(e) => mudar({ sessao: e.target.value || undefined })}
+        >
           <option value="">Todas as sessões</option>
           {(sessoes.data ?? []).map((s) => (
             <option key={s.id} value={s.id}>
@@ -191,10 +241,26 @@ function PedidosAdmin() {
             </option>
           ))}
         </select>
-        <input type="date" aria-label="De" className={sel} value={busca.de ?? ""} onChange={(e) => mudar({ de: e.target.value || undefined })} />
-        <input type="date" aria-label="Até" className={sel} value={busca.ate ?? ""} onChange={(e) => mudar({ ate: e.target.value || undefined })} />
+        <input
+          type="date"
+          aria-label="De"
+          className={sel}
+          value={busca.de ?? ""}
+          onChange={(e) => mudar({ de: e.target.value || undefined })}
+        />
+        <input
+          type="date"
+          aria-label="Até"
+          className={sel}
+          value={busca.ate ?? ""}
+          onChange={(e) => mudar({ ate: e.target.value || undefined })}
+        />
         <Button asChild variant="outline" className="min-h-11">
-          <Link to="/admin/eventos/$eventoId/impressao" params={{ eventoId }} search={busca.sessao ? { sessao: busca.sessao } : {}}>
+          <Link
+            to="/admin/eventos/$eventoId/impressao"
+            params={{ eventoId }}
+            search={busca.sessao ? { sessao: busca.sessao } : {}}
+          >
             Imprimir ingressos
           </Link>
         </Button>
@@ -221,7 +287,9 @@ function PedidosAdmin() {
             {(q.data ?? []).map((p) => (
               <tr key={p.id} className="border-b border-border text-foreground">
                 <td className="py-2 font-medium">{p.codigo}</td>
-                <td className="py-2">{p.familias?.responsavel_nome ?? p.pagador_nome ?? "Avulso"}</td>
+                <td className="py-2">
+                  {p.familias?.responsavel_nome ?? p.pagador_nome ?? "Avulso"}
+                </td>
                 <td className="py-2">{CANAL[p.canal] ?? p.canal}</td>
                 <td className="py-2">{STATUS[p.status] ?? p.status}</td>
                 <td className="py-2 text-right">{dinheiro(p.valor_total_centavos)}</td>
@@ -232,10 +300,20 @@ function PedidosAdmin() {
         </table>
       )}
       <div className="mt-4 flex gap-2">
-        <Button variant="outline" className="min-h-11" disabled={pagina === 0} onClick={() => navigate({ search: (a) => ({ ...a, pagina: pagina - 1 }) })}>
+        <Button
+          variant="outline"
+          className="min-h-11"
+          disabled={pagina === 0}
+          onClick={() => navigate({ search: (a) => ({ ...a, pagina: pagina - 1 }) })}
+        >
           Anteriores
         </Button>
-        <Button variant="outline" className="min-h-11" disabled={(q.data ?? []).length < POR_PAGINA} onClick={() => navigate({ search: (a) => ({ ...a, pagina: pagina + 1 }) })}>
+        <Button
+          variant="outline"
+          className="min-h-11"
+          disabled={(q.data ?? []).length < POR_PAGINA}
+          onClick={() => navigate({ search: (a) => ({ ...a, pagina: pagina + 1 }) })}
+        >
           Próximos
         </Button>
       </div>

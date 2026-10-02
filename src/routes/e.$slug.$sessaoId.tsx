@@ -17,11 +17,16 @@ function EscolherPublico() {
   const d = q.data;
   const s = d?.sessoes.find((x) => x.id === sessaoId);
   if (!d || !s) return <AvisoPalco titulo="Sessão não encontrada" />;
-  if (!vendaPublicaAberta(d.evento.status, d.janelas)) return <AvisoPalco titulo="Venda fechada" texto="A venda ao público não está aberta agora." />;
+  if (!vendaPublicaAberta(d.evento.status, d.janelas))
+    return <AvisoPalco titulo="Venda fechada" texto="A venda ao público não está aberta agora." />;
   const limite = d.evento.limite_por_pedido ?? 1;
   return (
     <div>
-      <Link to="/e/$slug" params={{ slug }} className="inline-flex min-h-11 items-center text-muted-foreground underline underline-offset-4">
+      <Link
+        to="/e/$slug"
+        params={{ slug }}
+        className="inline-flex min-h-11 items-center text-muted-foreground underline underline-offset-4"
+      >
         Voltar
       </Link>
       <h1 className="titulo-palco mt-2 text-3xl text-foreground">{s.nome}</h1>

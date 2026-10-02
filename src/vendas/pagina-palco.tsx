@@ -32,11 +32,18 @@ export function RodapePalco({ slug }: { slug?: string | null }) {
   return (
     <footer className="mt-12 flex flex-wrap gap-4 border-t border-border pt-6 text-sm text-muted-foreground">
       {slug ? (
-        <Link to="/termos/$slug" params={{ slug }} className="inline-flex min-h-11 items-center underline underline-offset-4">
+        <Link
+          to="/termos/$slug"
+          params={{ slug }}
+          className="inline-flex min-h-11 items-center underline underline-offset-4"
+        >
           Termos de compra
         </Link>
       ) : null}
-      <Link to="/privacidade" className="inline-flex min-h-11 items-center underline underline-offset-4">
+      <Link
+        to="/privacidade"
+        className="inline-flex min-h-11 items-center underline underline-offset-4"
+      >
         Privacidade
       </Link>
     </footer>
@@ -53,7 +60,15 @@ export function EsqueletoPalco() {
   );
 }
 
-export function AvisoPalco({ titulo, texto, acao }: { titulo: string; texto?: string; acao?: ReactNode }) {
+export function AvisoPalco({
+  titulo,
+  texto,
+  acao,
+}: {
+  titulo: string;
+  texto?: string;
+  acao?: ReactNode;
+}) {
   return (
     <div className="superficie-palco mx-auto max-w-md p-6 text-center">
       <h1 className="titulo-palco text-2xl text-foreground">{titulo}</h1>

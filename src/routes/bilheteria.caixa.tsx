@@ -32,22 +32,38 @@ function Caixa() {
   const q = useQuery({
     enabled: Boolean(evento),
     queryKey: ["caixa", evento?.id, dia],
-    queryFn: async () => (await buscar({ data: { evento: evento!.id, data: dia } })) as unknown as Record<string, { pedidos: number; total_centavos: number }>,
+    queryFn: async () =>
+      (await buscar({ data: { evento: evento!.id, data: dia } })) as unknown as Record<
+        string,
+        { pedidos: number; total_centavos: number }
+      >,
   });
   const fechamentos = useQuery({
     enabled: Boolean(evento),
     queryKey: ["fechamentos", evento?.id, dia],
     queryFn: async () => {
-      const { data, error } = await supabase.from("fechamentos_caixa").select("id, criado_em, diferenca_centavos").eq("evento_id", evento!.id).eq("data", dia).order("criado_em");
+      const { data, error } = await supabase
+        .from("fechamentos_caixa")
+        .select("id, criado_em, diferenca_centavos")
+        .eq("evento_id", evento!.id)
+        .eq("data", dia)
+        .order("criado_em");
       if (error) throw error;
       return data ?? [];
     },
   });
 
   if (!evento || q.isLoading) return <EsqueletoLista />;
-  if (q.error) return <EstadoErro mensagem={mensagemDeErro(q.error)} onTentar={() => q.refetch()} />;
+  if (q.error)
+    return <EstadoErro mensagem={mensagemDeErro(q.error)} onTentar={() => q.refetch()} />;
   const totais = q.data ?? {};
-  const formas = ["dinheiro", "pix", "debito", "credito", ...Object.keys(totais).filter((f) => !["dinheiro", "pix", "debito", "credito"].includes(f))];
+  const formas = [
+    "dinheiro",
+    "pix",
+    "debito",
+    "credito",
+    ...Object.keys(totais).filter((f) => !["dinheiro", "pix", "debito", "credito"].includes(f)),
+  ];
   const sistema = (f: string) => totais[f]?.total_centavos ?? 0;
   const conf = (f: string) => centavosDeTexto(conferido[f] ?? "") ?? 0;
   const diferenca = formas.reduce((s, f) => s + conf(f) - sistema(f), 0);
@@ -77,7 +93,11 @@ function Caixa() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <Cabecalho titulo="Caixa do dia" trilha={[{ rotulo: "Bilheteria", to: "/bilheteria" }]} descricao="Suas vendas de hoje na recepção." />
+      <Cabecalho
+        titulo="Caixa do dia"
+        trilha={[{ rotulo: "Bilheteria", to: "/bilheteria" }]}
+        descricao="Suas vendas de hoje na recepção."
+      />
       <table className="numeros w-full text-sm">
         <thead>
           <tr className="border-b border-border text-left text-muted-foreground">
@@ -109,13 +129,22 @@ function Caixa() {
           ))}
         </tbody>
       </table>
-      <p className="numeros mt-4 text-lg font-semibold text-foreground">Diferença total: {dinheiro(diferenca)}</p>
-      <Input className="mt-3 text-[16px]" placeholder="Observação (opcional)" value={obs} onChange={(e) => setObs(e.target.value)} />
+      <p className="numeros mt-4 text-lg font-semibold text-foreground">
+        Diferença total: {dinheiro(diferenca)}
+      </p>
+      <Input
+        className="mt-3 text-[16px]"
+        placeholder="Observação (opcional)"
+        value={obs}
+        onChange={(e) => setObs(e.target.value)}
+      />
       <Button className="mt-3 min-h-11" disabled={enviando} onClick={fechar}>
         Fechar caixa
       </Button>
       {(fechamentos.data ?? []).length > 0 ? (
-        <p className="mt-4 text-sm text-muted-foreground">Fechamentos de hoje: {(fechamentos.data ?? []).length}</p>
+        <p className="mt-4 text-sm text-muted-foreground">
+          Fechamentos de hoje: {(fechamentos.data ?? []).length}
+        </p>
       ) : null}
     </div>
   );

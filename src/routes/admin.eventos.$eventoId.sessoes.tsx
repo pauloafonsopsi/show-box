@@ -20,7 +20,12 @@ import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Switch } from "@/components/ui/switch";
 import { Campo, classeCampo, EsqueletoLista, EstadoErro, EstadoVazio } from "@/design/coxia";
-import { GradeDePoltronas, SeloStatus, type CelulaGrade, type EstadoPoltrona } from "@/design/palco";
+import {
+  GradeDePoltronas,
+  SeloStatus,
+  type CelulaGrade,
+  type EstadoPoltrona,
+} from "@/design/palco";
 import { supabase } from "@/integrations/supabase/client";
 import { sessoesQuery } from "@/lib/consultas";
 import { dataHora, deInputLocal, mensagemDeErro, paraInputLocal } from "@/lib/formato";
@@ -60,9 +65,11 @@ function Sessoes() {
   });
 
   if (q.isPending) return <EsqueletoLista />;
-  if (q.isError) return <EstadoErro mensagem={mensagemDeErro(q.error)} onTentar={() => q.refetch()} />;
+  if (q.isError)
+    return <EstadoErro mensagem={mensagemDeErro(q.error)} onTentar={() => q.refetch()} />;
 
-  const sessaoAtual = q.data.find((s) => s.id === sessaoBloqueio) ?? q.data.find((s) => s.mapa_congelado_em);
+  const sessaoAtual =
+    q.data.find((s) => s.id === sessaoBloqueio) ?? q.data.find((s) => s.mapa_congelado_em);
 
   return (
     <div className="space-y-10">
@@ -79,20 +86,30 @@ function Sessoes() {
         ) : (
           <ul className="divide-y divide-border rounded-lg border border-border">
             {q.data.map((s) => (
-              <li key={s.id} className="flex flex-col gap-2 px-4 py-3 md:flex-row md:items-center md:justify-between">
+              <li
+                key={s.id}
+                className="flex flex-col gap-2 px-4 py-3 md:flex-row md:items-center md:justify-between"
+              >
                 <button type="button" className="min-h-11 text-left" onClick={() => setEditando(s)}>
-                  <span className="block font-medium text-foreground underline-offset-4 hover:underline">{s.nome}</span>
-                  <span className="block text-sm text-muted-foreground">
-                    {s.data_hora ? dataHora(s.data_hora) : "Sem data e hora"}
-                    {s.abertura_portas ? `, portas às ${dataHora(s.abertura_portas).split(" às ")[1]}` : ""}
+                  <span className="block font-medium text-foreground underline-offset-4 hover:underline">
+                    {s.nome}
                   </span>
                   <span className="block text-sm text-muted-foreground">
-                    Mapa: {s.mapas ? `${s.mapas.nome} (${s.mapas.locais?.nome ?? ""})` : "não escolhido"}
+                    {s.data_hora ? dataHora(s.data_hora) : "Sem data e hora"}
+                    {s.abertura_portas
+                      ? `, portas às ${dataHora(s.abertura_portas).split(" às ")[1]}`
+                      : ""}
+                  </span>
+                  <span className="block text-sm text-muted-foreground">
+                    Mapa:{" "}
+                    {s.mapas ? `${s.mapas.nome} (${s.mapas.locais?.nome ?? ""})` : "não escolhido"}
                   </span>
                 </button>
                 <div className="flex flex-wrap items-center gap-2">
                   {s.mapa_congelado_em ? (
-                    <SeloStatus tom="sucesso">Congelado em {dataHora(s.mapa_congelado_em)}</SeloStatus>
+                    <SeloStatus tom="sucesso">
+                      Congelado em {dataHora(s.mapa_congelado_em)}
+                    </SeloStatus>
                   ) : (
                     <SeloStatus tom="aviso">Mapa não congelado</SeloStatus>
                   )}
@@ -110,9 +127,14 @@ function Sessoes() {
 
       <section>
         <h2 className="mb-1 text-lg font-semibold text-foreground">Bloqueios</h2>
-        <p className="mb-3 text-muted-foreground">Escolha a sessão, selecione lugares livres e bloqueie com um motivo.</p>
+        <p className="mb-3 text-muted-foreground">
+          Escolha a sessão, selecione lugares livres e bloqueie com um motivo.
+        </p>
         {q.data.filter((s) => s.mapa_congelado_em).length === 0 ? (
-          <EstadoVazio titulo="Nenhuma sessão com mapa congelado" texto="Congele o mapa de uma sessão para bloquear lugares." />
+          <EstadoVazio
+            titulo="Nenhuma sessão com mapa congelado"
+            texto="Congele o mapa de uma sessão para bloquear lugares."
+          />
         ) : (
           <>
             <div className="mb-4 max-w-sm space-y-1.5">
@@ -132,20 +154,28 @@ function Sessoes() {
                   ))}
               </select>
             </div>
-            {sessaoAtual?.mapa_id && <Bloqueios sessaoId={sessaoAtual.id} mapaId={sessaoAtual.mapa_id} />}
+            {sessaoAtual?.mapa_id && (
+              <Bloqueios sessaoId={sessaoAtual.id} mapaId={sessaoAtual.mapa_id} />
+            )}
           </>
         )}
       </section>
 
-      <EditarSessao eventoId={eventoId} sessao={editando} onFechar={() => setEditando(null)} total={q.data.length} />
+      <EditarSessao
+        eventoId={eventoId}
+        sessao={editando}
+        onFechar={() => setEditando(null)}
+        total={q.data.length}
+      />
 
       <AlertDialog open={congelar !== null} onOpenChange={(o) => !o && setCongelar(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Congelar o mapa de {congelar?.nome}?</AlertDialogTitle>
             <AlertDialogDescription>
-              Os lugares desta sessão serão substituídos pelos do mapa do local, como ele está agora. Bloqueios feitos
-              nesta sessão serão perdidos. Se a sessão já tiver vendas, o sistema recusa.
+              Os lugares desta sessão serão substituídos pelos do mapa do local, como ele está
+              agora. Bloqueios feitos nesta sessão serão perdidos. Se a sessão já tiver vendas, o
+              sistema recusa.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -212,7 +242,9 @@ function EditarSessao({
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success(nova ? "Sessão criada. Congele o mapa para liberar os lugares." : "Sessão salva.");
+      toast.success(
+        nova ? "Sessão criada. Congele o mapa para liberar os lugares." : "Sessão salva.",
+      );
       qc.invalidateQueries({ queryKey: ["sessoes", eventoId] });
       qc.invalidateQueries({ queryKey: ["setores-evento", eventoId] });
       onFechar();
@@ -233,7 +265,13 @@ function EditarSessao({
         </SheetHeader>
         <form key={chave} onSubmit={enviar} className="space-y-4 px-4 pb-6">
           <Campo id="s-nome" name="nome" rotulo="Nome" required defaultValue={s?.nome ?? ""} />
-          <Campo id="s-dh" name="data_hora" rotulo="Data e hora" type="datetime-local" defaultValue={paraInputLocal(s?.data_hora)} />
+          <Campo
+            id="s-dh"
+            name="data_hora"
+            rotulo="Data e hora"
+            type="datetime-local"
+            defaultValue={paraInputLocal(s?.data_hora)}
+          />
           <Campo
             id="s-portas"
             name="abertura_portas"
@@ -243,7 +281,12 @@ function EditarSessao({
           />
           <div className="space-y-1.5">
             <Label htmlFor="s-mapa">Mapa usado</Label>
-            <select id="s-mapa" name="mapa_id" className={classeCampo} defaultValue={s?.mapa_id ?? ""}>
+            <select
+              id="s-mapa"
+              name="mapa_id"
+              className={classeCampo}
+              defaultValue={s?.mapa_id ?? ""}
+            >
               <option value="">Escolha o mapa</option>
               {(mapas.data ?? []).map((m) => (
                 <option key={m.id} value={m.id}>
@@ -251,9 +294,20 @@ function EditarSessao({
                 </option>
               ))}
             </select>
-            {s && <p className="text-sm text-muted-foreground">Trocar o mapa só vale depois de congelar de novo.</p>}
+            {s && (
+              <p className="text-sm text-muted-foreground">
+                Trocar o mapa só vale depois de congelar de novo.
+              </p>
+            )}
           </div>
-          <Campo id="s-ordem" name="ordem" rotulo="Ordem" type="number" min={0} defaultValue={s?.ordem ?? total + 1} />
+          <Campo
+            id="s-ordem"
+            name="ordem"
+            rotulo="Ordem"
+            type="number"
+            min={0}
+            defaultValue={s?.ordem ?? total + 1}
+          />
           <div className="flex min-h-11 items-center gap-3">
             <Switch id="s-ativa" name="ativa" defaultChecked={s?.ativa ?? true} />
             <Label htmlFor="s-ativa">Sessão ativa</Label>
@@ -303,12 +357,18 @@ function Bloqueios({ sessaoId, mapaId }: { sessaoId: string; mapaId: string }) {
       const [a, m, c, st] = await Promise.all([
         supabase
           .from("assentos")
-          .select("numero, linha, coluna, rotulo_fila, status, bloqueio_motivo, acessivel, setor_id")
+          .select(
+            "numero, linha, coluna, rotulo_fila, status, bloqueio_motivo, acessivel, setor_id",
+          )
           .eq("sessao_id", sessaoId)
           .order("numero")
           .limit(5000),
         supabase.from("mapas").select("colunas, filas").eq("id", mapaId).single(),
-        supabase.from("mapa_celulas").select("linha, coluna, tipo").eq("mapa_id", mapaId).neq("tipo", "assento"),
+        supabase
+          .from("mapa_celulas")
+          .select("linha, coluna, tipo")
+          .eq("mapa_id", mapaId)
+          .neq("tipo", "assento"),
         supabase.from("setores").select("id, nome, cor").eq("mapa_id", mapaId).order("ordem"),
       ]);
       for (const r of [a, m, c, st]) if (r.error) throw r.error;
@@ -345,7 +405,11 @@ function Bloqueios({ sessaoId, mapaId }: { sessaoId: string; mapaId: string }) {
     if (!q.data) return [];
     const cores = new Map(q.data.setores.map((s) => [s.id, s]));
     return [
-      ...q.data.outras.map((c) => ({ linha: c.linha, coluna: c.coluna, tipo: c.tipo as "corredor" | "palco" })),
+      ...q.data.outras.map((c) => ({
+        linha: c.linha,
+        coluna: c.coluna,
+        tipo: c.tipo as "corredor" | "palco",
+      })),
       ...q.data.assentos.map((a) => ({
         linha: a.linha,
         coluna: a.coluna,
@@ -361,7 +425,8 @@ function Bloqueios({ sessaoId, mapaId }: { sessaoId: string; mapaId: string }) {
   }, [q.data, selecao]);
 
   if (q.isPending) return <EsqueletoLista linhas={1} altura="h-64" />;
-  if (q.isError) return <EstadoErro mensagem={mensagemDeErro(q.error)} onTentar={() => q.refetch()} />;
+  if (q.isError)
+    return <EstadoErro mensagem={mensagemDeErro(q.error)} onTentar={() => q.refetch()} />;
 
   const { assentos, setores, mapa } = q.data;
   const porEstado = (st: string) => assentos.filter((a) => a.status === st).length;
@@ -396,9 +461,14 @@ function Bloqueios({ sessaoId, mapaId }: { sessaoId: string; mapaId: string }) {
       <ul className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
         {setores.map((s) => (
           <li key={s.id} className="inline-flex items-center gap-2">
-            <span aria-hidden="true" className="inline-block h-1 w-5 rounded-sm" style={{ backgroundColor: s.cor }} />
+            <span
+              aria-hidden="true"
+              className="inline-block h-1 w-5 rounded-sm"
+              style={{ backgroundColor: s.cor }}
+            />
             <span>
-              {s.nome}: <span className="numeros">{assentos.filter((a) => a.setor_id === s.id).length}</span>
+              {s.nome}:{" "}
+              <span className="numeros">{assentos.filter((a) => a.setor_id === s.id).length}</span>
             </span>
           </li>
         ))}
@@ -413,10 +483,17 @@ function Bloqueios({ sessaoId, mapaId }: { sessaoId: string; mapaId: string }) {
           onChange={(e) => setNumerosTexto(e.target.value)}
           inputMode="numeric"
         />
-        <Campo id="motivo" rotulo="Motivo do bloqueio" value={motivo} onChange={(e) => setMotivo(e.target.value)} />
+        <Campo
+          id="motivo"
+          rotulo="Motivo do bloqueio"
+          value={motivo}
+          onChange={(e) => setMotivo(e.target.value)}
+        />
         <div className="flex flex-wrap items-center gap-2 md:col-span-2">
           <span className="text-muted-foreground">
-            {numerosAlvo.length === 0 ? "Nenhum lugar escolhido." : `Lugares: ${numerosAlvo.join(", ")}`}
+            {numerosAlvo.length === 0
+              ? "Nenhum lugar escolhido."
+              : `Lugares: ${numerosAlvo.join(", ")}`}
           </span>
         </div>
         <div className="flex flex-wrap gap-2 md:col-span-2">
@@ -450,7 +527,9 @@ function Bloqueios({ sessaoId, mapaId }: { sessaoId: string; mapaId: string }) {
       </div>
 
       <div>
-        <h3 className="mb-2 font-medium text-foreground">Lugares bloqueados ({bloqueados.length})</h3>
+        <h3 className="mb-2 font-medium text-foreground">
+          Lugares bloqueados ({bloqueados.length})
+        </h3>
         {bloqueados.length === 0 ? (
           <p className="text-muted-foreground">Nenhum lugar bloqueado.</p>
         ) : (
@@ -459,7 +538,9 @@ function Bloqueios({ sessaoId, mapaId }: { sessaoId: string; mapaId: string }) {
               <li key={a.numero} className="flex items-center justify-between gap-2 px-4 py-2">
                 <span>
                   <span className="numeros font-medium">Lugar {a.numero}</span>
-                  <span className="text-muted-foreground">, fila {a.rotulo_fila}: {a.bloqueio_motivo}</span>
+                  <span className="text-muted-foreground">
+                    , fila {a.rotulo_fila}: {a.bloqueio_motivo}
+                  </span>
                 </span>
                 <Button
                   variant="outline"

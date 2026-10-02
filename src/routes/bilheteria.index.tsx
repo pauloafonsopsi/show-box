@@ -45,12 +45,29 @@ function Busca() {
       const id = evento!.id;
       const padrao = `%${termo}%`;
       const [porFilha, porResp] = await Promise.all([
-        supabase.from("bailarinas").select("familia_id").eq("evento_id", id).eq("ativa", true).ilike("nome_busca", padrao).limit(30),
-        supabase.from("familias").select("id").eq("evento_id", id).eq("ativa", true).ilike("responsavel_nome", padrao).limit(30),
+        supabase
+          .from("bailarinas")
+          .select("familia_id")
+          .eq("evento_id", id)
+          .eq("ativa", true)
+          .ilike("nome_busca", padrao)
+          .limit(30),
+        supabase
+          .from("familias")
+          .select("id")
+          .eq("evento_id", id)
+          .eq("ativa", true)
+          .ilike("responsavel_nome", padrao)
+          .limit(30),
       ]);
       if (porFilha.error) throw porFilha.error;
       if (porResp.error) throw porResp.error;
-      const ids = [...new Set([...(porFilha.data ?? []).map((b) => b.familia_id), ...(porResp.data ?? []).map((f) => f.id)])].slice(0, 30);
+      const ids = [
+        ...new Set([
+          ...(porFilha.data ?? []).map((b) => b.familia_id),
+          ...(porResp.data ?? []).map((f) => f.id),
+        ]),
+      ].slice(0, 30);
       if (ids.length === 0) return [];
       const { data, error } = await supabase
         .from("familias")
@@ -63,7 +80,13 @@ function Busca() {
   });
 
   if (carregando) return <EsqueletoLista />;
-  if (!evento) return <EstadoVazio titulo="Nenhum evento em venda" texto="Peça ao administrador para colocar o evento em venda." />;
+  if (!evento)
+    return (
+      <EstadoVazio
+        titulo="Nenhum evento em venda"
+        texto="Peça ao administrador para colocar o evento em venda."
+      />
+    );
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -93,7 +116,10 @@ function Busca() {
         {termo.length < 2 ? null : resultado.isLoading ? (
           <EsqueletoLista linhas={3} />
         ) : (resultado.data ?? []).length === 0 ? (
-          <EstadoVazio titulo="Nenhuma família encontrada" texto="Confira a grafia ou faça uma venda avulsa." />
+          <EstadoVazio
+            titulo="Nenhuma família encontrada"
+            texto="Confira a grafia ou faça uma venda avulsa."
+          />
         ) : (
           <ul className="divide-y divide-border rounded-md border border-border">
             {(resultado.data ?? []).map((f) => {
@@ -111,11 +137,15 @@ function Busca() {
                       <span className="font-medium text-foreground">{f.responsavel_nome}</span>
                       {qn ? <SeloStatus tom="sucesso">Quebra-Nozes</SeloStatus> : null}
                     </div>
-                    <p className="text-sm text-muted-foreground">{filhas.map((b) => b.nome).join(", ")}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {filhas.map((b) => b.nome).join(", ")}
+                    </p>
                     <p className="numeros mt-1 text-sm text-foreground">
                       {(sessoes.data ?? [])
                         .map((s) => {
-                          const sd = (saldos.data ?? []).find((x) => x.familia_id === f.id && x.sessao_id === s.id);
+                          const sd = (saldos.data ?? []).find(
+                            (x) => x.familia_id === f.id && x.sessao_id === s.id,
+                          );
                           return `${s.nome}: saldo ${sd?.saldo ?? 0}`;
                         })
                         .join(" | ")}

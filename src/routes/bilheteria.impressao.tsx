@@ -7,7 +7,13 @@ import { ImpressaoIngressos } from "@/bilheteria/impressao";
 
 export const Route = createFileRoute("/bilheteria/impressao")({
   validateSearch: (s) =>
-    z.object({ evento: z.string().uuid().optional(), sessao: z.string().uuid().optional(), familia: z.string().uuid().optional() }).parse(s),
+    z
+      .object({
+        evento: z.string().uuid().optional(),
+        sessao: z.string().uuid().optional(),
+        familia: z.string().uuid().optional(),
+      })
+      .parse(s),
   component: Impressao,
 });
 
@@ -20,12 +26,17 @@ function Impressao() {
   return (
     <div>
       <div className="print:hidden">
-        <Cabecalho titulo="Imprimir ingressos" trilha={[{ rotulo: "Bilheteria", to: "/bilheteria" }]} />
+        <Cabecalho
+          titulo="Imprimir ingressos"
+          trilha={[{ rotulo: "Bilheteria", to: "/bilheteria" }]}
+        />
         <select
           aria-label="Sessão"
           className="mb-4 min-h-11 rounded-md border border-input bg-background px-3 text-[16px]"
           value={sessao ?? ""}
-          onChange={(e) => navigate({ search: (s) => ({ ...s, sessao: e.target.value || undefined }) })}
+          onChange={(e) =>
+            navigate({ search: (s) => ({ ...s, sessao: e.target.value || undefined }) })
+          }
         >
           <option value="">Todas as sessões</option>
           {(sessoes.data ?? []).map((s) => (

@@ -16,9 +16,22 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Cabecalho, Campo, classeCampo, EsqueletoLista, EstadoErro, EstadoVazio } from "@/design/coxia";
+import {
+  Cabecalho,
+  Campo,
+  classeCampo,
+  EsqueletoLista,
+  EstadoErro,
+  EstadoVazio,
+} from "@/design/coxia";
 import { convidarPessoa, listarEquipe, removerAcesso, trocarPapel } from "@/lib/equipe.functions";
 import { dataHora, mensagemDeErro } from "@/lib/formato";
 import { PAPEL } from "@/lib/rotulos";
@@ -46,7 +59,9 @@ function Equipe() {
   const mConvidar = useMutation({
     mutationFn: (v: { email: string; papel: PapelT }) => convidar({ data: v }),
     onSuccess: (r) => {
-      toast.success(r.convidado ? "Convite enviado por e-mail." : "Papel acrescentado a quem já tinha conta.");
+      toast.success(
+        r.convidado ? "Convite enviado por e-mail." : "Papel acrescentado a quem já tinha conta.",
+      );
       setConvite(false);
       invalidar();
     },
@@ -77,7 +92,10 @@ function Equipe() {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     if (!mConvidar.isPending)
-      mConvidar.mutate({ email: String(fd.get("email")), papel: String(fd.get("papel")) as PapelT });
+      mConvidar.mutate({
+        email: String(fd.get("email")),
+        papel: String(fd.get("papel")) as PapelT,
+      });
   }
 
   return (
@@ -101,11 +119,16 @@ function Equipe() {
       ) : (
         <ul className="divide-y divide-border rounded-lg border border-border">
           {q.data.map((p) => (
-            <li key={p.email} className="flex flex-col gap-3 px-4 py-3 md:flex-row md:items-center md:justify-between">
+            <li
+              key={p.email}
+              className="flex flex-col gap-3 px-4 py-3 md:flex-row md:items-center md:justify-between"
+            >
               <div>
                 <p className="font-medium text-foreground">{p.email}</p>
                 <p className="text-sm text-muted-foreground">
-                  {p.ultimo_acesso ? `Último acesso em ${dataHora(p.ultimo_acesso)}` : "Ainda não entrou"}
+                  {p.ultimo_acesso
+                    ? `Último acesso em ${dataHora(p.ultimo_acesso)}`
+                    : "Ainda não entrou"}
                 </p>
               </div>
               <div className="flex flex-wrap items-end gap-2">
@@ -119,7 +142,13 @@ function Equipe() {
                       className={classeCampo + " w-40"}
                       value={papel}
                       disabled={mTrocar.isPending}
-                      onChange={(e) => mTrocar.mutate({ email: p.email, de: papel as PapelT, para: e.target.value as PapelT })}
+                      onChange={(e) =>
+                        mTrocar.mutate({
+                          email: p.email,
+                          de: papel as PapelT,
+                          para: e.target.value as PapelT,
+                        })
+                      }
                     >
                       {PAPEIS.map((x) => (
                         <option key={x} value={x} disabled={x !== papel && p.papeis.includes(x)}>
@@ -144,7 +173,14 @@ function Equipe() {
             <DialogTitle>Convidar pessoa</DialogTitle>
           </DialogHeader>
           <form onSubmit={enviar} className="space-y-4">
-            <Campo id="c-email" name="email" type="email" rotulo="E-mail" autoComplete="off" required />
+            <Campo
+              id="c-email"
+              name="email"
+              type="email"
+              rotulo="E-mail"
+              autoComplete="off"
+              required
+            />
             <div className="space-y-1.5">
               <Label htmlFor="c-papel">Papel</Label>
               <select id="c-papel" name="papel" className={classeCampo} defaultValue="bilheteria">
@@ -156,7 +192,12 @@ function Equipe() {
               </select>
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" className="min-h-11" onClick={() => setConvite(false)}>
+              <Button
+                type="button"
+                variant="outline"
+                className="min-h-11"
+                onClick={() => setConvite(false)}
+              >
                 Cancelar
               </Button>
               <Button type="submit" className="min-h-11" disabled={mConvidar.isPending}>
@@ -172,7 +213,8 @@ function Equipe() {
           <AlertDialogHeader>
             <AlertDialogTitle>Remover o acesso de {tirar}?</AlertDialogTitle>
             <AlertDialogDescription>
-              A pessoa perde todos os papéis e não entra mais no painel nem na bilheteria. A conta não é apagada.
+              A pessoa perde todos os papéis e não entra mais no painel nem na bilheteria. A conta
+              não é apagada.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

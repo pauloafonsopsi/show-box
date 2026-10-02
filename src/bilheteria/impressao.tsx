@@ -7,7 +7,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { data, hora, mensagemDeErro } from "@/lib/formato";
 import { QrTexto } from "@/vendas/qr";
 
-const TIPO: Record<string, string> = { meia_todos: "Meia-entrada", inteira: "Inteira", meia: "Meia-entrada", cortesia: "Cortesia" };
+const TIPO: Record<string, string> = {
+  meia_todos: "Meia-entrada",
+  inteira: "Inteira",
+  meia: "Meia-entrada",
+  cortesia: "Cortesia",
+};
 
 const CSS_IMPRESSAO = `
 @media print {
@@ -20,7 +25,15 @@ const CSS_IMPRESSAO = `
 }
 `;
 
-export function ImpressaoIngressos({ eventoId, sessao, familia }: { eventoId: string; sessao?: string | undefined; familia?: string | undefined }) {
+export function ImpressaoIngressos({
+  eventoId,
+  sessao,
+  familia,
+}: {
+  eventoId: string;
+  sessao?: string | undefined;
+  familia?: string | undefined;
+}) {
   const q = useQuery({
     queryKey: ["impressao", eventoId, sessao ?? "", familia ?? ""],
     queryFn: async () => {
@@ -58,16 +71,24 @@ export function ImpressaoIngressos({ eventoId, sessao, familia }: { eventoId: st
     <div>
       <style>{CSS_IMPRESSAO}</style>
       <div className="nao-imprimir mb-4 flex flex-wrap items-center gap-3">
-        <p className="text-muted-foreground">{lista.length} ingressos em {folhas.length} folhas.</p>
+        <p className="text-muted-foreground">
+          {lista.length} ingressos em {folhas.length} folhas.
+        </p>
         <Button className="min-h-11" onClick={() => window.print()}>
           Imprimir
         </Button>
       </div>
       <div className="area-impressao">
         {folhas.map((f, n) => (
-          <div key={n} className="folha mb-6 grid grid-cols-2 gap-0 border border-dashed border-border">
+          <div
+            key={n}
+            className="folha mb-6 grid grid-cols-2 gap-0 border border-dashed border-border"
+          >
             {f.map((i) => (
-              <div key={i.id} className="flex min-h-[130mm] flex-col justify-between border border-dashed border-border p-4 text-foreground">
+              <div
+                key={i.id}
+                className="flex min-h-[130mm] flex-col justify-between border border-dashed border-border p-4 text-foreground"
+              >
                 <div>
                   <div className="h-1 w-full border-t-2 border-foreground" aria-hidden="true" />
                   <p className="titulo-palco mt-3 text-xl">{i.pedidos?.eventos?.nome}</p>
@@ -77,13 +98,18 @@ export function ImpressaoIngressos({ eventoId, sessao, familia }: { eventoId: st
                   </p>
                   <p className="numeros mt-3 text-lg font-semibold">
                     {i.assentos?.setores?.nome}
-                    {i.assentos?.rotulo_fila ? `, fila ${i.assentos.rotulo_fila}` : ""}, poltrona {i.assentos?.numero}
+                    {i.assentos?.rotulo_fila ? `, fila ${i.assentos.rotulo_fila}` : ""}, poltrona{" "}
+                    {i.assentos?.numero}
                   </p>
                   <p className="text-sm">{TIPO[i.tipo] ?? i.tipo}</p>
                   <p className="numeros text-sm">Pedido {i.pedidos?.codigo}</p>
                 </div>
                 <div className="self-end">
-                  <QrTexto texto={i.qr_token} tamanho={110} rotulo={`QR da poltrona ${i.assentos?.numero}`} />
+                  <QrTexto
+                    texto={i.qr_token}
+                    tamanho={110}
+                    rotulo={`QR da poltrona ${i.assentos?.numero}`}
+                  />
                 </div>
               </div>
             ))}

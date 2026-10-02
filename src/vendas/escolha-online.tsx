@@ -30,7 +30,13 @@ export function EscolhaOnline({
   const [enviando, setEnviando] = useState(false);
 
   if (carregando) return <EsqueletoPalco />;
-  if (erro || !mapa) return <AvisoPalco titulo="Não foi possível abrir o mapa" texto={erro ? mensagemDeErro(erro) : "Sessão não encontrada."} />;
+  if (erro || !mapa)
+    return (
+      <AvisoPalco
+        titulo="Não foi possível abrir o mapa"
+        texto={erro ? mensagemDeErro(erro) : "Sessão não encontrada."}
+      />
+    );
 
   const tipo = tiposDisponiveis(mapa)[0] ?? "meia_todos";
   const lugares = [...escolhidos].map((n) => ({
@@ -56,7 +62,11 @@ export function EscolhaOnline({
     setEnviando(true);
     try {
       const r = await reservar({
-        data: { sessao: sessaoId, numeros: [...escolhidos], ...(tokenFamilia ? { tokenFamilia } : {}) },
+        data: {
+          sessao: sessaoId,
+          numeros: [...escolhidos],
+          ...(tokenFamilia ? { tokenFamilia } : {}),
+        },
       });
       if (r.ok && r.acesso_token) {
         aoReservar(r.acesso_token);
@@ -74,12 +84,19 @@ export function EscolhaOnline({
 
   return (
     <>
-      <MapaPoltronas mapa={mapa} escolhidos={escolhidos} perdidos={perdidos} onEscolher={alternar} />
+      <MapaPoltronas
+        mapa={mapa}
+        escolhidos={escolhidos}
+        perdidos={perdidos}
+        onEscolher={alternar}
+      />
       <div className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-background">
         <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-3">
           <div className="min-w-0 flex-1">
             <p className="numeros font-medium text-foreground">
-              {escolhidos.size === 0 ? "Toque nas poltronas livres" : `${escolhidos.size} de ${limite} lugares`}
+              {escolhidos.size === 0
+                ? "Toque nas poltronas livres"
+                : `${escolhidos.size} de ${limite} lugares`}
             </p>
             {escolhidos.size > 0 ? (
               <p className="numeros text-sm text-muted-foreground">
@@ -88,7 +105,11 @@ export function EscolhaOnline({
               </p>
             ) : null}
           </div>
-          <Button className="min-h-11" disabled={escolhidos.size === 0 || enviando} onClick={continuar}>
+          <Button
+            className="min-h-11"
+            disabled={escolhidos.size === 0 || enviando}
+            onClick={continuar}
+          >
             {enviando ? "Reservando..." : "Continuar"}
           </Button>
         </div>

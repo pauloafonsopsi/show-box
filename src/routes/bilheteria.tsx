@@ -15,7 +15,10 @@ export const Route = createFileRoute("/bilheteria")({
       { title: "Bilheteria | Recepção" },
       { name: "description", content: "Venda presencial na recepção do Ballet Letícia Lobo." },
       { property: "og:title", content: "Bilheteria | Recepção" },
-      { property: "og:description", content: "Venda presencial na recepção do Ballet Letícia Lobo." },
+      {
+        property: "og:description",
+        content: "Venda presencial na recepção do Ballet Letícia Lobo.",
+      },
       { name: "robots", content: "noindex" },
     ],
   }),

@@ -66,7 +66,11 @@ export function tiposDisponiveis(mapa: MapaSessao): TipoIngresso[] {
       : ["inteira"];
 }
 
-export function precoDe(setores: SetorMapa[], setorId: string | null, tipo: TipoIngresso): number | null {
+export function precoDe(
+  setores: SetorMapa[],
+  setorId: string | null,
+  tipo: TipoIngresso,
+): number | null {
   const s = setores.find((x) => x.id === setorId);
   if (!s) return null;
   return tipo === "meia_todos" ? s.meia_todos : tipo === "inteira" ? s.inteira : s.meia;
@@ -75,7 +79,7 @@ export function precoDe(setores: SetorMapa[], setorId: string | null, tipo: Tipo
 /** Se o modo de preço não tem meia hoje, todo lugar volta para o tipo único. */
 export function tipoPermitido(mapa: MapaSessao, tipo: TipoIngresso): TipoIngresso {
   const tipos = tiposDisponiveis(mapa);
-  return tipos.includes(tipo) ? tipo : tipos[0] ?? "meia_todos";
+  return tipos.includes(tipo) ? tipo : (tipos[0] ?? "meia_todos");
 }
 
 export interface LugarEscolhido {
@@ -189,7 +193,9 @@ export function normalizarBusca(texto: string): string {
 
 export function celulasDoMapa(
   mapa: MapaSessao,
-  estadoDe: (assento: AssentoMapa) => Pick<CelulaGrade, "estado" | "destaque"> = () => ({ estado: "livre" }),
+  estadoDe: (assento: AssentoMapa) => Pick<CelulaGrade, "estado" | "destaque"> = () => ({
+    estado: "livre",
+  }),
 ): CelulaGrade[] {
   const palco = new Set(mapa.palco.map(([l, c]) => `${l}:${c}`));
   const corredor = new Set(mapa.corredor.map(([l, c]) => `${l}:${c}`));

@@ -9,7 +9,9 @@ import { dinheiro, mensagemDeErro } from "@/lib/formato";
 import { useMapaSessao } from "@/vendas/mapa-sessao";
 
 function baixarCsv(nome: string, linhas: Array<Array<string | number>>) {
-  const csv = linhas.map((l) => l.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(";")).join("\r\n");
+  const csv = linhas
+    .map((l) => l.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(";"))
+    .join("\r\n");
   const url = URL.createObjectURL(new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" }));
   const a = document.createElement("a");
   a.href = url;
@@ -22,14 +24,18 @@ export function RelatorioEntrega({ eventoId }: { eventoId: string }) {
   const [sessao, setSessao] = useState("");
   const sessoes = useQuery({
     queryKey: ["rel-sessoes", eventoId],
-    queryFn: async () => (await supabase.from("sessoes").select("id, nome").eq("evento_id", eventoId).order("ordem")).data ?? [],
+    queryFn: async () =>
+      (await supabase.from("sessoes").select("id, nome").eq("evento_id", eventoId).order("ordem"))
+        .data ?? [],
   });
   const q = useQuery({
     queryKey: ["rel-entrega", eventoId, sessao],
     queryFn: async () => {
       let c = supabase
         .from("pedido_itens")
-        .select("quantidade, sessao_entrega_id, produtos(nome), pedidos!inner(codigo, status, evento_id, familias(responsavel_nome))")
+        .select(
+          "quantidade, sessao_entrega_id, produtos(nome), pedidos!inner(codigo, status, evento_id, familias(responsavel_nome))",
+        )
         .eq("pedidos.evento_id", eventoId)
         .in("pedidos.status", ["pago", "pago_sem_lugar"])
         .limit(3000);
@@ -39,8 +45,18 @@ export function RelatorioEntrega({ eventoId }: { eventoId: string }) {
       return data ?? [];
     },
   });
-  const nomeSessao = (id: string | null) => sessoes.data?.find((s) => s.id === id)?.nome ?? "Sem sessão";
-  const linhas = (q.data ?? []).map((i) => [nomeSessao(i.sessao_entrega_id), i.produtos?.nome ?? "", i.quantidade, i.pedidos?.codigo ?? "", i.pedidos?.familias?.responsavel_nome ?? "Avulso"] as const);
+  const nomeSessao = (id: string | null) =>
+    sessoes.data?.find((s) => s.id === id)?.nome ?? "Sem sessão";
+  const linhas = (q.data ?? []).map(
+    (i) =>
+      [
+        nomeSessao(i.sessao_entrega_id),
+        i.produtos?.nome ?? "",
+        i.quantidade,
+        i.pedidos?.codigo ?? "",
+        i.pedidos?.familias?.responsavel_nome ?? "Avulso",
+      ] as const,
+  );
 
   return (
     <section>
@@ -48,7 +64,12 @@ export function RelatorioEntrega({ eventoId }: { eventoId: string }) {
       <div className="rel-entrega">
         <h2 className="text-lg font-semibold text-foreground">Relatório de entrega</h2>
         <div className="nao-imprimir mt-2 flex flex-wrap gap-2">
-          <select aria-label="Sessão de entrega" className="min-h-11 rounded-md border border-input bg-background px-3 text-[16px]" value={sessao} onChange={(e) => setSessao(e.target.value)}>
+          <select
+            aria-label="Sessão de entrega"
+            className="min-h-11 rounded-md border border-input bg-background px-3 text-[16px]"
+            value={sessao}
+            onChange={(e) => setSessao(e.target.value)}
+          >
             <option value="">Todas as sessões</option>
             {(sessoes.data ?? []).map((s) => (
               <option key={s.id} value={s.id}>
@@ -59,7 +80,16 @@ export function RelatorioEntrega({ eventoId }: { eventoId: string }) {
           <Button variant="outline" className="min-h-11" onClick={() => window.print()}>
             Imprimir
           </Button>
-          <Button variant="outline" className="min-h-11" onClick={() => baixarCsv("entrega.csv", [["Sessão", "Produto", "Quantidade", "Pedido", "Família"], ...linhas.map((l) => [...l])])}>
+          <Button
+            variant="outline"
+            className="min-h-11"
+            onClick={() =>
+              baixarCsv("entrega.csv", [
+                ["Sessão", "Produto", "Quantidade", "Pedido", "Família"],
+                ...linhas.map((l) => [...l]),
+              ])
+            }
+          >
             Exportar planilha
           </Button>
         </div>
@@ -102,11 +132,14 @@ function Ocupacao({ sessaoId, nome }: { sessaoId: string; nome: string }) {
   const { mapa } = useMapaSessao(sessaoId);
   if (!mapa) return null;
   const total = mapa.assentos.filter((a) => a.estado !== "bloqueado").length;
-  const vendidos = mapa.assentos.filter((a) => (a.estado as string) === "vendido" || a.estado === "ocupado").length;
+  const vendidos = mapa.assentos.filter(
+    (a) => (a.estado as string) === "vendido" || a.estado === "ocupado",
+  ).length;
   const reservados = mapa.assentos.filter((a) => a.estado === "reservado").length;
   return (
     <li>
-      {nome}: {vendidos} de {total} vendidos, {reservados} reservados agora, {mapa.meias_disponiveis} meias ainda disponíveis
+      {nome}: {vendidos} de {total} vendidos, {reservados} reservados agora,{" "}
+      {mapa.meias_disponiveis} meias ainda disponíveis
     </li>
   );
 }
@@ -118,7 +151,9 @@ export function ResumoVendas({ eventoId }: { eventoId: string }) {
       const [ings, sess] = await Promise.all([
         supabase
           .from("ingressos")
-          .select("tipo, valor_centavos, sessao_id, criado_em, assentos(setores(nome)), pedidos!inner(canal, evento_id)")
+          .select(
+            "tipo, valor_centavos, sessao_id, criado_em, assentos(setores(nome)), pedidos!inner(canal, evento_id)",
+          )
           .eq("status", "ativo")
           .eq("pedidos.evento_id", eventoId)
           .limit(5000),
@@ -143,14 +178,31 @@ export function ResumoVendas({ eventoId }: { eventoId: string }) {
     }
     return [...m.entries()].sort();
   };
-  const CANAL: Record<string, string> = { presencial: "Recepção", online: "Famílias online", publico: "Público", cortesia: "Cortesia" };
+  const CANAL: Record<string, string> = {
+    presencial: "Recepção",
+    online: "Famílias online",
+    publico: "Público",
+    cortesia: "Cortesia",
+  };
   const blocos = [
-    { titulo: "Por canal", dados: agrupar((i) => CANAL[i.pedidos?.canal ?? ""] ?? i.pedidos?.canal ?? "") },
+    {
+      titulo: "Por canal",
+      dados: agrupar((i) => CANAL[i.pedidos?.canal ?? ""] ?? i.pedidos?.canal ?? ""),
+    },
     { titulo: "Por setor", dados: agrupar((i) => i.assentos?.setores?.nome ?? "") },
-    { titulo: "Por dia de venda", dados: agrupar((i) => new Intl.DateTimeFormat("pt-BR", { timeZone: "America/Belem" }).format(new Date(i.criado_em))) },
+    {
+      titulo: "Por dia de venda",
+      dados: agrupar((i) =>
+        new Intl.DateTimeFormat("pt-BR", { timeZone: "America/Belem" }).format(
+          new Date(i.criado_em),
+        ),
+      ),
+    },
     {
       titulo: "Meias vendidas por sessão",
-      dados: agrupar((i) => (i.tipo === "meia" ? (sessoes.find((s) => s.id === i.sessao_id)?.nome ?? "") : "")).filter(([k]) => k),
+      dados: agrupar((i) =>
+        i.tipo === "meia" ? (sessoes.find((s) => s.id === i.sessao_id)?.nome ?? "") : "",
+      ).filter(([k]) => k),
     },
   ];
   return (

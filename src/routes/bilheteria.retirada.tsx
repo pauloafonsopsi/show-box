@@ -19,7 +19,16 @@ export const Route = createFileRoute("/bilheteria/retirada")({
 interface Resultado {
   familia_id: string | null;
   responsavel: string | null;
-  ingressos: Array<{ id: string; sessao: string; numero: number; fila: string | null; setor: string; tipo: string; pedido: string; entregue_em: string | null }>;
+  ingressos: Array<{
+    id: string;
+    sessao: string;
+    numero: number;
+    fila: string | null;
+    setor: string;
+    tipo: string;
+    pedido: string;
+    entregue_em: string | null;
+  }>;
 }
 
 function Leitor({ aoLer }: { aoLer: (t: string) => void }) {
@@ -33,10 +42,15 @@ function Leitor({ aoLer }: { aoLer: (t: string) => void }) {
       const leitor = new Html5Qrcode("leitor-qr");
       ativo.current = leitor;
       leitor
-        .start({ facingMode: "environment" }, { fps: 10, qrbox: 220 }, (texto) => {
-          aoLer(texto);
-          setLigado(false);
-        }, () => undefined)
+        .start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: 220 },
+          (texto) => {
+            aoLer(texto);
+            setLigado(false);
+          },
+          () => undefined,
+        )
         .catch(() => {
           toast.error("Não foi possível abrir a câmera. Digite o código.");
           setLigado(false);
@@ -53,7 +67,12 @@ function Leitor({ aoLer }: { aoLer: (t: string) => void }) {
       <Button variant="outline" className="min-h-11" onClick={() => setLigado((l) => !l)}>
         {ligado ? "Fechar câmera" : "Ler QR pela câmera"}
       </Button>
-      {ligado ? <div id="leitor-qr" className="mt-3 max-w-sm overflow-hidden rounded-md border border-border" /> : null}
+      {ligado ? (
+        <div
+          id="leitor-qr"
+          className="mt-3 max-w-sm overflow-hidden rounded-md border border-border"
+        />
+      ) : null}
     </div>
   );
 }
@@ -97,7 +116,10 @@ function Retirada() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <Cabecalho titulo="Retirada de ingressos" trilha={[{ rotulo: "Bilheteria", to: "/bilheteria" }]} />
+      <Cabecalho
+        titulo="Retirada de ingressos"
+        trilha={[{ rotulo: "Bilheteria", to: "/bilheteria" }]}
+      />
       <form
         className="flex flex-wrap gap-2"
         onSubmit={(e) => {
@@ -105,14 +127,25 @@ function Retirada() {
           void procurar(codigo);
         }}
       >
-        <Input autoFocus value={codigo} onChange={(e) => setCodigo(e.target.value)} placeholder="Código do QR ou do pedido" aria-label="Código" className="h-12 flex-1 text-[16px]" />
+        <Input
+          autoFocus
+          value={codigo}
+          onChange={(e) => setCodigo(e.target.value)}
+          placeholder="Código do QR ou do pedido"
+          aria-label="Código"
+          className="h-12 flex-1 text-[16px]"
+        />
         <Button type="submit" className="min-h-11" disabled={enviando}>
           Buscar
         </Button>
       </form>
       <p className="mt-2 text-sm text-muted-foreground">
         Para buscar pelo nome, use a{" "}
-        <Link to="/bilheteria" search={evento ? { evento: evento.id } : {}} className="underline underline-offset-4">
+        <Link
+          to="/bilheteria"
+          search={evento ? { evento: evento.id } : {}}
+          className="underline underline-offset-4"
+        >
           busca de famílias
         </Link>
         .
@@ -121,10 +154,16 @@ function Retirada() {
         <Leitor aoLer={(t) => void procurar(t)} />
       </div>
 
-      {res === null ? <div className="mt-6"><EstadoVazio titulo="Nada encontrado com este código" /></div> : null}
+      {res === null ? (
+        <div className="mt-6">
+          <EstadoVazio titulo="Nada encontrado com este código" />
+        </div>
+      ) : null}
       {res ? (
         <section className="mt-6">
-          <h2 className="text-lg font-semibold text-foreground">{res.responsavel ?? "Pedido avulso"}</h2>
+          <h2 className="text-lg font-semibold text-foreground">
+            {res.responsavel ?? "Pedido avulso"}
+          </h2>
           <ul className="mt-2 divide-y divide-border rounded-md border border-border">
             {res.ingressos.map((i) => (
               <li key={i.id} className="flex min-h-11 items-center gap-3 px-3 py-2">
@@ -150,12 +189,19 @@ function Retirada() {
             ))}
           </ul>
           <div className="mt-3 flex flex-wrap gap-2">
-            <Button className="min-h-11" disabled={marcados.size === 0 || enviando} onClick={entregar}>
+            <Button
+              className="min-h-11"
+              disabled={marcados.size === 0 || enviando}
+              onClick={entregar}
+            >
               Marcar {marcados.size} como entregues
             </Button>
             {res.familia_id && evento ? (
               <Button asChild variant="outline" className="min-h-11">
-                <Link to="/bilheteria/impressao" search={{ evento: evento.id, familia: res.familia_id }}>
+                <Link
+                  to="/bilheteria/impressao"
+                  search={{ evento: evento.id, familia: res.familia_id }}
+                >
                   Imprimir ingressos da família
                 </Link>
               </Button>

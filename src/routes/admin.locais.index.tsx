@@ -5,7 +5,13 @@ import { Plus } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Cabecalho, Campo, EsqueletoLista, EstadoErro, EstadoVazio } from "@/design/coxia";
@@ -84,15 +90,19 @@ function Locais() {
       toast.success("Mapa criado. Agora crie os setores e desenhe os lugares.");
       setNovoMapa(null);
       qc.invalidateQueries({ queryKey: ["locais"] });
-      navigate({ to: "/admin/locais/$localId/mapas/$mapaId", params: { localId: m.local_id, mapaId: m.id } });
+      navigate({
+        to: "/admin/locais/$localId/mapas/$mapaId",
+        params: { localId: m.local_id, mapaId: m.id },
+      });
     },
     onError: (e) => toast.error(mensagemDeErro(e)),
   });
 
-  const enviar = (fn: (fd: FormData) => void, pendente: boolean) => (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!pendente) fn(new FormData(e.currentTarget));
-  };
+  const enviar =
+    (fn: (fd: FormData) => void, pendente: boolean) => (e: FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      if (!pendente) fn(new FormData(e.currentTarget));
+    };
   const l = local && local !== "novo" ? local : null;
 
   return (
@@ -112,7 +122,10 @@ function Locais() {
       ) : q.isError ? (
         <EstadoErro mensagem={mensagemDeErro(q.error)} onTentar={() => q.refetch()} />
       ) : q.data.length === 0 ? (
-        <EstadoVazio titulo="Nenhum local" texto="Cadastre o teatro ou espaço onde o espetáculo acontece." />
+        <EstadoVazio
+          titulo="Nenhum local"
+          texto="Cadastre o teatro ou espaço onde o espetáculo acontece."
+        />
       ) : (
         <div className="space-y-4">
           {q.data.map((x) => (
@@ -165,7 +178,11 @@ function Locais() {
           <DialogHeader>
             <DialogTitle>{l ? "Editar local" : "Novo local"}</DialogTitle>
           </DialogHeader>
-          <form key={l?.id ?? "novo"} onSubmit={enviar((fd) => salvarLocal.mutate(fd), salvarLocal.isPending)} className="space-y-4">
+          <form
+            key={l?.id ?? "novo"}
+            onSubmit={enviar((fd) => salvarLocal.mutate(fd), salvarLocal.isPending)}
+            className="space-y-4"
+          >
             <Campo id="l-nome" name="nome" rotulo="Nome" required defaultValue={l?.nome ?? ""} />
             <Campo id="l-end" name="endereco" rotulo="Endereço" defaultValue={l?.endereco ?? ""} />
             <div className="flex min-h-11 items-center gap-3">
@@ -173,7 +190,12 @@ function Locais() {
               <Label htmlFor="l-ativo">Local ativo</Label>
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" className="min-h-11" onClick={() => setLocal(null)}>
+              <Button
+                type="button"
+                variant="outline"
+                className="min-h-11"
+                onClick={() => setLocal(null)}
+              >
                 Cancelar
               </Button>
               <Button type="submit" className="min-h-11" disabled={salvarLocal.isPending}>
@@ -189,14 +211,46 @@ function Locais() {
           <DialogHeader>
             <DialogTitle>Novo mapa em {novoMapa?.nome}</DialogTitle>
           </DialogHeader>
-          <form onSubmit={enviar((fd) => criarMapa.mutate(fd), criarMapa.isPending)} className="space-y-4">
-            <Campo id="m-nome" name="nome" rotulo="Nome do mapa" required placeholder="Ex.: Plateia" />
+          <form
+            onSubmit={enviar((fd) => criarMapa.mutate(fd), criarMapa.isPending)}
+            className="space-y-4"
+          >
+            <Campo
+              id="m-nome"
+              name="nome"
+              rotulo="Nome do mapa"
+              required
+              placeholder="Ex.: Plateia"
+            />
             <div className="grid grid-cols-2 gap-4">
-              <Campo id="m-col" name="colunas" rotulo="Colunas" type="number" min={1} max={60} required defaultValue={20} />
-              <Campo id="m-fil" name="filas" rotulo="Filas" type="number" min={1} max={40} required defaultValue={15} />
+              <Campo
+                id="m-col"
+                name="colunas"
+                rotulo="Colunas"
+                type="number"
+                min={1}
+                max={60}
+                required
+                defaultValue={20}
+              />
+              <Campo
+                id="m-fil"
+                name="filas"
+                rotulo="Filas"
+                type="number"
+                min={1}
+                max={40}
+                required
+                defaultValue={15}
+              />
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" className="min-h-11" onClick={() => setNovoMapa(null)}>
+              <Button
+                type="button"
+                variant="outline"
+                className="min-h-11"
+                onClick={() => setNovoMapa(null)}
+              >
                 Cancelar
               </Button>
               <Button type="submit" className="min-h-11" disabled={criarMapa.isPending}>

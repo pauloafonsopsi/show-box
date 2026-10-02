@@ -51,11 +51,18 @@ function VisaoGeral() {
       parcMin: String(e.parcelamento_min_ingressos),
       parcMax: String(e.parcelas_max),
       meiaPct: String(e.meia_percentual),
-      meiaCats: (Array.isArray(e.meia_categorias) ? (e.meia_categorias as string[]) : []).join("\n"),
+      meiaCats: (Array.isArray(e.meia_categorias) ? (e.meia_categorias as string[]) : []).join(
+        "\n",
+      ),
     };
   }, [q.data]);
 
-  const { valor: f, setValor, limpar, temRascunho } = useRascunho<Form>(`evento:${eventoId}`, inicial);
+  const {
+    valor: f,
+    setValor,
+    limpar,
+    temRascunho,
+  } = useRascunho<Form>(`evento:${eventoId}`, inicial);
 
   const salvar = useMutation({
     mutationFn: async (v: Form) => {
@@ -89,7 +96,8 @@ function VisaoGeral() {
   });
 
   if (q.isPending || !f) return <EsqueletoLista linhas={6} />;
-  if (q.isError) return <EstadoErro mensagem={mensagemDeErro(q.error)} onTentar={() => q.refetch()} />;
+  if (q.isError)
+    return <EstadoErro mensagem={mensagemDeErro(q.error)} onTentar={() => q.refetch()} />;
 
   const set = (parcial: Partial<Form>) => setValor({ ...f, ...parcial });
 
@@ -100,80 +108,141 @@ function VisaoGeral() {
 
   return (
     <div className="space-y-10">
-    <ResumoVendas eventoId={eventoId} />
-    <form onSubmit={enviar} className="max-w-2xl space-y-6">
-      {temRascunho && (
-        <SeloStatus tom="aviso">Você tem alterações ainda não salvas.</SeloStatus>
-      )}
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Campo id="nome" rotulo="Nome" required value={f.nome} onChange={(e) => set({ nome: e.target.value })} />
-        <Campo
-          id="slug"
-          rotulo="Endereço"
-          required
-          pattern="[a-z0-9]+(-[a-z0-9]+)*"
-          ajuda="Letras minúsculas, números e hífen."
-          value={f.slug}
-          onChange={(e) => set({ slug: e.target.value })}
-        />
-        <div className="space-y-1.5">
-          <Label htmlFor="status">Situação</Label>
-          <select id="status" className={classeCampo} value={f.status} onChange={(e) => set({ status: e.target.value })}>
-            <option value="rascunho">Rascunho</option>
-            <option value="em_venda">Em venda</option>
-            <option value="encerrado">Encerrado</option>
-          </select>
-        </div>
-      </div>
-
-      <fieldset className="space-y-3 rounded-lg border border-border p-4">
-        <legend className="px-1 font-medium text-foreground">Cota por participante</legend>
-        <div className="flex min-h-11 items-center gap-3">
-          <Switch id="cota-ligada" checked={f.cotaLigada} onCheckedChange={(v) => set({ cotaLigada: v })} />
-          <Label htmlFor="cota-ligada">{f.cotaLigada ? "Ligada" : "Desligada"}</Label>
-        </div>
-        {f.cotaLigada && (
+      <ResumoVendas eventoId={eventoId} />
+      <form onSubmit={enviar} className="max-w-2xl space-y-6">
+        {temRascunho && <SeloStatus tom="aviso">Você tem alterações ainda não salvas.</SeloStatus>}
+        <div className="grid gap-4 sm:grid-cols-2">
           <Campo
-            id="cota"
-            rotulo="Ingressos por bailarina, por sessão"
+            id="nome"
+            rotulo="Nome"
+            required
+            value={f.nome}
+            onChange={(e) => set({ nome: e.target.value })}
+          />
+          <Campo
+            id="slug"
+            rotulo="Endereço"
+            required
+            pattern="[a-z0-9]+(-[a-z0-9]+)*"
+            ajuda="Letras minúsculas, números e hífen."
+            value={f.slug}
+            onChange={(e) => set({ slug: e.target.value })}
+          />
+          <div className="space-y-1.5">
+            <Label htmlFor="status">Situação</Label>
+            <select
+              id="status"
+              className={classeCampo}
+              value={f.status}
+              onChange={(e) => set({ status: e.target.value })}
+            >
+              <option value="rascunho">Rascunho</option>
+              <option value="em_venda">Em venda</option>
+              <option value="encerrado">Encerrado</option>
+            </select>
+          </div>
+        </div>
+
+        <fieldset className="space-y-3 rounded-lg border border-border p-4">
+          <legend className="px-1 font-medium text-foreground">Cota por participante</legend>
+          <div className="flex min-h-11 items-center gap-3">
+            <Switch
+              id="cota-ligada"
+              checked={f.cotaLigada}
+              onCheckedChange={(v) => set({ cotaLigada: v })}
+            />
+            <Label htmlFor="cota-ligada">{f.cotaLigada ? "Ligada" : "Desligada"}</Label>
+          </div>
+          {f.cotaLigada && (
+            <Campo
+              id="cota"
+              rotulo="Ingressos por bailarina, por sessão"
+              type="number"
+              min={0}
+              required
+              value={f.cota}
+              onChange={(e) => set({ cota: e.target.value })}
+              className="max-w-xs"
+            />
+          )}
+        </fieldset>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Campo
+            id="limite"
+            rotulo="Limite por pedido"
+            type="number"
+            min={1}
+            required
+            value={f.limite}
+            onChange={(e) => set({ limite: e.target.value })}
+          />
+          <Campo
+            id="reserva"
+            rotulo="Tempo de reserva (minutos)"
+            type="number"
+            min={5}
+            max={60}
+            required
+            value={f.reserva}
+            onChange={(e) => set({ reserva: e.target.value })}
+          />
+          <Campo
+            id="parcmin"
+            rotulo="Parcelar a partir de quantos ingressos"
+            type="number"
+            min={1}
+            required
+            value={f.parcMin}
+            onChange={(e) => set({ parcMin: e.target.value })}
+          />
+          <Campo
+            id="parcmax"
+            rotulo="Parcelas no máximo"
+            type="number"
+            min={1}
+            max={12}
+            required
+            value={f.parcMax}
+            onChange={(e) => set({ parcMax: e.target.value })}
+          />
+          <Campo
+            id="meiapct"
+            rotulo="Meia-entrada: percentual por sessão"
             type="number"
             min={0}
+            max={100}
             required
-            value={f.cota}
-            onChange={(e) => set({ cota: e.target.value })}
-            className="max-w-xs"
+            value={f.meiaPct}
+            onChange={(e) => set({ meiaPct: e.target.value })}
           />
-        )}
-      </fieldset>
-
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Campo id="limite" rotulo="Limite por pedido" type="number" min={1} required value={f.limite} onChange={(e) => set({ limite: e.target.value })} />
-        <Campo id="reserva" rotulo="Tempo de reserva (minutos)" type="number" min={5} max={60} required value={f.reserva} onChange={(e) => set({ reserva: e.target.value })} />
-        <Campo id="parcmin" rotulo="Parcelar a partir de quantos ingressos" type="number" min={1} required value={f.parcMin} onChange={(e) => set({ parcMin: e.target.value })} />
-        <Campo id="parcmax" rotulo="Parcelas no máximo" type="number" min={1} max={12} required value={f.parcMax} onChange={(e) => set({ parcMax: e.target.value })} />
-        <Campo id="meiapct" rotulo="Meia-entrada: percentual por sessão" type="number" min={0} max={100} required value={f.meiaPct} onChange={(e) => set({ meiaPct: e.target.value })} />
-      </div>
-      <div className="space-y-1.5">
-        <Label htmlFor="meiacats">Categorias da meia-entrada (uma por linha)</Label>
-        <textarea
-          id="meiacats"
-          rows={5}
-          className={classeCampo}
-          value={f.meiaCats}
-          onChange={(e) => set({ meiaCats: e.target.value })}
-        />
-      </div>
-      <div className="flex flex-wrap gap-2">
-        <Button type="submit" className="min-h-11" disabled={salvar.isPending}>
-          {salvar.isPending ? "Salvando..." : "Salvar evento"}
-        </Button>
-        {temRascunho && (
-          <Button type="button" variant="outline" className="min-h-11" onClick={() => limpar(inicial)}>
-            Descartar alterações
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="meiacats">Categorias da meia-entrada (uma por linha)</Label>
+          <textarea
+            id="meiacats"
+            rows={5}
+            className={classeCampo}
+            value={f.meiaCats}
+            onChange={(e) => set({ meiaCats: e.target.value })}
+          />
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button type="submit" className="min-h-11" disabled={salvar.isPending}>
+            {salvar.isPending ? "Salvando..." : "Salvar evento"}
           </Button>
-        )}
-      </div>
-    </form>
+          {temRascunho && (
+            <Button
+              type="button"
+              variant="outline"
+              className="min-h-11"
+              onClick={() => limpar(inicial)}
+            >
+              Descartar alterações
+            </Button>
+          )}
+        </div>
+      </form>
     </div>
   );
 }

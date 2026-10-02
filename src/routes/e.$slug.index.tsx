@@ -19,7 +19,9 @@ function Precos({ sessaoId }: { sessaoId: string }) {
       {mapa.setores.map((s) => (
         <li key={s.id}>
           {s.nome}:{" "}
-          {mapa.modo_preco === "unico" ? dinheiro(s.meia_todos) : `inteira ${dinheiro(s.inteira)}, meia ${dinheiro(s.meia)}`}
+          {mapa.modo_preco === "unico"
+            ? dinheiro(s.meia_todos)
+            : `inteira ${dinheiro(s.inteira)}, meia ${dinheiro(s.meia)}`}
         </li>
       ))}
     </ul>
@@ -41,7 +43,9 @@ function EventoPublico() {
       <h1 className="titulo-palco mt-6 text-3xl text-foreground">{d.evento.nome}</h1>
       {!aberta ? (
         <p className="mt-3 text-foreground">
-          {proxima ? `A venda ao público abre em ${dataHora(proxima.inicio)}.` : "A venda ao público não está aberta."}
+          {proxima
+            ? `A venda ao público abre em ${dataHora(proxima.inicio)}.`
+            : "A venda ao público não está aberta."}
         </p>
       ) : null}
       <div className="mt-6 space-y-4">

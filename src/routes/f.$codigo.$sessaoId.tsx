@@ -18,14 +18,24 @@ function EscolherFamilia() {
   const q = usePainelFamilia(codigo);
   if (q.isLoading) return <EsqueletoPalco />;
   const p = q.data;
-  if (!p) return <AvisoPalco titulo="Link inválido" texto="Este link foi substituído. Peça o novo à recepção." />;
+  if (!p)
+    return (
+      <AvisoPalco
+        titulo="Link inválido"
+        texto="Este link foi substituído. Peça o novo à recepção."
+      />
+    );
   const s = p.sessoes.find((x) => x.id === sessaoId);
   if (!s) return <AvisoPalco titulo="Sessão não encontrada" />;
   const limite = s.saldo > 0 ? s.saldo : janelaAberta(p.janelas, "publico") ? LIMITE_TELA : 0;
 
   return (
     <div>
-      <Link to="/f/$codigo" params={{ codigo }} className="inline-flex min-h-11 items-center text-muted-foreground underline underline-offset-4">
+      <Link
+        to="/f/$codigo"
+        params={{ codigo }}
+        className="inline-flex min-h-11 items-center text-muted-foreground underline underline-offset-4"
+      >
         Voltar
       </Link>
       <h1 className="titulo-palco mt-2 text-3xl text-foreground">{s.nome}</h1>
@@ -41,7 +51,9 @@ function EscolherFamilia() {
             limite={limite}
             tokenFamilia={codigo}
             textoLimite={`Você pode escolher até ${limite} lugares nesta sessão.`}
-            aoReservar={(acesso) => navigate({ to: "/f/$codigo/pagamento/$acesso", params: { codigo, acesso } })}
+            aoReservar={(acesso) =>
+              navigate({ to: "/f/$codigo/pagamento/$acesso", params: { codigo, acesso } })
+            }
           />
         )}
       </div>

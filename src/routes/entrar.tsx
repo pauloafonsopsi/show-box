@@ -19,7 +19,10 @@ export const Route = createFileRoute("/entrar")({
       { title: "Entrar | Bilheteria" },
       { name: "description", content: "Acesso da equipe da Bilheteria do Ballet Letícia Lobo." },
       { property: "og:title", content: "Entrar | Bilheteria" },
-      { property: "og:description", content: "Acesso da equipe da Bilheteria do Ballet Letícia Lobo." },
+      {
+        property: "og:description",
+        content: "Acesso da equipe da Bilheteria do Ballet Letícia Lobo.",
+      },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -83,13 +86,18 @@ function Entrar() {
         });
         if (error) throw new Error(traduzir(error.message));
         if (data.session) await decidirDestino();
-        else setAviso("Conta criada. Abra o e-mail que enviamos e toque no link para confirmar. Depois volte aqui e entre.");
+        else
+          setAviso(
+            "Conta criada. Abra o e-mail que enviamos e toque no link para confirmar. Depois volte aqui e entre.",
+          );
       } else if (modo === "recuperar") {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
           redirectTo: `${window.location.origin}/entrar`,
         });
         if (error) throw new Error(traduzir(error.message));
-        setAviso("Se este e-mail tiver conta, chega uma mensagem com o link para criar uma senha nova.");
+        setAviso(
+          "Se este e-mail tiver conta, chega uma mensagem com o link para criar uma senha nova.",
+        );
       } else {
         const { error } = await supabase.auth.updateUser({ password: senha });
         if (error) throw new Error(traduzir(error.message));
@@ -129,7 +137,10 @@ function Entrar() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-background px-4 py-10">
       <div className="w-full max-w-sm">
-        <Link to="/" className="inline-flex min-h-11 items-center text-sm text-muted-foreground hover:text-foreground">
+        <Link
+          to="/"
+          className="inline-flex min-h-11 items-center text-sm text-muted-foreground hover:text-foreground"
+        >
           Voltar para o início
         </Link>
         <h1 className="mt-2 text-2xl font-semibold text-foreground">{titulos[modo]}</h1>
@@ -141,7 +152,9 @@ function Entrar() {
               Você entrou como <strong>{semAcesso.email}</strong>.
             </p>
             {semAcesso.existeAdmin ? (
-              <SeloStatus tom="aviso">Sua conta ainda não tem acesso. Fale com o administrador.</SeloStatus>
+              <SeloStatus tom="aviso">
+                Sua conta ainda não tem acesso. Fale com o administrador.
+              </SeloStatus>
             ) : (
               <Button className="min-h-11 w-full" disabled={enviando} onClick={ativarAdmin}>
                 {enviando ? "Ativando..." : "Ativar conta de administrador"}
@@ -188,7 +201,12 @@ function Entrar() {
             <Button type="submit" className="min-h-11 w-full" disabled={enviando}>
               {enviando
                 ? "Aguarde..."
-                : { entrar: "Entrar", criar: "Criar conta", recuperar: "Mandar link", "nova-senha": "Salvar senha" }[modo]}
+                : {
+                    entrar: "Entrar",
+                    criar: "Criar conta",
+                    recuperar: "Mandar link",
+                    "nova-senha": "Salvar senha",
+                  }[modo]}
             </Button>
             <div className="flex flex-col gap-1">
               {modo === "entrar" ? (
@@ -220,10 +238,14 @@ function BotaoLink({ onClick, children }: { onClick: () => void; children: strin
 }
 
 function traduzir(m: string): string {
-  if (/invalid login credentials/i.test(m)) return "E-mail ou senha não conferem. Confira e tente de novo.";
-  if (/email not confirmed/i.test(m)) return "Confirme o e-mail pelo link que enviamos antes de entrar.";
-  if (/already registered/i.test(m)) return "Este e-mail já tem conta. Use Entrar ou Esqueci minha senha.";
-  if (/password/i.test(m) && /(weak|short|least)/i.test(m)) return "Senha fraca. Use pelo menos 8 caracteres, misturando letras e números.";
+  if (/invalid login credentials/i.test(m))
+    return "E-mail ou senha não conferem. Confira e tente de novo.";
+  if (/email not confirmed/i.test(m))
+    return "Confirme o e-mail pelo link que enviamos antes de entrar.";
+  if (/already registered/i.test(m))
+    return "Este e-mail já tem conta. Use Entrar ou Esqueci minha senha.";
+  if (/password/i.test(m) && /(weak|short|least)/i.test(m))
+    return "Senha fraca. Use pelo menos 8 caracteres, misturando letras e números.";
   if (/rate limit/i.test(m)) return "Muitas tentativas. Espere um minuto e tente de novo.";
   return m;
 }

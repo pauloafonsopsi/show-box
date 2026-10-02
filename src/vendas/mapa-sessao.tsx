@@ -3,7 +3,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Proscenio, GradeDePoltronas, SeloStatus, type CelulaGrade, type EstadoPoltrona } from "@/design/palco";
+import {
+  Proscenio,
+  GradeDePoltronas,
+  SeloStatus,
+  type CelulaGrade,
+  type EstadoPoltrona,
+} from "@/design/palco";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { celulasDoMapa, type MapaSessao } from "./tipos";
 
@@ -18,7 +24,9 @@ export function useMapaSessao(sessaoId: string | null | undefined) {
     enabled: Boolean(sessaoId),
     queryKey: chaveMapa(sessaoId ?? ""),
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("mapa_da_sessao", { p_sessao: sessaoId as string });
+      const { data, error } = await supabase.rpc("mapa_da_sessao", {
+        p_sessao: sessaoId as string,
+      });
       if (error) throw new Error(error.message);
       return (data ?? null) as MapaSessao | null;
     },
@@ -32,13 +40,17 @@ export function useMapaSessao(sessaoId: string | null | undefined) {
     if (!sessaoId) return;
     const canal = supabase
       .channel(`assentos-${sessaoId}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "assentos", filter: `sessao_id=eq.${sessaoId}` }, () => {
-        if (esperando.current) return;
-        esperando.current = setTimeout(() => {
-          esperando.current = null;
-          void queryClient.invalidateQueries({ queryKey: ["mapa-da-sessao", sessaoId] });
-        }, 350);
-      })
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "assentos", filter: `sessao_id=eq.${sessaoId}` },
+        () => {
+          if (esperando.current) return;
+          esperando.current = setTimeout(() => {
+            esperando.current = null;
+            void queryClient.invalidateQueries({ queryKey: ["mapa-da-sessao", sessaoId] });
+          }, 350);
+        },
+      )
       .subscribe();
     return () => {
       void supabase.removeChannel(canal);
@@ -46,7 +58,11 @@ export function useMapaSessao(sessaoId: string | null | undefined) {
     };
   }, [sessaoId, queryClient]);
 
-  return { mapa: consulta.data ?? null, carregando: consulta.isLoading, erro: consulta.error as Error | null };
+  return {
+    mapa: consulta.data ?? null,
+    carregando: consulta.isLoading,
+    erro: consulta.error as Error | null,
+  };
 }
 
 const ROTULO_ESTADO: Record<EstadoPoltrona, string> = {
@@ -90,10 +106,22 @@ export function MapaPoltronas({
 
   // Estado no banco -> estado na poltrona.
   const estadoDe = (e: string): EstadoPoltrona =>
-    e === "bloqueado" ? "bloqueada" : e === "vendido" ? "ocupada" : e === "reservado" ? "outra-pessoa" : "livre";
+    e === "bloqueado"
+      ? "bloqueada"
+      : e === "vendido"
+        ? "ocupada"
+        : e === "reservado"
+          ? "outra-pessoa"
+          : "livre";
 
   const contagens = useMemo(() => {
-    const c: Record<EstadoPoltrona, number> = { livre: 0, escolhida: 0, ocupada: 0, "outra-pessoa": 0, bloqueada: 0 };
+    const c: Record<EstadoPoltrona, number> = {
+      livre: 0,
+      escolhida: 0,
+      ocupada: 0,
+      "outra-pessoa": 0,
+      bloqueada: 0,
+    };
     for (const a of mapa.assentos) c[estadoDe(a.estado)]++;
     c.escolhida = escolhidos.size;
     if (c.livre > 0) c.livre -= escolhidos.size;
@@ -109,12 +137,15 @@ export function MapaPoltronas({
       };
     }).filter((c) => {
       if (c.tipo === "assento" && vista !== "tudo")
-        return mapa.assentos.some((a) => a.setor_id === vista && a.linha === c.linha && a.coluna === c.coluna);
+        return mapa.assentos.some(
+          (a) => a.setor_id === vista && a.linha === c.linha && a.coluna === c.coluna,
+        );
       return true;
     });
   }, [mapa, escolhidos, vista, piscando, conjunto]);
 
-  const nomeVista = vista === "tudo" ? null : (mapa.setores.find((s) => s.id === vista)?.nome ?? null);
+  const nomeVista =
+    vista === "tudo" ? null : (mapa.setores.find((s) => s.id === vista)?.nome ?? null);
 
   const cheio = maxEscolhidos > 0 && escolhidos.size >= maxEscolhidos;
 
@@ -196,7 +227,11 @@ export function MapaPoltronas({
       <div className="mt-4 flex flex-wrap gap-3 text-sm text-muted-foreground">
         {mapa.setores.map((s) => (
           <span key={s.id} className="inline-flex items-center gap-1.5">
-            <span aria-hidden="true" className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: s.cor }} />
+            <span
+              aria-hidden="true"
+              className="inline-block h-2.5 w-2.5 rounded-full"
+              style={{ background: s.cor }}
+            />
             {s.nome}
           </span>
         ))}

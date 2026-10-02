@@ -15,7 +15,9 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { mensagemDeErro } from "@/lib/formato";
 
-const EditorDeGrade = lazy(() => import("@/design/editor-de-grade").then((m) => ({ default: m.EditorDeGrade })));
+const EditorDeGrade = lazy(() =>
+  import("@/design/editor-de-grade").then((m) => ({ default: m.EditorDeGrade })),
+);
 
 export const Route = createFileRoute("/admin/locais/$localId/mapas/$mapaId")({
   head: () => ({ meta: [{ title: "Mapa de lugares | Bilheteria" }] }),
@@ -31,8 +33,17 @@ function TelaMapa() {
     queryKey: ["mapa", mapaId],
     queryFn: async () => {
       const [m, s, c, uso] = await Promise.all([
-        supabase.from("mapas").select("id, nome, colunas, filas, status, locais(nome)").eq("id", mapaId).eq("local_id", localId).single(),
-        supabase.from("setores").select("id, nome, cor, ordem").eq("mapa_id", mapaId).order("ordem"),
+        supabase
+          .from("mapas")
+          .select("id, nome, colunas, filas, status, locais(nome)")
+          .eq("id", mapaId)
+          .eq("local_id", localId)
+          .single(),
+        supabase
+          .from("setores")
+          .select("id, nome, cor, ordem")
+          .eq("mapa_id", mapaId)
+          .order("ordem"),
         supabase
           .from("mapa_celulas")
           .select("linha, coluna, tipo, rotulo_fila, numero, setor_id, acessivel, bloqueado_padrao")
@@ -53,10 +64,20 @@ function TelaMapa() {
   const invalidar = () => qc.invalidateQueries({ queryKey: ["mapa", mapaId] });
 
   const salvarSetor = useMutation({
-    mutationFn: async (v: { id?: string | undefined; nome: string; cor: string; ordem: number }) => {
+    mutationFn: async (v: {
+      id?: string | undefined;
+      nome: string;
+      cor: string;
+      ordem: number;
+    }) => {
       const { error } = v.id
-        ? await supabase.from("setores").update({ nome: v.nome, cor: v.cor, ordem: v.ordem }).eq("id", v.id)
-        : await supabase.from("setores").insert({ mapa_id: mapaId, nome: v.nome, cor: v.cor, ordem: v.ordem });
+        ? await supabase
+            .from("setores")
+            .update({ nome: v.nome, cor: v.cor, ordem: v.ordem })
+            .eq("id", v.id)
+        : await supabase
+            .from("setores")
+            .insert({ mapa_id: mapaId, nome: v.nome, cor: v.cor, ordem: v.ordem });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -68,7 +89,10 @@ function TelaMapa() {
 
   const status = useMutation({
     mutationFn: async (pronto: boolean) => {
-      const { error } = await supabase.from("mapas").update({ status: pronto ? "pronto" : "rascunho" }).eq("id", mapaId);
+      const { error } = await supabase
+        .from("mapas")
+        .update({ status: pronto ? "pronto" : "rascunho" })
+        .eq("id", mapaId);
       if (error) throw error;
       return pronto;
     },
@@ -81,7 +105,10 @@ function TelaMapa() {
   });
 
   async function salvarMapa(grade: Grade) {
-    const { data, error } = await supabase.rpc("salvar_mapa", { p_mapa: mapaId, ...paraSalvarMapa(grade) });
+    const { data, error } = await supabase.rpc("salvar_mapa", {
+      p_mapa: mapaId,
+      ...paraSalvarMapa(grade),
+    });
     if (error) {
       toast.error(mensagemDeErro(error));
       throw error;
@@ -91,7 +118,9 @@ function TelaMapa() {
       const nome = q.data?.setores.find((s) => s.id === k)?.nome ?? k;
       return `${nome}: ${n}`;
     });
-    toast.success(`Mapa salvo com ${r.assentos} lugares.${partes.length ? ` ${partes.join(", ")}.` : ""}`);
+    toast.success(
+      `Mapa salvo com ${r.assentos} lugares.${partes.length ? ` ${partes.join(", ")}.` : ""}`,
+    );
     invalidar();
   }
 
@@ -112,7 +141,8 @@ function TelaMapa() {
   }, [q.data]);
 
   if (q.isPending) return <EsqueletoLista linhas={2} altura="h-64" />;
-  if (q.isError) return <EstadoErro mensagem={mensagemDeErro(q.error)} onTentar={() => q.refetch()} />;
+  if (q.isError)
+    return <EstadoErro mensagem={mensagemDeErro(q.error)} onTentar={() => q.refetch()} />;
   const { mapa, setores, grade, emUso } = q.data;
 
   return (
@@ -166,7 +196,13 @@ function TelaMapa() {
               >
                 <div className="space-y-1">
                   <Label htmlFor={`st-n-${s?.id ?? "n"}`}>{s ? "Nome" : "Novo setor"}</Label>
-                  <Input id={`st-n-${s?.id ?? "n"}`} name="nome" required defaultValue={s?.nome ?? ""} className="min-h-11 text-base md:text-base" />
+                  <Input
+                    id={`st-n-${s?.id ?? "n"}`}
+                    name="nome"
+                    required
+                    defaultValue={s?.nome ?? ""}
+                    className="min-h-11 text-base md:text-base"
+                  />
                 </div>
                 <div className="flex items-end gap-2">
                   <div className="space-y-1">
@@ -191,8 +227,15 @@ function TelaMapa() {
                     />
                   </div>
                 </div>
-                <Button type="submit" variant={s ? "outline" : "default"} className="min-h-11 w-full" disabled={salvarSetor.isPending}>
-                  {s ? "Salvar setor" : (
+                <Button
+                  type="submit"
+                  variant={s ? "outline" : "default"}
+                  className="min-h-11 w-full"
+                  disabled={salvarSetor.isPending}
+                >
+                  {s ? (
+                    "Salvar setor"
+                  ) : (
                     <>
                       <Plus aria-hidden="true" />
                       Criar setor

@@ -15,7 +15,13 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Campo, classeCampo, EsqueletoLista, EstadoErro, EstadoVazio } from "@/design/coxia";
@@ -25,7 +31,6 @@ import {
   centavosDeTexto,
   dataHora,
   deInputLocal,
-
   mensagemDeErro,
   paraInputLocal,
   textoDeCentavos,
@@ -64,7 +69,9 @@ function Periodos({ eventoId }: { eventoId: string }) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("periodos_preco")
-        .select("id, nome, inicio, fim, modo, rotulo_unico, precos(id, setor_id, tipo, valor_centavos)")
+        .select(
+          "id, nome, inicio, fim, modo, rotulo_unico, precos(id, setor_id, tipo, valor_centavos)",
+        )
         .eq("evento_id", eventoId)
         .order("inicio");
       if (error) throw error;
@@ -84,9 +91,15 @@ function Periodos({ eventoId }: { eventoId: string }) {
       {q.isPending || setores.isPending ? (
         <EsqueletoLista linhas={2} altura="h-40" />
       ) : q.isError || setores.isError ? (
-        <EstadoErro mensagem={mensagemDeErro(q.error ?? setores.error)} onTentar={() => q.refetch()} />
+        <EstadoErro
+          mensagem={mensagemDeErro(q.error ?? setores.error)}
+          onTentar={() => q.refetch()}
+        />
       ) : q.data.length === 0 ? (
-        <EstadoVazio titulo="Nenhum período de preço" texto="Crie o primeiro período para definir os valores." />
+        <EstadoVazio
+          titulo="Nenhum período de preço"
+          texto="Crie o primeiro período para definir os valores."
+        />
       ) : (
         <div className="space-y-4">
           {q.data.map((p) => (
@@ -124,15 +137,24 @@ function TabelaPrecos({
 
   const salvar = useMutation({
     mutationFn: async () => {
-      const mudancas: { periodo_id: string; setor_id: string; tipo: string; valor_centavos: number }[] = [];
+      const mudancas: {
+        periodo_id: string;
+        setor_id: string;
+        tipo: string;
+        valor_centavos: number;
+      }[] = [];
       for (const [k, v] of Object.entries(valores)) {
         const [setor = "", tipo = ""] = k.split("|");
         const c = centavosDeTexto(v);
-        if (c === null) throw new Error("Preencha todos os valores alterados com um número, por exemplo 240,00.");
-        if (c !== atual(setor, tipo)) mudancas.push({ periodo_id: periodo.id, setor_id: setor, tipo, valor_centavos: c });
+        if (c === null)
+          throw new Error("Preencha todos os valores alterados com um número, por exemplo 240,00.");
+        if (c !== atual(setor, tipo))
+          mudancas.push({ periodo_id: periodo.id, setor_id: setor, tipo, valor_centavos: c });
       }
       if (mudancas.length === 0) return 0;
-      const { error } = await supabase.from("precos").upsert(mudancas, { onConflict: "periodo_id,setor_id,tipo" });
+      const { error } = await supabase
+        .from("precos")
+        .upsert(mudancas, { onConflict: "periodo_id,setor_id,tipo" });
       if (error) throw error;
       return mudancas.length;
     },
@@ -161,7 +183,9 @@ function TabelaPrecos({
         </Button>
       </div>
       {setores.length === 0 ? (
-        <p className="text-muted-foreground">Escolha o mapa das sessões para definir os preços por setor.</p>
+        <p className="text-muted-foreground">
+          Escolha o mapa das sessões para definir os preços por setor.
+        </p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -180,7 +204,11 @@ function TabelaPrecos({
                 <tr key={s.id} className="border-t border-border">
                   <td className="py-2 pr-4">
                     <span className="inline-flex items-center gap-2">
-                      <span aria-hidden="true" className="inline-block h-1 w-4 rounded-sm" style={{ backgroundColor: s.cor }} />
+                      <span
+                        aria-hidden="true"
+                        className="inline-block h-1 w-4 rounded-sm"
+                        style={{ backgroundColor: s.cor }}
+                      />
                       {s.nome}
                     </span>
                   </td>
@@ -272,12 +300,31 @@ function EditarPeriodo({
         <form key={p?.id ?? "novo"} onSubmit={enviar} className="space-y-4">
           <Campo id="pr-nome" name="nome" rotulo="Nome" required defaultValue={p?.nome ?? ""} />
           <div className="grid gap-4 sm:grid-cols-2">
-            <Campo id="pr-ini" name="inicio" rotulo="Início" type="datetime-local" required defaultValue={paraInputLocal(p?.inicio)} />
-            <Campo id="pr-fim" name="fim" rotulo="Fim" type="datetime-local" required defaultValue={paraInputLocal(p?.fim)} />
+            <Campo
+              id="pr-ini"
+              name="inicio"
+              rotulo="Início"
+              type="datetime-local"
+              required
+              defaultValue={paraInputLocal(p?.inicio)}
+            />
+            <Campo
+              id="pr-fim"
+              name="fim"
+              rotulo="Fim"
+              type="datetime-local"
+              required
+              defaultValue={paraInputLocal(p?.fim)}
+            />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="pr-modo">Modo</Label>
-            <select id="pr-modo" name="modo" className={classeCampo} defaultValue={p?.modo ?? "inteira_meia"}>
+            <select
+              id="pr-modo"
+              name="modo"
+              className={classeCampo}
+              defaultValue={p?.modo ?? "inteira_meia"}
+            >
               <option value="unico">Valor único</option>
               <option value="inteira_meia">Inteira e meia</option>
             </select>
@@ -302,7 +349,13 @@ function EditarPeriodo({
   );
 }
 
-type Janela = { id: string; tipo: string; inicio: string; fim: string | null; observacao: string | null };
+type Janela = {
+  id: string;
+  tipo: string;
+  inicio: string;
+  fim: string | null;
+  observacao: string | null;
+};
 
 function Janelas({ eventoId }: { eventoId: string }) {
   const qc = useQueryClient();
@@ -358,14 +411,20 @@ function Janelas({ eventoId }: { eventoId: string }) {
       key={j?.id ?? "nova"}
       onSubmit={(e) => {
         e.preventDefault();
-        if (!salvar.isPending) salvar.mutate({ id: j?.id ?? null, f: new FormData(e.currentTarget) });
+        if (!salvar.isPending)
+          salvar.mutate({ id: j?.id ?? null, f: new FormData(e.currentTarget) });
         if (!j) e.currentTarget.reset();
       }}
       className="grid gap-2 border-t border-border py-3 md:grid-cols-[10rem_12rem_12rem_1fr_auto] md:items-end"
     >
       <div className="space-y-1">
         <Label className="md:sr-only">Tipo</Label>
-        <select name="tipo" className={classeCampo} defaultValue={j?.tipo ?? "presencial"} aria-label="Tipo">
+        <select
+          name="tipo"
+          className={classeCampo}
+          defaultValue={j?.tipo ?? "presencial"}
+          aria-label="Tipo"
+        >
           {Object.entries(TIPO_JANELA).map(([v, r]) => (
             <option key={v} value={v}>
               {r}
@@ -375,22 +434,51 @@ function Janelas({ eventoId }: { eventoId: string }) {
       </div>
       <div className="space-y-1">
         <Label className="md:sr-only">Início</Label>
-        <Input name="inicio" type="datetime-local" required aria-label="Início" className="min-h-11 text-base md:text-base" defaultValue={paraInputLocal(j?.inicio)} />
+        <Input
+          name="inicio"
+          type="datetime-local"
+          required
+          aria-label="Início"
+          className="min-h-11 text-base md:text-base"
+          defaultValue={paraInputLocal(j?.inicio)}
+        />
       </div>
       <div className="space-y-1">
         <Label className="md:sr-only">Fim</Label>
-        <Input name="fim" type="datetime-local" aria-label="Fim" className="min-h-11 text-base md:text-base" defaultValue={paraInputLocal(j?.fim)} />
+        <Input
+          name="fim"
+          type="datetime-local"
+          aria-label="Fim"
+          className="min-h-11 text-base md:text-base"
+          defaultValue={paraInputLocal(j?.fim)}
+        />
       </div>
       <div className="space-y-1">
         <Label className="md:sr-only">Observação</Label>
-        <Input name="observacao" aria-label="Observação" className="min-h-11 text-base md:text-base" defaultValue={j?.observacao ?? ""} />
+        <Input
+          name="observacao"
+          aria-label="Observação"
+          className="min-h-11 text-base md:text-base"
+          defaultValue={j?.observacao ?? ""}
+        />
       </div>
       <div className="flex gap-1">
-        <Button type="submit" variant={j ? "outline" : "default"} className="min-h-11" disabled={salvar.isPending}>
+        <Button
+          type="submit"
+          variant={j ? "outline" : "default"}
+          className="min-h-11"
+          disabled={salvar.isPending}
+        >
           {j ? "Salvar" : "Adicionar"}
         </Button>
         {j && (
-          <Button type="button" variant="ghost" className="min-h-11" aria-label="Apagar janela" onClick={() => setApagar(j)}>
+          <Button
+            type="button"
+            variant="ghost"
+            className="min-h-11"
+            aria-label="Apagar janela"
+            onClick={() => setApagar(j)}
+          >
             <Trash2 aria-hidden="true" />
           </Button>
         )}
@@ -424,8 +512,8 @@ function Janelas({ eventoId }: { eventoId: string }) {
           <AlertDialogHeader>
             <AlertDialogTitle>Apagar esta janela?</AlertDialogTitle>
             <AlertDialogDescription>
-              {apagar && `${TIPO_JANELA[apagar.tipo]} de ${dataHora(apagar.inicio)}`} sai do calendário. Este canal deixa de ter
-              horário definido.
+              {apagar && `${TIPO_JANELA[apagar.tipo]} de ${dataHora(apagar.inicio)}`} sai do
+              calendário. Este canal deixa de ter horário definido.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -445,4 +533,3 @@ function Janelas({ eventoId }: { eventoId: string }) {
     </section>
   );
 }
-

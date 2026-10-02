@@ -5,7 +5,12 @@ import { usePainelFamilia } from "@/vendas/familia";
 
 export const Route = createFileRoute("/f/$codigo")({
   ssr: false,
-  head: () => ({ meta: metaPrivada("Ingressos da família", "Escolha os lugares e veja os ingressos da sua família.") }),
+  head: () => ({
+    meta: metaPrivada(
+      "Ingressos da família",
+      "Escolha os lugares e veja os ingressos da sua família.",
+    ),
+  }),
   component: LayoutFamilia,
 });
 

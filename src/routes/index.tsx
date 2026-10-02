@@ -7,7 +7,10 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Bilheteria do Ballet Letícia Lobo" },
-      { name: "description", content: "Ingressos com lugar marcado para os espetáculos do Ballet Letícia Lobo." },
+      {
+        name: "description",
+        content: "Ingressos com lugar marcado para os espetáculos do Ballet Letícia Lobo.",
+      },
       { property: "og:title", content: "Bilheteria do Ballet Letícia Lobo" },
       {
         property: "og:description",

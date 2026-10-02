@@ -14,7 +14,11 @@ function PedidoFamilia() {
   if (q.isLoading) return <EsqueletoPalco />;
   return (
     <div>
-      <Link to="/f/$codigo" params={{ codigo }} className="inline-flex min-h-11 items-center text-muted-foreground underline underline-offset-4">
+      <Link
+        to="/f/$codigo"
+        params={{ codigo }}
+        className="inline-flex min-h-11 items-center text-muted-foreground underline underline-offset-4"
+      >
         Voltar para a página da família
       </Link>
       <div className="mt-4">

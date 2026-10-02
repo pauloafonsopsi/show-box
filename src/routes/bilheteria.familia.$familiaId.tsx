@@ -6,11 +6,20 @@ import { Button } from "@/components/ui/button";
 import { EsqueletoLista, EstadoErro } from "@/design/coxia";
 import { supabase } from "@/integrations/supabase/client";
 import { dinheiro, mensagemDeErro } from "@/lib/formato";
-import { semAcento, useEventoAtual, useSaldos, useSessoesEvento, FORMA_PRESENCIAL } from "@/bilheteria/comum";
+import {
+  semAcento,
+  useEventoAtual,
+  useSaldos,
+  useSessoesEvento,
+  FORMA_PRESENCIAL,
+} from "@/bilheteria/comum";
 import { VendaPresencial } from "@/bilheteria/venda-presencial";
 
 export const Route = createFileRoute("/bilheteria/familia/$familiaId")({
-  validateSearch: (s) => z.object({ evento: z.string().uuid().optional(), sessao: z.string().uuid().optional() }).parse(s),
+  validateSearch: (s) =>
+    z
+      .object({ evento: z.string().uuid().optional(), sessao: z.string().uuid().optional() })
+      .parse(s),
   component: FamiliaBilheteria,
 });
 
@@ -27,7 +36,9 @@ function FamiliaBilheteria() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("familias")
-        .select("id, responsavel_nome, whatsapp, bailarinas(id, nome, pacote, ativa, escalacao(sessao_id)), pedidos(id, codigo, status, canal, forma_pagamento, valor_total_centavos, pago_em)")
+        .select(
+          "id, responsavel_nome, whatsapp, bailarinas(id, nome, pacote, ativa, escalacao(sessao_id)), pedidos(id, codigo, status, canal, forma_pagamento, valor_total_centavos, pago_em)",
+        )
         .eq("id", familiaId)
         .maybeSingle();
       if (error) throw error;
@@ -36,17 +47,24 @@ function FamiliaBilheteria() {
   });
 
   if (q.isLoading || !evento) return <EsqueletoLista />;
-  if (q.error || !q.data) return <EstadoErro mensagem={q.error ? mensagemDeErro(q.error) : "Família não encontrada."} />;
+  if (q.error || !q.data)
+    return <EstadoErro mensagem={q.error ? mensagemDeErro(q.error) : "Família não encontrada."} />;
   const f = q.data;
   const filhas = (f.bailarinas ?? []).filter((b) => b.ativa);
   const saldoPor: Record<string, number> = {};
   for (const s of saldos.data ?? []) if (s.familia_id === f.id) saldoPor[s.sessao_id] = s.saldo;
-  const compras = (f.pedidos ?? []).filter((p) => p.status === "pago" || p.status === "pago_sem_lugar");
+  const compras = (f.pedidos ?? []).filter(
+    (p) => p.status === "pago" || p.status === "pago_sem_lugar",
+  );
 
   return (
     <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
       <aside className="space-y-4">
-        <Link to="/bilheteria" search={{ evento: evento.id }} className="inline-flex min-h-11 items-center text-sm text-muted-foreground underline underline-offset-4">
+        <Link
+          to="/bilheteria"
+          search={{ evento: evento.id }}
+          className="inline-flex min-h-11 items-center text-sm text-muted-foreground underline underline-offset-4"
+        >
           Voltar à busca
         </Link>
         <div>
@@ -59,7 +77,10 @@ function FamiliaBilheteria() {
               <li key={b.id}>
                 {b.nome}
                 {semAcento(b.pacote ?? "") === "quebra-nozes" ? " (Quebra-Nozes)" : ""}:{" "}
-                {(b.escalacao ?? []).map((e) => sessoes.data?.find((s) => s.id === e.sessao_id)?.nome).filter(Boolean).join(", ")}
+                {(b.escalacao ?? [])
+                  .map((e) => sessoes.data?.find((s) => s.id === e.sessao_id)?.nome)
+                  .filter(Boolean)
+                  .join(", ")}
               </li>
             ))}
           </ul>
@@ -82,7 +103,8 @@ function FamiliaBilheteria() {
             <ul className="numeros mt-1 space-y-1 text-sm text-foreground">
               {compras.map((p) => (
                 <li key={p.id}>
-                  {p.codigo}: {dinheiro(p.valor_total_centavos)} ({FORMA_PRESENCIAL[p.forma_pagamento ?? ""] ?? p.forma_pagamento})
+                  {p.codigo}: {dinheiro(p.valor_total_centavos)} (
+                  {FORMA_PRESENCIAL[p.forma_pagamento ?? ""] ?? p.forma_pagamento})
                 </li>
               ))}
             </ul>

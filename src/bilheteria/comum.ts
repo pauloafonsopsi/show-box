@@ -29,7 +29,11 @@ export function useEventosEmVenda() {
 }
 
 /** Evento escolhido no topo (na URL); sem escolha, o mais recente em venda. */
-export function useEventoAtual(): { evento: EventoBilheteria | null; carregando: boolean; eventos: EventoBilheteria[] } {
+export function useEventoAtual(): {
+  evento: EventoBilheteria | null;
+  carregando: boolean;
+  eventos: EventoBilheteria[];
+} {
   const busca = useSearch({ strict: false }) as { evento?: string };
   const q = useEventosEmVenda();
   const eventos = q.data ?? [];
@@ -59,7 +63,9 @@ export function useSaldos(eventoId: string | undefined) {
     enabled: Boolean(eventoId),
     queryKey: ["bilheteria-saldos", eventoId],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("saldos_do_evento", { p_evento: eventoId as string });
+      const { data, error } = await supabase.rpc("saldos_do_evento", {
+        p_evento: eventoId as string,
+      });
       if (error) throw error;
       return data ?? [];
     },
@@ -71,20 +77,35 @@ export function useJanelas(eventoId: string | undefined) {
     enabled: Boolean(eventoId),
     queryKey: ["bilheteria-janelas", eventoId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("janelas").select("tipo, inicio, fim").eq("evento_id", eventoId as string);
+      const { data, error } = await supabase
+        .from("janelas")
+        .select("tipo, inicio, fim")
+        .eq("evento_id", eventoId as string);
       if (error) throw error;
       return data ?? [];
     },
   });
 }
 
-export function janelaHoje(janelas: Array<{ tipo: string; inicio: string; fim: string | null }>, tipo: string) {
+export function janelaHoje(
+  janelas: Array<{ tipo: string; inicio: string; fim: string | null }>,
+  tipo: string,
+) {
   const agora = Date.now();
-  return janelas.some((j) => j.tipo === tipo && new Date(j.inicio).getTime() <= agora && (!j.fim || new Date(j.fim).getTime() > agora));
+  return janelas.some(
+    (j) =>
+      j.tipo === tipo &&
+      new Date(j.inicio).getTime() <= agora &&
+      (!j.fim || new Date(j.fim).getTime() > agora),
+  );
 }
 
 export function semAcento(t: string) {
-  return t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+  return t
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
 }
 
 export const FORMA_PRESENCIAL: Record<string, string> = {

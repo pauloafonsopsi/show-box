@@ -23,7 +23,13 @@ interface PedidoPublico {
   desistir_ate: string | null;
 }
 
-const FORMA: Record<string, string> = { pix: "PIX", cartao: "Cartão de crédito", credito: "Crédito", debito: "Débito", dinheiro: "Dinheiro" };
+const FORMA: Record<string, string> = {
+  pix: "PIX",
+  cartao: "Cartão de crédito",
+  credito: "Crédito",
+  debito: "Débito",
+  dinheiro: "Dinheiro",
+};
 
 export function ConfirmacaoPedido({
   acesso,
@@ -41,7 +47,10 @@ export function ConfirmacaoPedido({
   const [confirmar, setConfirmar] = useState(false);
   const [enviando, setEnviando] = useState(false);
 
-  const q = useQuery({ queryKey: ["pedido-publico", acesso], queryFn: () => buscar({ data: { acesso } }) });
+  const q = useQuery({
+    queryKey: ["pedido-publico", acesso],
+    queryFn: () => buscar({ data: { acesso } }),
+  });
   if (q.isLoading) return <EsqueletoPalco />;
   const p = q.data as unknown as PedidoPublico | null;
   if (!p) return <AvisoPalco titulo="Pedido não encontrado" texto="Confira o link recebido." />;
@@ -53,33 +62,46 @@ export function ConfirmacaoPedido({
       <h1 className="titulo-palco text-3xl text-foreground">Compra confirmada</h1>
       {p.status === "pago_sem_lugar" ? (
         <p className="mt-3 text-foreground">
-          Seu pagamento entrou, mas os lugares não estavam mais livres. A recepção vai falar com você para resolver.
+          Seu pagamento entrou, mas os lugares não estavam mais livres. A recepção vai falar com
+          você para resolver.
         </p>
       ) : (
         <>
-          {conteudos["confirmacao"] ? <p className="mt-3 whitespace-pre-line text-foreground">{conteudos["confirmacao"]}</p> : null}
+          {conteudos["confirmacao"] ? (
+            <p className="mt-3 whitespace-pre-line text-foreground">{conteudos["confirmacao"]}</p>
+          ) : null}
           {conteudos["lembrete_filmagem"] ? (
-            <p className="mt-3 whitespace-pre-line text-muted-foreground">{conteudos["lembrete_filmagem"]}</p>
+            <p className="mt-3 whitespace-pre-line text-muted-foreground">
+              {conteudos["lembrete_filmagem"]}
+            </p>
           ) : null}
         </>
       )}
 
       {linkDoPedido ? (
         <section className="superficie-palco mt-6 p-4">
-          <p className="text-sm text-muted-foreground">Link do pedido. Guarde para ver seus ingressos depois.</p>
+          <p className="text-sm text-muted-foreground">
+            Link do pedido. Guarde para ver seus ingressos depois.
+          </p>
           <p className="mt-1 select-all break-all text-foreground">{linkDoPedido}</p>
           <div className="mt-3 flex flex-wrap gap-3">
             <Button
               variant="outline"
               className="min-h-11"
               onClick={() => {
-                void navigator.clipboard.writeText(linkDoPedido).then(() => toast.success("Link copiado."));
+                void navigator.clipboard
+                  .writeText(linkDoPedido)
+                  .then(() => toast.success("Link copiado."));
               }}
             >
               Copiar link
             </Button>
             <Button asChild variant="outline" className="min-h-11">
-              <a href={`https://wa.me/?text=${encodeURIComponent(linkDoPedido)}`} target="_blank" rel="noreferrer">
+              <a
+                href={`https://wa.me/?text=${encodeURIComponent(linkDoPedido)}`}
+                target="_blank"
+                rel="noreferrer"
+              >
                 Enviar para meu WhatsApp
               </a>
             </Button>
@@ -123,7 +145,11 @@ export function ConfirmacaoPedido({
             <dd>{dataHora(p.pago_em)}</dd>
           </dl>
           {podeDesistir && conteudos["desistencia_linha"] ? (
-            <button type="button" className="mt-4 min-h-11 text-left text-foreground underline underline-offset-4" onClick={() => setConfirmar(true)}>
+            <button
+              type="button"
+              className="mt-4 min-h-11 text-left text-foreground underline underline-offset-4"
+              onClick={() => setConfirmar(true)}
+            >
               {conteudos["desistencia_linha"]}
             </button>
           ) : null}
@@ -135,7 +161,9 @@ export function ConfirmacaoPedido({
           <DialogHeader>
             <DialogTitle>Desistir da compra</DialogTitle>
           </DialogHeader>
-          <p className="whitespace-pre-line text-foreground">{conteudos["desistencia_confirmar"] ?? ""}</p>
+          <p className="whitespace-pre-line text-foreground">
+            {conteudos["desistencia_confirmar"] ?? ""}
+          </p>
           <div className="mt-4 flex flex-wrap gap-3">
             <Button
               variant="destructive"
@@ -145,7 +173,9 @@ export function ConfirmacaoPedido({
                 setEnviando(true);
                 try {
                   await desistir({ data: { acesso } });
-                  toast.success("Pedido de desistência enviado. A recepção vai concluir o estorno.");
+                  toast.success(
+                    "Pedido de desistência enviado. A recepção vai concluir o estorno.",
+                  );
                   setConfirmar(false);
                   setDetalhes(false);
                   void queryClient.invalidateQueries({ queryKey: ["pedido-publico", acesso] });

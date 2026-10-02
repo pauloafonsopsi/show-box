@@ -1,6 +1,14 @@
 import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { CalendarDays, History, LayoutDashboard, LogOut, MapPinned, Settings, Users } from "lucide-react";
+import {
+  CalendarDays,
+  History,
+  LayoutDashboard,
+  LogOut,
+  MapPinned,
+  Settings,
+  Users,
+} from "lucide-react";
 
 import {
   Sidebar,
@@ -27,7 +35,10 @@ export const Route = createFileRoute("/admin")({
       { title: "Painel | Bilheteria" },
       { name: "description", content: "Administração da Bilheteria do Ballet Letícia Lobo." },
       { property: "og:title", content: "Painel | Bilheteria" },
-      { property: "og:description", content: "Administração da Bilheteria do Ballet Letícia Lobo." },
+      {
+        property: "og:description",
+        content: "Administração da Bilheteria do Ballet Letícia Lobo.",
+      },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -79,10 +90,18 @@ function Menu({ email }: { email: string }) {
           <SidebarGroupContent>
             <SidebarMenu>
               {MENU.map((m) => {
-                const ativo = "exato" in m ? caminho === m.to || caminho === `${m.to}/` : caminho.startsWith(m.to);
+                const ativo =
+                  "exato" in m
+                    ? caminho === m.to || caminho === `${m.to}/`
+                    : caminho.startsWith(m.to);
                 return (
                   <SidebarMenuItem key={m.to}>
-                    <SidebarMenuButton asChild isActive={ativo} tooltip={m.rotulo} className="min-h-11">
+                    <SidebarMenuButton
+                      asChild
+                      isActive={ativo}
+                      tooltip={m.rotulo}
+                      className="min-h-11"
+                    >
                       <Link to={m.to} onClick={() => setOpenMobile(false)}>
                         <m.Icone aria-hidden="true" />
                         <span>{m.rotulo}</span>
@@ -96,7 +115,9 @@ function Menu({ email }: { email: string }) {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        <p className="truncate px-2 text-sm text-muted-foreground group-data-[collapsible=icon]:hidden">{email}</p>
+        <p className="truncate px-2 text-sm text-muted-foreground group-data-[collapsible=icon]:hidden">
+          {email}
+        </p>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton

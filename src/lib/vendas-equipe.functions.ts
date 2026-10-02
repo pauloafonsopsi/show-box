@@ -7,10 +7,19 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { mensagemBanco, pagarmeDelete, rpcAdmin } from "./vendas.server";
 
-type Supa = { rpc: (nome: string, args: Record<string, Json>) => Promise<{ data: unknown; error: { message?: string } | null }> };
+type Supa = {
+  rpc: (
+    nome: string,
+    args: Record<string, Json>,
+  ) => Promise<{ data: unknown; error: { message?: string } | null }>;
+};
 type Ctx = { supabase: Supa; userId: string };
 
-async function rpcEquipe<T>(context: unknown, nome: string, args: Record<string, Json>): Promise<T> {
+async function rpcEquipe<T>(
+  context: unknown,
+  nome: string,
+  args: Record<string, Json>,
+): Promise<T> {
   const { supabase } = context as Ctx;
   const { data, error } = await supabase.rpc(nome, args);
   if (error) throw new Error(mensagemBanco(error));
@@ -117,18 +126,28 @@ export const registrarVendaPresencial = createServerFn({ method: "POST" })
 export const liberarReservaEquipe = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => z.object({ pedido: z.string().uuid() }).parse(d))
-  .handler(async ({ data, context }) => rpcEquipe<void>(context, "liberar_reserva", { p_pedido: data.pedido }));
+  .handler(async ({ data, context }) =>
+    rpcEquipe<void>(context, "liberar_reserva", { p_pedido: data.pedido }),
+  );
 
 export const cancelarVendaEquipe = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) => z.object({ pedido: z.string().uuid(), motivo: z.string().trim().min(1).max(300) }).parse(d))
-  .handler(async ({ data, context }) => rpcEquipe<void>(context, "cancelar_venda", { p_pedido: data.pedido, p_motivo: data.motivo }));
+  .inputValidator((d) =>
+    z.object({ pedido: z.string().uuid(), motivo: z.string().trim().min(1).max(300) }).parse(d),
+  )
+  .handler(async ({ data, context }) =>
+    rpcEquipe<void>(context, "cancelar_venda", { p_pedido: data.pedido, p_motivo: data.motivo }),
+  );
 
 export const trocarLugar = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) =>
     z
-      .object({ ingresso: z.string().uuid(), novoNumero: z.number().int().min(1).max(9999), motivo: z.string().trim().max(300).optional() })
+      .object({
+        ingresso: z.string().uuid(),
+        novoNumero: z.number().int().min(1).max(9999),
+        motivo: z.string().trim().max(300).optional(),
+      })
       .parse(d),
   )
   .handler(async ({ data, context }) =>
@@ -163,24 +182,47 @@ export const emitirCortesia = createServerFn({ method: "POST" })
 export const buscarParaRetirada = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => z.object({ codigo: z.string().trim().min(4).max(120) }).parse(d))
-  .handler(async ({ data, context }) => rpcEquipe<Record<string, Json> | null>(context, "buscar_para_retirada", { p_codigo: data.codigo }));
+  .handler(async ({ data, context }) =>
+    rpcEquipe<Record<string, Json> | null>(context, "buscar_para_retirada", {
+      p_codigo: data.codigo,
+    }),
+  );
 
 export const marcarEntregues = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) => z.object({ ingressos: z.array(z.string().uuid()).min(1).max(200), entregue: z.boolean() }).parse(d))
-  .handler(async ({ data, context }) => rpcEquipe<number>(context, "marcar_entregues", { p_ingressos: data.ingressos, p_entregue: data.entregue }));
+  .inputValidator((d) =>
+    z
+      .object({ ingressos: z.array(z.string().uuid()).min(1).max(200), entregue: z.boolean() })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) =>
+    rpcEquipe<number>(context, "marcar_entregues", {
+      p_ingressos: data.ingressos,
+      p_entregue: data.entregue,
+    }),
+  );
 
 export const caixaDoDia = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) =>
-    z.object({ evento: z.string().uuid(), data: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), atendente: z.string().uuid().optional() }).parse(d),
+    z
+      .object({
+        evento: z.string().uuid(),
+        data: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+        atendente: z.string().uuid().optional(),
+      })
+      .parse(d),
   )
   .handler(async ({ data, context }) =>
-    rpcEquipe<Record<string, { pedidos: number; total_centavos: number }>>(context, "caixa_do_dia", {
-      p_evento: data.evento,
-      p_data: data.data,
-      p_atendente: data.atendente ?? null,
-    }),
+    rpcEquipe<Record<string, { pedidos: number; total_centavos: number }>>(
+      context,
+      "caixa_do_dia",
+      {
+        p_evento: data.evento,
+        p_data: data.data,
+        p_atendente: data.atendente ?? null,
+      },
+    ),
   );
 
 /** Admin aprova a desistência, cancela a cobrança na Pagar.me e conclui o estorno. */
@@ -189,15 +231,21 @@ export const estornarDesistencia = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ pedido: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     await exigirAdmin(context);
-    const aprov = await rpcEquipe<{ pagarme_charge_id: string; valor_total_centavos: number }>(context, "aprovar_desistencia", {
-      p_pedido: data.pedido,
-    });
+    const aprov = await rpcEquipe<{ pagarme_charge_id: string; valor_total_centavos: number }>(
+      context,
+      "aprovar_desistencia",
+      {
+        p_pedido: data.pedido,
+      },
+    );
     try {
       await pagarmeDelete(`/charges/${aprov.pagarme_charge_id}`);
     } catch (e) {
-      throw new Error(mensagemBanco(e) === "A operadora de pagamento respondeu com erro 404."
-        ? "A cobrança não foi encontrada na Pagar.me. Confira o valor recebido antes de continuar."
-        : mensagemBanco(e));
+      throw new Error(
+        mensagemBanco(e) === "A operadora de pagamento respondeu com erro 404."
+          ? "A cobrança não foi encontrada na Pagar.me. Confira o valor recebido antes de continuar."
+          : mensagemBanco(e),
+      );
     }
     await rpcAdmin("concluir_estorno", { p_pedido: data.pedido });
     return { ok: true, valor_total_centavos: aprov.valor_total_centavos };

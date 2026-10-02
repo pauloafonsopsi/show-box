@@ -6,7 +6,10 @@ import { AvisoPalco, EsqueletoPalco, PaginaPalco } from "./pagina-palco";
 
 export function TextoLegal({ tipo, slug }: { tipo: "termos" | "privacidade"; slug?: string }) {
   const buscar = useServerFn(textoLegal);
-  const q = useQuery({ queryKey: ["texto-legal", tipo, slug ?? ""], queryFn: () => buscar({ data: { tipo, ...(slug ? { slug } : {}) } }) });
+  const q = useQuery({
+    queryKey: ["texto-legal", tipo, slug ?? ""],
+    queryFn: () => buscar({ data: { tipo, ...(slug ? { slug } : {}) } }),
+  });
   const titulo = tipo === "termos" ? "Termos de compra" : "Política de privacidade";
   return (
     <PaginaPalco>
