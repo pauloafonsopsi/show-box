@@ -617,6 +617,7 @@ export function EditorDeGrade({
                   modo === m.id ? "bg-secondary font-semibold" : "hover:bg-accent",
                 )}
               >
+                {m.id === "mover" ? <Hand aria-hidden="true" className="h-4 w-4" /> : null}
                 {m.id === "inspecionar" ? (
                   <MousePointerClick aria-hidden="true" className="h-4 w-4" />
                 ) : null}
@@ -657,9 +658,17 @@ export function EditorDeGrade({
               </p>
             </div>
           ) : null}
+          <div className="relative w-max" ref={gradeRef}>
+          <div
+            className="proscenio mb-4 h-12 text-sm"
+            style={{ width: colunas * (tamanho + 2) - 2 }}
+            aria-label="Palco fica deste lado"
+          >
+            PALCO
+          </div>
           <div
             role="presentation"
-            className="grid w-max touch-none select-none"
+            className={cn("grid w-max touch-none select-none", modo === "mover" && "cursor-grab")}
             style={{
               gridTemplateColumns: `repeat(${colunas}, ${tamanho}px)`,
               gridTemplateRows: `repeat(${filas}, ${tamanho}px)`,
@@ -687,8 +696,10 @@ export function EditorDeGrade({
                     className={cn(
                       "relative flex items-center justify-center rounded-[3px]",
                       !c && "border border-dashed border-border/70",
-                      c?.tipo === "palco" && "bg-ouro/30",
+                      c?.tipo === "palco" && "bg-ouro/45 shadow-[0_0_12px_var(--luz-palco)]",
                       c?.tipo === "corredor" && "bg-muted/60",
+                      alvoArraste === k && !c && "ring-2 ring-primary bg-primary/20",
+                      origemArraste.current === k && alvoArraste !== k && "opacity-40",
                       marcada && "ring-2 ring-ring",
                       selecionada === k && "ring-2 ring-primary",
                     )}
@@ -709,6 +720,39 @@ export function EditorDeGrade({
                 );
               }),
             )}
+          </div>
+          {menu && celulas.get(menu.k)?.tipo === "assento" ? (
+            <MenuAssento
+              x={menu.x}
+              y={menu.y}
+              celula={celulas.get(menu.k) as Celula}
+              setores={setores}
+              aoMudar={(m) => {
+                const atual = celulas.get(menu.k);
+                if (!atual) return;
+                const novo = new Map(celulas);
+                novo.set(menu.k, { ...atual, ...m });
+                registrar(novo);
+              }}
+              aoCorredor={() => {
+                const atual = celulas.get(menu.k);
+                if (!atual) return;
+                const novo = new Map(celulas);
+                novo.set(menu.k, novaCelula(atual.linha, atual.coluna, "corredor"));
+                registrar(novo);
+                setMenu(null);
+                setSelecionada(null);
+              }}
+              aoApagar={() => {
+                const novo = new Map(celulas);
+                novo.delete(menu.k);
+                registrar(novo);
+                setMenu(null);
+                setSelecionada(null);
+              }}
+              aoFechar={() => setMenu(null)}
+            />
+          ) : null}
           </div>
         </section>
 
@@ -865,6 +909,129 @@ export function EditorDeGrade({
             </div>
           </section>
         </aside>
+      </div>
+    </div>
+  );
+}
+
+function MenuAssento({
+  x,
+  y,
+  celula,
+  setores,
+  aoMudar,
+  aoCorredor,
+  aoApagar,
+  aoFechar,
+}: {
+  x: number;
+  y: number;
+  celula: Celula;
+  setores: Setor[];
+  aoMudar: (m: Partial<Celula>) => void;
+  aoCorredor: () => void;
+  aoApagar: () => void;
+  aoFechar: () => void;
+}) {
+  return (
+    <div
+      role="dialog"
+      aria-label={`Assento ${celula.rotuloFila ?? ""}${celula.numero ?? ""}`}
+      className="absolute z-20 mt-2 flex w-64 -translate-x-1/2 flex-col gap-3 rounded-xl border bg-popover p-3 text-popover-foreground"
+      style={{ left: x, top: y, boxShadow: "var(--sombra-janela)" }}
+      onPointerDown={(e) => e.stopPropagation()}
+    >
+      <div className="flex items-center justify-between">
+        <p className="text-sm font-semibold">
+          Fila {celula.rotuloFila ?? celula.linha}, assento {celula.numero ?? "sem número"}
+        </p>
+        <button
+          type="button"
+          onClick={aoFechar}
+          aria-label="Fechar"
+          className="flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <label className="flex flex-col gap-1 text-xs text-muted-foreground">
+          Fila
+          <input
+            className="min-h-11 rounded-md border bg-background px-2 text-base text-foreground"
+            value={celula.rotuloFila ?? ""}
+            onChange={(e) => aoMudar({ rotuloFila: e.target.value || null })}
+          />
+        </label>
+        <label className="flex flex-col gap-1 text-xs text-muted-foreground">
+          Número
+          <input
+            type="number"
+            inputMode="numeric"
+            min={1}
+            className="min-h-11 rounded-md border bg-background px-2 text-base text-foreground"
+            value={celula.numero ?? ""}
+            onChange={(e) => aoMudar({ numero: e.target.value ? Number(e.target.value) : null })}
+          />
+        </label>
+      </div>
+      <div className="flex flex-col gap-1">
+        <p className="text-xs text-muted-foreground">Setor</p>
+        <div className="flex flex-wrap gap-1.5">
+          {setores.map((s) => (
+            <button
+              key={s.id}
+              type="button"
+              aria-pressed={celula.setorId === s.id}
+              onClick={() => aoMudar({ setorId: s.id })}
+              className={cn(
+                "flex min-h-11 items-center gap-1.5 rounded-md border px-2 text-sm",
+                celula.setorId === s.id ? "border-primary bg-accent" : "border-border",
+              )}
+            >
+              <span aria-hidden="true" className="h-3 w-3 rounded-sm" style={{ background: s.cor }} />
+              {s.nome}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-1.5">
+        <button
+          type="button"
+          aria-pressed={celula.acessivel}
+          onClick={() => aoMudar({ acessivel: !celula.acessivel })}
+          className={cn(
+            "flex min-h-11 items-center gap-1.5 rounded-md border px-2 text-sm",
+            celula.acessivel ? "border-primary bg-accent" : "border-border",
+          )}
+        >
+          <Accessibility className="h-4 w-4" /> Acessível
+        </button>
+        <button
+          type="button"
+          aria-pressed={celula.bloqueadoPadrao}
+          onClick={() => aoMudar({ bloqueadoPadrao: !celula.bloqueadoPadrao })}
+          className={cn(
+            "flex min-h-11 items-center gap-1.5 rounded-md border px-2 text-sm",
+            celula.bloqueadoPadrao ? "border-primary bg-accent" : "border-border",
+          )}
+        >
+          <Ban className="h-4 w-4" /> Bloqueado
+        </button>
+        <button
+          type="button"
+          onClick={aoCorredor}
+          className="flex min-h-11 items-center gap-1.5 rounded-md border border-border px-2 text-sm"
+        >
+          <SquareDashed className="h-4 w-4" /> Corredor
+        </button>
+        <button
+          type="button"
+          onClick={aoApagar}
+          className="flex min-h-11 items-center gap-1.5 rounded-md border border-destructive/50 px-2 text-sm text-destructive"
+        >
+          <Trash2 className="h-4 w-4" /> Apagar
+        </button>
       </div>
     </div>
   );
