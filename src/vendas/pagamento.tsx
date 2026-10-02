@@ -260,18 +260,18 @@ function FormularioDePagamento({
       if (!mapa) continue;
       const prev = pedido.previstos.find((p) => p.numero === l.numero && p.sessao_id === l.sessao_id);
       const tipo = tipoPermitido(mapa, (prev?.tipo as TipoIngresso) ?? (mapa.modo_preco === "unico" ? "meia_todos" : "inteira"));
-      t[chaveDe(l.sessao_id, l.numero)] = { tipo, categoriaMeia: prev?.categoria_meia ?? undefined };
+      t[chaveDe(l.sessao_id, l.numero)] = prev?.categoria_meia ? { tipo, categoriaMeia: prev.categoria_meia } : { tipo };
     }
     setTipos(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [estado, pedido]);
 
-  const lugaresEscolhidos: LugarEscolhido[] = estado.lugares.map((l) => ({
-    numero: l.numero,
-    setorId: l.setor_id,
-    tipo: tipos[chaveDe(l.sessao_id, l.numero)]?.tipo ?? "meia_todos",
-    categoriaMeia: tipos[chaveDe(l.sessao_id, l.numero)]?.categoriaMeia,
-  }));
+  const lugaresEscolhidos: LugarEscolhido[] = estado.lugares.map((l) => {
+    const escolha = tipos[chaveDe(l.sessao_id, l.numero)];
+    return escolha?.categoriaMeia
+      ? { numero: l.numero, setorId: l.setor_id, tipo: escolha.tipo, categoriaMeia: escolha.categoriaMeia }
+      : { numero: l.numero, setorId: l.setor_id, tipo: escolha?.tipo ?? "meia_todos" };
+  });
 
   const minutos = Math.max(0, Math.ceil((new Date(pedido.expira_em).getTime() - Date.now()) / 60000));
 
