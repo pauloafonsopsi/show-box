@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState, type ChangeEvent } from "react";
-import { FileSpreadsheet } from "lucide-react";
+import { FileSpreadsheet, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -399,6 +399,7 @@ function Familias({ eventoId }: { eventoId: string }) {
   const navigate = useNavigate({ from: Route.fullPath });
   const sessoes = useQuery(sessoesQuery(eventoId));
   const [novoLink, setNovoLink] = useState<Familia | null>(null);
+  const [nova, setNova] = useState<{ familia: Familia | null } | null>(null);
   const qc = useQueryClient();
 
   const q = useQuery({
@@ -474,7 +475,13 @@ function Familias({ eventoId }: { eventoId: string }) {
 
   return (
     <section>
-      <h2 className="mb-3 text-lg font-semibold text-foreground">Famílias</h2>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-lg font-semibold text-foreground">Famílias</h2>
+        <Button className="min-h-11" onClick={() => setNova({ familia: null })}>
+          <UserPlus aria-hidden="true" />
+          Adicionar bailarina
+        </Button>
+      </div>
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div className="space-y-1.5">
           <Label htmlFor="busca">Buscar</Label>
@@ -572,9 +579,15 @@ function Familias({ eventoId }: { eventoId: string }) {
                       )}
                     </div>
                   </div>
-                  <Button variant="outline" className="min-h-11" onClick={() => setNovoLink(f)}>
-                    Gerar novo link
-                  </Button>
+                  <div className="flex flex-wrap gap-2">
+                    <Button variant="outline" className="min-h-11" onClick={() => setNova({ familia: f })}>
+                      <UserPlus aria-hidden="true" />
+                      Adicionar irmã
+                    </Button>
+                    <Button variant="outline" className="min-h-11" onClick={() => setNovoLink(f)}>
+                      Gerar novo link
+                    </Button>
+                  </div>
                 </div>
                 <ul className="mt-3 divide-y divide-border">
                   {f.bailarinas.map((b) => (
@@ -656,6 +669,12 @@ function Familias({ eventoId }: { eventoId: string }) {
         eventoId={eventoId}
         familia={familiaAberta}
         onFechar={() => navigate({ search: (a) => ({ ...a, familia: undefined }) })}
+      />
+      <NovaBailarina
+        eventoId={eventoId}
+        aberto={nova}
+        sessoes={(sessoes.data ?? []).map((s) => ({ id: s.id, nome: s.nome }))}
+        onFechar={() => setNova(null)}
       />
 
       <AlertDialog open={novoLink !== null} onOpenChange={(o) => !o && setNovoLink(null)}>
@@ -942,5 +961,188 @@ function EditarFamilia({
         )}
       </SheetContent>
     </Sheet>
+  );
+}
+
+function NovaBailarina({
+  eventoId,
+  aberto,
+  sessoes,
+  onFechar,
+}: {
+  eventoId: string;
+  aberto: { familia: Familia | null } | null;
+  sessoes: SessaoOpcao[];
+  onFechar: () => void;
+}) {
+  const familia = aberto?.familia ?? null;
+  return (
+    <Sheet open={aberto !== null} onOpenChange={(o) => !o && onFechar()}>
+      <SheetContent className="w-full overflow-y-auto sm:max-w-md">
+        <SheetHeader>
+          <SheetTitle>
+            {familia ? `Adicionar irmã na família de ${familia.responsavel_nome}` : "Adicionar bailarina"}
+          </SheetTitle>
+        </SheetHeader>
+        {aberto && (
+          <FormNovaBailarina
+            key={familia?.id ?? "nova"}
+            eventoId={eventoId}
+            familia={familia}
+            sessoes={sessoes}
+            onFechar={onFechar}
+          />
+        )}
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+function FormNovaBailarina({
+  eventoId,
+  familia,
+  sessoes,
+  onFechar,
+}: {
+  eventoId: string;
+  familia: Familia | null;
+  sessoes: SessaoOpcao[];
+  onFechar: () => void;
+}) {
+  const qc = useQueryClient();
+  const [dias, setDias] = useState<string[]>([]);
+
+  const salvar = useMutation({
+    mutationFn: async (fd: FormData) => {
+      const nome = String(fd.get("nome") ?? "").trim();
+      if (nome.split(/\s+/).length < 2) throw new Error("Escreva o nome completo da bailarina.");
+      let familiaId = familia?.id ?? null;
+      let novaFamilia = false;
+      if (!familiaId) {
+        const { data: whatsapp, error: e1 } = await supabase.rpc("normalizar_whatsapp", {
+          p: String(fd.get("whatsapp") ?? ""),
+        });
+        if (e1) throw e1;
+        if (!whatsapp)
+          throw new Error("WhatsApp inválido. Use DDD e número, por exemplo (91) 98888-7777.");
+        const { data: existe } = await supabase
+          .from("familias")
+          .select("responsavel_nome")
+          .eq("evento_id", eventoId)
+          .eq("whatsapp", whatsapp)
+          .maybeSingle();
+        if (existe)
+          throw new Error(
+            `Esse WhatsApp já é da família de ${existe.responsavel_nome}. Use "Adicionar irmã" no cartão dela.`,
+          );
+        const { data: nova, error: e2 } = await supabase
+          .from("familias")
+          .insert({
+            evento_id: eventoId,
+            responsavel_nome: String(fd.get("responsavel") ?? "").trim(),
+            whatsapp,
+          })
+          .select("id")
+          .single();
+        if (e2) throw e2;
+        familiaId = nova.id;
+        novaFamilia = true;
+      }
+      const { data: b, error: e3 } = await supabase
+        .from("bailarinas")
+        .insert({
+          evento_id: eventoId,
+          familia_id: familiaId,
+          nome,
+          nome_busca: normalizar(nome),
+          turma: String(fd.get("turma") ?? "").trim() || null,
+          pacote: String(fd.get("pacote") ?? "").trim() || null,
+          origem: "recepcao",
+        })
+        .select("id")
+        .single();
+      if (e3) {
+        if (e3.code === "23505") throw new Error("Já existe uma bailarina com esse nome neste evento.");
+        throw e3;
+      }
+      const r = await supabase.rpc("definir_escalacao", { p_bailarina: b.id, p_sessoes: dias });
+      if (r.error) throw r.error;
+      if (novaFamilia) {
+        const g = await supabase.rpc("gerar_link_familia", { p_familia: familiaId });
+        if (g.error) throw g.error;
+      }
+      return novaFamilia;
+    },
+    onSuccess: (novaFamilia) => {
+      toast.success(
+        novaFamilia
+          ? "Bailarina e família cadastradas. O link já está na aba Envio de links."
+          : "Irmã adicionada. O saldo da família foi atualizado.",
+      );
+      qc.invalidateQueries({ queryKey: ["familias", eventoId] });
+      qc.invalidateQueries({ queryKey: ["envio", eventoId] });
+      onFechar();
+    },
+    onError: (e) => toast.error(mensagemDeErro(e)),
+  });
+
+  const semDia = dias.length === 0;
+
+  return (
+    <form
+      className="space-y-4 px-4 pb-6"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (semDia) {
+          toast.error("Marque pelo menos um dia.");
+          return;
+        }
+        if (!salvar.isPending) salvar.mutate(new FormData(e.currentTarget));
+      }}
+    >
+      {familia ? (
+        <p className="text-muted-foreground">
+          Já na família: {familia.bailarinas.map((b) => primeiroNome(b.nome)).join(", ")}
+        </p>
+      ) : (
+        <>
+          <Campo id="n-resp" name="responsavel" rotulo="Responsável" required autoComplete="off" />
+          <Campo
+            id="n-whats"
+            name="whatsapp"
+            rotulo="WhatsApp do responsável"
+            inputMode="tel"
+            placeholder="(91) 98888-7777"
+            required
+          />
+        </>
+      )}
+      <Campo id="n-nome" name="nome" rotulo="Nome completo da bailarina" required autoComplete="off" />
+      <Campo id="n-turma" name="turma" rotulo="Turma" />
+      <Campo id="n-pacote" name="pacote" rotulo="Pacote" />
+      <fieldset className="space-y-1">
+        <legend className="text-sm font-medium text-foreground">Dias em que dança</legend>
+        {sessoes.map((s) => (
+          <div key={s.id} className="flex min-h-11 items-center gap-3">
+            <Checkbox
+              id={`n-dia-${s.id}`}
+              checked={dias.includes(s.id)}
+              onCheckedChange={(v) =>
+                setDias(v === true ? [...dias, s.id] : dias.filter((d) => d !== s.id))
+              }
+            />
+            <Label htmlFor={`n-dia-${s.id}`}>{s.nome}</Label>
+          </div>
+        ))}
+      </fieldset>
+      <div className="flex gap-2">
+        <Button type="button" variant="outline" className="min-h-11" onClick={onFechar}>
+          Cancelar
+        </Button>
+        <Button type="submit" className="min-h-11" disabled={salvar.isPending}>
+          {salvar.isPending ? "Salvando..." : familia ? "Adicionar irmã" : "Cadastrar bailarina"}
+        </Button>
+      </div>
+    </form>
   );
 }
