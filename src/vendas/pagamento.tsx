@@ -367,7 +367,7 @@ function FormularioDePagamento({
               mapa={g.mapa}
               lugares={lugaresEscolhidos.filter((l) => estado.lugares.find((x) => x.numero === l.numero && x.sessao_id === sessaoId))}
               aoMudar={(novos) => {
-                for (const l of novos) setTipos((t) => ({ ...t, [chaveDe(sessaoId, l.numero)]: { tipo: l.tipo, categoriaMeia: l.categoriaMeia } }));
+                for (const l of novos) setTipos((t) => ({ ...t, [chaveDe(sessaoId, l.numero)]: l.categoriaMeia ? { tipo: l.tipo, categoriaMeia: l.categoriaMeia } : { tipo: l.tipo } }));
               }}
               exigirDeclaracaoMeia
               categorias={categorias}

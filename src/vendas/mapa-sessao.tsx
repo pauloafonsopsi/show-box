@@ -185,7 +185,7 @@ export function MapaPoltronas({
           celulas={celulas}
           onEscolher={onEscolher ?? (() => undefined)}
           tamanhoMaximo={vista === "tudo" ? (pequeno ? 22 : 30) : 44}
-          className={vista === "tudo" ? undefined : "overflow-x-auto pb-2"}
+          className={vista === "tudo" ? "" : "overflow-x-auto pb-2"}
         />
       </div>
       {pequeno && vista !== "tudo" ? (
