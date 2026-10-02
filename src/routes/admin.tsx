@@ -36,8 +36,8 @@ export const Route = createFileRoute("/admin")({
 
 const MENU = [
   { to: "/admin", rotulo: "Painel", Icone: LayoutDashboard, exato: true },
-  { to: "/admin/eventos/", rotulo: "Eventos", Icone: CalendarDays },
-  { to: "/admin/locais/", rotulo: "Locais e mapas", Icone: MapPinned },
+  { to: "/admin/eventos", rotulo: "Eventos", Icone: CalendarDays },
+  { to: "/admin/locais", rotulo: "Locais e mapas", Icone: MapPinned },
   { to: "/admin/equipe", rotulo: "Equipe", Icone: Users },
   { to: "/admin/configuracoes", rotulo: "Configurações", Icone: Settings },
   { to: "/admin/auditoria", rotulo: "Auditoria", Icone: History },
