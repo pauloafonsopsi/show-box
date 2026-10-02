@@ -18,6 +18,7 @@ const ABAS = [
   { to: "/admin/eventos/$eventoId/elenco", rotulo: "Elenco e famílias" },
   { to: "/admin/eventos/$eventoId/envio", rotulo: "Envio de links" },
   { to: "/admin/eventos/$eventoId/adicionais", rotulo: "Adicionais" },
+  { to: "/admin/eventos/$eventoId/pedidos", rotulo: "Pedidos" },
   { to: "/admin/eventos/$eventoId/conteudos", rotulo: "Conteúdos" },
 ] as const;
 

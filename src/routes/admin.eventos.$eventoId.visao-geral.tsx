@@ -1,3 +1,4 @@
+import { ResumoVendas } from "@/admin-vendas/relatorios";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, type FormEvent } from "react";
@@ -98,6 +99,8 @@ function VisaoGeral() {
   }
 
   return (
+    <div className="space-y-10">
+    <ResumoVendas eventoId={eventoId} />
     <form onSubmit={enviar} className="max-w-2xl space-y-6">
       {temRascunho && (
         <SeloStatus tom="aviso">Você tem alterações ainda não salvas.</SeloStatus>
@@ -171,5 +174,6 @@ function VisaoGeral() {
         )}
       </div>
     </form>
+    </div>
   );
 }

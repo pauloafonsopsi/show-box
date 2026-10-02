@@ -1,3 +1,4 @@
+import { RelatorioEntrega } from "@/admin-vendas/relatorios";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState, type ChangeEvent } from "react";
@@ -51,6 +52,7 @@ function Adicionais() {
     <div className="space-y-10">
       <Produtos eventoId={eventoId} />
       <Estoques eventoId={eventoId} />
+      <RelatorioEntrega eventoId={eventoId} />
     </div>
   );
 }
