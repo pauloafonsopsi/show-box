@@ -163,6 +163,8 @@ export const iniciarPagamento = createServerFn({ method: "POST" })
         cep: z.string().trim().max(9).optional(),
         numero: z.string().trim().max(20).optional(),
         referencia: z.string().trim().max(160).optional(),
+        cidade: z.string().trim().max(80).optional(),
+        estado: z.string().trim().max(2).optional(),
       })
       .parse(d),
   )
@@ -231,8 +233,8 @@ export const iniciarPagamento = createServerFn({ method: "POST" })
                 billing_address: {
                   line_1: `${data.referencia ?? ""} ${data.numero ?? ""}`.trim(),
                   zip_code: (data.cep ?? "").replace(/\D/g, ""),
-                  city: "Belém",
-                  state: "PA",
+                  city: data.cidade ?? "Belém",
+                  state: data.estado ?? "PA",
                   country: "BR",
                 },
               },

@@ -28,6 +28,7 @@ import { Route as AdminEventosEventoIdEnvioRouteImport } from './routes/admin.ev
 import { Route as AdminEventosEventoIdPrecosRouteImport } from './routes/admin.eventos.$eventoId.precos'
 import { Route as AdminEventosEventoIdSessoesRouteImport } from './routes/admin.eventos.$eventoId.sessoes'
 import { Route as AdminEventosEventoIdVisaoGeralRouteImport } from './routes/admin.eventos.$eventoId.visao-geral'
+import { Route as ApiPagarmeWebhookSegredoRouteImport } from './routes/api/pagarme/webhook.$segredo'
 import { Route as AdminLocaisLocalIdMapasMapaIdRouteImport } from './routes/admin.locais.$localId.mapas.$mapaId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -133,6 +134,12 @@ const AdminEventosEventoIdVisaoGeralRoute =
     path: '/visao-geral',
     getParentRoute: () => AdminEventosEventoIdRoute,
   } as any)
+const ApiPagarmeWebhookSegredoRoute =
+  ApiPagarmeWebhookSegredoRouteImport.update({
+    id: '/api/pagarme/webhook/$segredo',
+    path: '/api/pagarme/webhook/$segredo',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AdminLocaisLocalIdMapasMapaIdRoute =
   AdminLocaisLocalIdMapasMapaIdRouteImport.update({
     id: '/locais/$localId/mapas/$mapaId',
@@ -159,6 +166,7 @@ export interface FileRoutesByFullPath {
   '/admin/eventos/$eventoId/precos': typeof AdminEventosEventoIdPrecosRoute
   '/admin/eventos/$eventoId/sessoes': typeof AdminEventosEventoIdSessoesRoute
   '/admin/eventos/$eventoId/visao-geral': typeof AdminEventosEventoIdVisaoGeralRoute
+  '/api/pagarme/webhook/$segredo': typeof ApiPagarmeWebhookSegredoRoute
   '/admin/eventos/$eventoId/': typeof AdminEventosEventoIdIndexRoute
   '/admin/locais/$localId/mapas/$mapaId': typeof AdminLocaisLocalIdMapasMapaIdRoute
 }
@@ -179,6 +187,7 @@ export interface FileRoutesByTo {
   '/admin/eventos/$eventoId/precos': typeof AdminEventosEventoIdPrecosRoute
   '/admin/eventos/$eventoId/sessoes': typeof AdminEventosEventoIdSessoesRoute
   '/admin/eventos/$eventoId/visao-geral': typeof AdminEventosEventoIdVisaoGeralRoute
+  '/api/pagarme/webhook/$segredo': typeof ApiPagarmeWebhookSegredoRoute
   '/admin/eventos/$eventoId': typeof AdminEventosEventoIdIndexRoute
   '/admin/locais/$localId/mapas/$mapaId': typeof AdminLocaisLocalIdMapasMapaIdRoute
 }
@@ -202,6 +211,7 @@ export interface FileRoutesById {
   '/admin/eventos/$eventoId/precos': typeof AdminEventosEventoIdPrecosRoute
   '/admin/eventos/$eventoId/sessoes': typeof AdminEventosEventoIdSessoesRoute
   '/admin/eventos/$eventoId/visao-geral': typeof AdminEventosEventoIdVisaoGeralRoute
+  '/api/pagarme/webhook/$segredo': typeof ApiPagarmeWebhookSegredoRoute
   '/admin/eventos/$eventoId/': typeof AdminEventosEventoIdIndexRoute
   '/admin/locais/$localId/mapas/$mapaId': typeof AdminLocaisLocalIdMapasMapaIdRoute
 }
@@ -226,6 +236,7 @@ export interface FileRouteTypes {
     | '/admin/eventos/$eventoId/precos'
     | '/admin/eventos/$eventoId/sessoes'
     | '/admin/eventos/$eventoId/visao-geral'
+    | '/api/pagarme/webhook/$segredo'
     | '/admin/eventos/$eventoId/'
     | '/admin/locais/$localId/mapas/$mapaId'
   fileRoutesByTo: FileRoutesByTo
@@ -246,6 +257,7 @@ export interface FileRouteTypes {
     | '/admin/eventos/$eventoId/precos'
     | '/admin/eventos/$eventoId/sessoes'
     | '/admin/eventos/$eventoId/visao-geral'
+    | '/api/pagarme/webhook/$segredo'
     | '/admin/eventos/$eventoId'
     | '/admin/locais/$localId/mapas/$mapaId'
   id:
@@ -268,6 +280,7 @@ export interface FileRouteTypes {
     | '/admin/eventos/$eventoId/precos'
     | '/admin/eventos/$eventoId/sessoes'
     | '/admin/eventos/$eventoId/visao-geral'
+    | '/api/pagarme/webhook/$segredo'
     | '/admin/eventos/$eventoId/'
     | '/admin/locais/$localId/mapas/$mapaId'
   fileRoutesById: FileRoutesById
@@ -277,6 +290,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren
   BilheteriaRoute: typeof BilheteriaRoute
   EntrarRoute: typeof EntrarRoute
+  ApiPagarmeWebhookSegredoRoute: typeof ApiPagarmeWebhookSegredoRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -414,6 +428,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminEventosEventoIdVisaoGeralRouteImport
       parentRoute: typeof AdminEventosEventoIdRoute
     }
+    '/api/pagarme/webhook/$segredo': {
+      id: '/api/pagarme/webhook/$segredo'
+      path: '/api/pagarme/webhook/$segredo'
+      fullPath: '/api/pagarme/webhook/$segredo'
+      preLoaderRoute: typeof ApiPagarmeWebhookSegredoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/locais/$localId/mapas/$mapaId': {
       id: '/admin/locais/$localId/mapas/$mapaId'
       path: '/locais/$localId/mapas/$mapaId'
@@ -478,6 +499,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRouteWithChildren,
   BilheteriaRoute: BilheteriaRoute,
   EntrarRoute: EntrarRoute,
+  ApiPagarmeWebhookSegredoRoute: ApiPagarmeWebhookSegredoRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
