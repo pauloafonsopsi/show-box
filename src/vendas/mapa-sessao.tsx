@@ -75,7 +75,7 @@ export function MapaPoltronas({
   onEscolher?: (numero: number) => void;
   semProscenio?: boolean;
 }) {
-  const pequeno = useMediaQuery("(max-width: 640px)");
+  const pequeno = useIsMobile();
   const [vista, setVista] = useState<"tudo" | string>("tudo");
   const [piscando, setPiscando] = useState(false);
 
@@ -96,27 +96,26 @@ export function MapaPoltronas({
     return c;
   }, [mapa, escolhidos]);
 
-  const visiveis = useMemo(
-    () => (vista === "tudo" ? mapa.assentos : mapa.assentos.filter((a) => a.setor_id === vista)),
-    [mapa, vista],
-  );
-
   const celulas: CelulaGrade[] = useMemo(() => {
-    const vistaSetores = vista === "tudo" ? null : mapa.setores.find((s) => s.id === vista) ?? null;
     return celulasDoMapa(mapa, (a) => {
       const escolhida = escolhidos.has(a.numero);
-      const estado: EstadoPoltrona = escolhida ? "escolhida" : a.estado === "livre" ? "livre" : a.estado === "reservado" ? "outra-pessoa" : a.estado;
+      const estado: EstadoPoltrona = escolhida
+        ? "escolhida"
+        : a.estado === "reservado"
+          ? "outra-pessoa"
+          : a.estado;
       return {
         estado,
-        destaque: (piscando && conjunto.has(a.numero)) || false,
+        destaque: piscando && conjunto.has(a.numero),
       };
     }).filter((c) => {
-      if (c.tipo === "assento" && vista !== "tudo") {
+      if (c.tipo === "assento" && vista !== "tudo")
         return mapa.assentos.some((a) => a.setor_id === vista && a.linha === c.linha && a.coluna === c.coluna);
-      }
       return true;
-    }).map((c) => (c.tipo === "palco" && vistaSetores ? { ...c, tipo: "corredor" as const } : c));
-  }, [mapa, escolhidos, vista, piscando, conjunto, vistaSetores]);
+    });
+  }, [mapa, escolhidos, vista, piscando, conjunto]);
+
+  const nomeVista = vista === "tudo" ? null : (mapa.setores.find((s) => s.id === vista)?.nome ?? null);
 
   const cheio = maxEscolhidos > 0 && escolhidos.size >= maxEscolhidos;
 
@@ -192,7 +191,7 @@ export function MapaPoltronas({
       </div>
       {pequeno && vista !== "tudo" ? (
         <p className="mt-2 text-sm text-muted-foreground">
-          Você está vendo só o setor {vistaSetores?.nome ?? ""}. Volte em “Mapa inteiro” para ver todos.
+          Você está vendo só o setor {nomeVista}. Volte em “Mapa inteiro” para ver todos.
         </p>
       ) : null}
       <div className="mt-4 flex flex-wrap gap-3 text-sm text-muted-foreground">
@@ -206,5 +205,3 @@ export function MapaPoltronas({
     </div>
   );
 }
-
-function useMediaQuery(classe: string) { return false; }
