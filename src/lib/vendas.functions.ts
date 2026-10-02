@@ -391,3 +391,39 @@ export const chavePublicaPagarme = createServerFn({ method: "GET" }).handler(asy
   if (!chave) throw new Error("A chave pública de pagamento não está configurada. Fale com o administrador.");
   return chave;
 });
+
+/** Evento e textos do pedido pelo código de acesso (página /p). */
+export const contextoPedido = createServerFn({ method: "POST" })
+  .inputValidator((d) => z.object({ acesso: Acesso }).parse(d))
+  .handler(async ({ data }) => {
+    const supabase = await comChaveServico();
+    const { data: p } = await supabase.from("pedidos").select("evento_id").eq("acesso_token", data.acesso).maybeSingle();
+    if (!p) return null;
+    const [ev, cont] = await Promise.all([
+      supabase.from("eventos").select("nome, slug, limite_por_pedido").eq("id", p.evento_id).maybeSingle(),
+      supabase.from("conteudos").select("chave, texto").eq("evento_id", p.evento_id),
+    ]);
+    const conteudos: Record<string, string> = {};
+    for (const c of cont.data ?? []) if (c.chave) conteudos[c.chave] = c.texto;
+    return { evento: ev.data ?? null, conteudos };
+  });
+
+/** Texto vigente dos termos (por evento) ou da política de privacidade. */
+export const textoLegal = createServerFn({ method: "POST" })
+  .inputValidator((d) => z.object({ tipo: z.enum(["termos", "privacidade"]), slug: z.string().trim().max(120).optional() }).parse(d))
+  .handler(async ({ data }) => {
+    const supabase = await comChaveServico();
+    let eventoId: string | null = null;
+    let nome: string | null = null;
+    if (data.slug) {
+      const { data: ev } = await supabase.from("eventos").select("id, nome").eq("slug", data.slug).maybeSingle();
+      if (!ev) return null;
+      eventoId = ev.id;
+      nome = ev.nome;
+    }
+    let q = supabase.from("termos_versoes").select("versao, texto, criado_em").eq("tipo", data.tipo);
+    if (eventoId) q = q.eq("evento_id", eventoId);
+    const { data: t } = await q.order("criado_em", { ascending: false }).limit(1);
+    const v = t?.[0];
+    return v ? { evento: nome, versao: v.versao, texto: v.texto } : null;
+  });
