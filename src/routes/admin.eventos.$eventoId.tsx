@@ -56,8 +56,11 @@ function EventoLayout() {
               <Link
                 to={a.to}
                 params={{ eventoId }}
-                className="inline-flex min-h-11 items-center border-b-2 border-transparent px-3 text-muted-foreground hover:text-foreground"
-                activeProps={{ className: "border-primary font-medium text-foreground" }}
+                className="-mb-px inline-flex min-h-11 items-center rounded-t-md border-b-2 border-transparent px-3 text-muted-foreground transition-colors hover:text-foreground"
+                activeProps={{
+                  "aria-current": "page",
+                  className: "!border-primary bg-primary/15 font-semibold !text-primary",
+                }}
               >
                 {a.rotulo}
               </Link>
