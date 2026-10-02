@@ -7,12 +7,25 @@ import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { EsqueletoLista, EstadoErro, EstadoVazio } from "@/design/coxia";
 import { SeloStatus } from "@/design/palco";
 import { supabase } from "@/integrations/supabase/client";
-import { dataHora, juntarNomes, mensagemDeErro, preencher, primeiroNome, whatsappExibir } from "@/lib/formato";
+import {
+  dataHora,
+  juntarNomes,
+  mensagemDeErro,
+  preencher,
+  primeiroNome,
+  whatsappExibir,
+} from "@/lib/formato";
 
 const busca = z.object({
   pendentes: z.boolean().optional().catch(undefined),
@@ -47,12 +60,19 @@ function Envio() {
       const [f, c] = await Promise.all([
         supabase
           .from("familias")
-          .select("id, responsavel_nome, whatsapp, bailarinas(nome, ativa), familia_links(token, enviado_em)")
+          .select(
+            "id, responsavel_nome, whatsapp, bailarinas(nome, ativa), familia_links(token, enviado_em)",
+          )
           .eq("evento_id", eventoId)
           .eq("ativa", true)
           .order("responsavel_nome")
           .limit(2000),
-        supabase.from("conteudos").select("texto").eq("evento_id", eventoId).eq("chave", "mensagem_link").maybeSingle(),
+        supabase
+          .from("conteudos")
+          .select("texto")
+          .eq("evento_id", eventoId)
+          .eq("chave", "mensagem_link")
+          .maybeSingle(),
       ]);
       if (f.error) throw f.error;
       if (c.error) throw c.error;
@@ -67,7 +87,11 @@ function Envio() {
       return data;
     },
     onSuccess: (n) => {
-      toast.success(n === 0 ? "Todas as famílias já tinham link." : `${n} links gerados. Agora envie pelo WhatsApp.`);
+      toast.success(
+        n === 0
+          ? "Todas as famílias já tinham link."
+          : `${n} links gerados. Agora envie pelo WhatsApp.`,
+      );
       qc.invalidateQueries({ queryKey: ["envio", eventoId] });
     },
     onError: (e) => toast.error(mensagemDeErro(e)),
@@ -75,7 +99,10 @@ function Envio() {
 
   const marcar = useMutation({
     mutationFn: async ({ id, enviado }: { id: string; enviado: boolean }) => {
-      const { error } = await supabase.rpc("marcar_link_enviado", { p_familia: id, p_enviado: enviado });
+      const { error } = await supabase.rpc("marcar_link_enviado", {
+        p_familia: id,
+        p_enviado: enviado,
+      });
       if (error) throw error;
       return enviado;
     },
@@ -88,7 +115,8 @@ function Envio() {
   });
 
   if (q.isPending) return <EsqueletoLista />;
-  if (q.isError) return <EstadoErro mensagem={mensagemDeErro(q.error)} onTentar={() => q.refetch()} />;
+  if (q.isError)
+    return <EstadoErro mensagem={mensagemDeErro(q.error)} onTentar={() => q.refetch()} />;
 
   const semLink = q.data.familias.filter((f) => !f.familia_links).length;
   const filtradas = q.data.familias.filter((f) => !pendentes || !f.familia_links?.enviado_em);
@@ -109,7 +137,12 @@ function Envio() {
           <Checkbox
             id="pendentes"
             checked={Boolean(pendentes)}
-            onCheckedChange={(v) => navigate({ search: { pendentes: v ? true : undefined, pagina: undefined }, replace: true })}
+            onCheckedChange={(v) =>
+              navigate({
+                search: { pendentes: v ? true : undefined, pagina: undefined },
+                replace: true,
+              })
+            }
           />
           <Label htmlFor="pendentes">Só não enviados</Label>
         </div>
@@ -119,35 +152,53 @@ function Envio() {
         </Button>
       </div>
       {semLink > 0 && <SeloStatus tom="aviso">{semLink} famílias ainda sem link.</SeloStatus>}
-      {!q.data.mensagem && <SeloStatus tom="erro">Falta o texto "Mensagem do link" em Conteúdos.</SeloStatus>}
+      {!q.data.mensagem && (
+        <SeloStatus tom="erro">Falta o texto "Mensagem do link" em Conteúdos.</SeloStatus>
+      )}
 
       {filtradas.length === 0 ? (
         <EstadoVazio
-          titulo={q.data.familias.length === 0 ? "Nenhuma família" : "Todos os links foram enviados"}
-          {...(q.data.familias.length === 0 ? { texto: "Importe a planilha na aba Elenco e famílias." } : {})}
+          titulo={
+            q.data.familias.length === 0 ? "Nenhuma família" : "Todos os links foram enviados"
+          }
+          {...(q.data.familias.length === 0
+            ? { texto: "Importe a planilha na aba Elenco e famílias." }
+            : {})}
         />
       ) : (
         <ul className="divide-y divide-border rounded-lg border border-border">
           {visiveis.map((f) => (
-            <li key={f.id} className="flex flex-col gap-2 px-4 py-3 md:flex-row md:items-center md:justify-between">
+            <li
+              key={f.id}
+              className="flex flex-col gap-2 px-4 py-3 md:flex-row md:items-center md:justify-between"
+            >
               <div>
                 <p className="font-medium text-foreground">{f.responsavel_nome}</p>
                 <p className="text-sm text-muted-foreground">
-                  {juntarNomes(f.bailarinas.filter((b) => b.ativa).map((b) => primeiroNome(b.nome)))},{" "}
-                  {whatsappExibir(f.whatsapp)}
+                  {juntarNomes(
+                    f.bailarinas.filter((b) => b.ativa).map((b) => primeiroNome(b.nome)),
+                  )}
+                  , {whatsappExibir(f.whatsapp)}
                 </p>
                 <div className="mt-1">
                   {!f.familia_links ? (
                     <SeloStatus tom="erro">Sem link</SeloStatus>
                   ) : f.familia_links.enviado_em ? (
-                    <SeloStatus tom="sucesso">Enviado em {dataHora(f.familia_links.enviado_em)}</SeloStatus>
+                    <SeloStatus tom="sucesso">
+                      Enviado em {dataHora(f.familia_links.enviado_em)}
+                    </SeloStatus>
                   ) : (
                     <SeloStatus tom="aviso">Não enviado</SeloStatus>
                   )}
                 </div>
               </div>
               <div className="flex flex-wrap gap-2">
-                <Button variant="outline" className="min-h-11" disabled={!f.familia_links} onClick={() => setPreview(f)}>
+                <Button
+                  variant="outline"
+                  className="min-h-11"
+                  disabled={!f.familia_links}
+                  onClick={() => setPreview(f)}
+                >
                   <MessageCircle aria-hidden="true" />
                   Abrir no WhatsApp
                 </Button>
@@ -156,7 +207,9 @@ function Envio() {
                     variant="ghost"
                     className="min-h-11"
                     disabled={marcar.isPending}
-                    onClick={() => marcar.mutate({ id: f.id, enviado: !f.familia_links!.enviado_em })}
+                    onClick={() =>
+                      marcar.mutate({ id: f.id, enviado: !f.familia_links!.enviado_em })
+                    }
                   >
                     {f.familia_links.enviado_em ? "Desmarcar envio" : "Marcar como enviado"}
                   </Button>
@@ -196,7 +249,9 @@ function Envio() {
             <DialogTitle>Mensagem para {preview?.responsavel_nome}</DialogTitle>
           </DialogHeader>
           {preview && (
-            <pre className="whitespace-pre-wrap rounded-md bg-muted p-3 font-sans text-foreground">{mensagemDe(preview)}</pre>
+            <pre className="whitespace-pre-wrap rounded-md bg-muted p-3 font-sans text-foreground">
+              {mensagemDe(preview)}
+            </pre>
           )}
           <DialogFooter>
             <Button variant="outline" className="min-h-11" onClick={() => setPreview(null)}>

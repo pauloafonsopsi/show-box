@@ -5,7 +5,13 @@ import { Plus } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Cabecalho, Campo, EsqueletoLista, EstadoErro, EstadoVazio } from "@/design/coxia";
 import { SeloStatus } from "@/design/palco";
 import { supabase } from "@/integrations/supabase/client";
@@ -91,7 +97,8 @@ function NovoEvento({ aberto, onFechar }: { aberto: boolean; onFechar: () => voi
         .select("id")
         .single();
       if (error) {
-        if (error.code === "23505") throw new Error("Já existe um evento com este endereço. Mude o endereço.");
+        if (error.code === "23505")
+          throw new Error("Já existe um evento com este endereço. Mude o endereço.");
         throw error;
       }
       return data.id;

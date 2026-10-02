@@ -42,8 +42,16 @@ async function carregarPainel() {
           })),
       );
       const [fam, bai, env] = await Promise.all([
-        supabase.from("familias").select("id", { count: "exact", head: true }).eq("evento_id", ev.id).eq("ativa", true),
-        supabase.from("bailarinas").select("id", { count: "exact", head: true }).eq("evento_id", ev.id).eq("ativa", true),
+        supabase
+          .from("familias")
+          .select("id", { count: "exact", head: true })
+          .eq("evento_id", ev.id)
+          .eq("ativa", true),
+        supabase
+          .from("bailarinas")
+          .select("id", { count: "exact", head: true })
+          .eq("evento_id", ev.id)
+          .eq("ativa", true),
         supabase
           .from("familia_links")
           .select("familia_id, familias!inner(evento_id)", { count: "exact", head: true })
@@ -51,7 +59,13 @@ async function carregarPainel() {
           .not("enviado_em", "is", null),
       ]);
       for (const r of [fam, bai, env]) if (r.error) throw r.error;
-      return { ...ev, sessoes, familias: fam.count ?? 0, bailarinas: bai.count ?? 0, enviados: env.count ?? 0 };
+      return {
+        ...ev,
+        sessoes,
+        familias: fam.count ?? 0,
+        bailarinas: bai.count ?? 0,
+        enviados: env.count ?? 0,
+      };
     }),
   );
 }
@@ -71,7 +85,10 @@ function Painel() {
           titulo="Nenhum evento ainda"
           texto="Crie o primeiro evento para começar."
           acao={
-            <Link to="/admin/eventos" className="inline-flex min-h-11 items-center rounded-md bg-primary px-4 font-medium text-primary-foreground">
+            <Link
+              to="/admin/eventos"
+              className="inline-flex min-h-11 items-center rounded-md bg-primary px-4 font-medium text-primary-foreground"
+            >
               Ir para Eventos
             </Link>
           }
@@ -117,7 +134,9 @@ function Painel() {
                     {ev.sessoes.map((s) => (
                       <div key={s.id} className="rounded-md bg-muted/50 p-3">
                         <p className="font-medium text-foreground">{s.nome}</p>
-                        {s.data_hora && <p className="text-sm text-muted-foreground">{dataHora(s.data_hora)}</p>}
+                        {s.data_hora && (
+                          <p className="text-sm text-muted-foreground">{dataHora(s.data_hora)}</p>
+                        )}
                         <p className="numeros mt-2 text-foreground">
                           {s.livres} livres, {s.bloqueados} bloqueados, {s.vendidos} vendidos
                         </p>

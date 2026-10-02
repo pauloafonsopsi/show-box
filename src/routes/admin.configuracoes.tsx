@@ -20,7 +20,13 @@ export const Route = createFileRoute("/admin/configuracoes")({
   component: Configuracoes,
 });
 
-type Config = { chave: string; valor: Json; tipo: string; rotulo: string; explicacao: string | null };
+type Config = {
+  chave: string;
+  valor: Json;
+  tipo: string;
+  rotulo: string;
+  explicacao: string | null;
+};
 
 function Configuracoes() {
   const emails = useServerFn(emailsDeQuem);
@@ -28,7 +34,10 @@ function Configuracoes() {
     queryKey: ["configuracoes"],
     queryFn: async () => {
       const [c, a] = await Promise.all([
-        supabase.from("configuracoes").select("chave, valor, tipo, rotulo, explicacao").order("ordem"),
+        supabase
+          .from("configuracoes")
+          .select("chave, valor, tipo, rotulo, explicacao")
+          .order("ordem"),
         supabase
           .from("auditoria")
           .select("registro_id, quem, em")
@@ -39,7 +48,8 @@ function Configuracoes() {
       if (c.error) throw c.error;
       if (a.error) throw a.error;
       const ultima = new Map<string, { quem: string | null; em: string }>();
-      for (const x of a.data) if (x.registro_id && !ultima.has(x.registro_id)) ultima.set(x.registro_id, x);
+      for (const x of a.data)
+        if (x.registro_id && !ultima.has(x.registro_id)) ultima.set(x.registro_id, x);
       const ids = [...new Set([...ultima.values()].map((x) => x.quem).filter(Boolean))] as string[];
       const nomes = ids.length ? await emails({ data: { ids } }) : {};
       return { itens: c.data as Config[], ultima, nomes };
@@ -63,7 +73,11 @@ function Configuracoes() {
               <li key={c.chave}>
                 <LinhaConfig
                   config={c}
-                  rodape={u ? `Mudou em ${dataHora(u.em)}${u.quem ? ` por ${q.data.nomes[u.quem] ?? "pessoa removida"}` : ""}` : null}
+                  rodape={
+                    u
+                      ? `Mudou em ${dataHora(u.em)}${u.quem ? ` por ${q.data.nomes[u.quem] ?? "pessoa removida"}` : ""}`
+                      : null
+                  }
                 />
               </li>
             );
@@ -109,7 +123,10 @@ function LinhaConfig({ config, rodape }: { config: Config; rodape: string | null
         default:
           valor = texto;
       }
-      const { error } = await supabase.from("configuracoes").update({ valor }).eq("chave", config.chave);
+      const { error } = await supabase
+        .from("configuracoes")
+        .update({ valor })
+        .eq("chave", config.chave);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -121,7 +138,13 @@ function LinhaConfig({ config, rodape }: { config: Config; rodape: string | null
 
   const id = `cfg-${config.chave}`;
   const tipoInput =
-    config.tipo === "data" ? "date" : config.tipo === "hora" ? "time" : config.tipo === "numero" ? "number" : "text";
+    config.tipo === "data"
+      ? "date"
+      : config.tipo === "hora"
+        ? "time"
+        : config.tipo === "numero"
+          ? "number"
+          : "text";
 
   return (
     <form
@@ -154,7 +177,9 @@ function LinhaConfig({ config, rodape }: { config: Config; rodape: string | null
               </div>
             </>
           )}
-          {config.explicacao && <p className="text-sm text-muted-foreground">{config.explicacao}</p>}
+          {config.explicacao && (
+            <p className="text-sm text-muted-foreground">{config.explicacao}</p>
+          )}
         </div>
         <Button type="submit" variant="outline" className="min-h-11" disabled={salvar.isPending}>
           {salvar.isPending ? "Salvando..." : "Salvar"}
@@ -208,7 +233,8 @@ function Privacidade() {
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border p-4">
           {q.data ? (
             <p className="text-foreground">
-              Versão <span className="numeros">{q.data.versao}</span>, publicada em {dataHora(q.data.publicada_em)}. Código{" "}
+              Versão <span className="numeros">{q.data.versao}</span>, publicada em{" "}
+              {dataHora(q.data.publicada_em)}. Código{" "}
               <span className="font-mono">{q.data.hash.slice(0, 12)}</span>
             </p>
           ) : (

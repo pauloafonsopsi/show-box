@@ -18,6 +18,7 @@ const ABAS = [
   { to: "/admin/eventos/$eventoId/elenco", rotulo: "Elenco e famílias" },
   { to: "/admin/eventos/$eventoId/envio", rotulo: "Envio de links" },
   { to: "/admin/eventos/$eventoId/adicionais", rotulo: "Adicionais" },
+  { to: "/admin/eventos/$eventoId/pedidos", rotulo: "Pedidos" },
   { to: "/admin/eventos/$eventoId/conteudos", rotulo: "Conteúdos" },
 ] as const;
 
@@ -45,7 +46,10 @@ function EventoLayout() {
           }
         />
       )}
-      <nav aria-label="Seções do evento" className="-mx-4 mb-6 overflow-x-auto border-b border-border px-4 md:mx-0 md:px-0">
+      <nav
+        aria-label="Seções do evento"
+        className="-mx-4 mb-6 overflow-x-auto border-b border-border px-4 md:mx-0 md:px-0"
+      >
         <ul className="flex min-w-max gap-1">
           {ABAS.map((a) => (
             <li key={a.to}>

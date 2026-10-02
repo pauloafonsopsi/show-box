@@ -39,10 +39,16 @@ export function QrTexto({
           aria-hidden="true"
         />
       ) : (
-        <span className="block bg-muted" style={{ width: tamanho, height: tamanho }} aria-hidden="true" />
+        <span
+          className="block bg-muted"
+          style={{ width: tamanho, height: tamanho }}
+          aria-hidden="true"
+        />
       )}
       {rotulo ? (
-        <figcaption className="numeros mt-1 text-center text-[11px] text-muted-foreground">{rotulo}</figcaption>
+        <figcaption className="numeros mt-1 text-center text-[11px] text-muted-foreground">
+          {rotulo}
+        </figcaption>
       ) : null}
     </figure>
   );

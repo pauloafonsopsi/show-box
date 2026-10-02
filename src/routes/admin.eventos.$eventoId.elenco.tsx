@@ -26,7 +26,13 @@ import { SeloStatus } from "@/design/palco";
 import { supabase } from "@/integrations/supabase/client";
 import { sessoesQuery } from "@/lib/consultas";
 import { mensagemDeErro, primeiroNome, whatsappExibir } from "@/lib/formato";
-import { linhasParaImportar, lerPlanilha, normalizar, sessaoPelaData, type PlanilhaLida } from "@/lib/planilha";
+import {
+  linhasParaImportar,
+  lerPlanilha,
+  normalizar,
+  sessaoPelaData,
+  type PlanilhaLida,
+} from "@/lib/planilha";
 import { useRascunho } from "@/lib/rascunho";
 
 const busca = z.object({
@@ -88,7 +94,9 @@ function Importar({ eventoId }: { eventoId: string }) {
       setArquivo(f);
       setPlanilha(p);
       const lista = sessoes.data ?? [];
-      setLigacao(Object.fromEntries(p.dancas.map((d) => [d.indice, sessaoPelaData(d.titulo, lista)])));
+      setLigacao(
+        Object.fromEntries(p.dancas.map((d) => [d.indice, sessaoPelaData(d.titulo, lista)])),
+      );
     } catch (err) {
       setPlanilha(null);
       toast.error(mensagemDeErro(err));
@@ -138,12 +146,20 @@ function Importar({ eventoId }: { eventoId: string }) {
           <FileSpreadsheet aria-hidden="true" className="size-4" />
           {lendo ? "Lendo planilha..." : arquivo ? "Escolher outra planilha" : "Escolher planilha"}
         </Label>
-        <input id="arquivo" type="file" accept=".xlsx,.csv" className="sr-only" onChange={escolher} disabled={lendo} />
+        <input
+          id="arquivo"
+          type="file"
+          accept=".xlsx,.csv"
+          className="sr-only"
+          onChange={escolher}
+          disabled={lendo}
+        />
 
         {planilha && (
           <div className="mt-4 space-y-4">
             <p className="text-foreground">
-              {arquivo?.name}, aba "{planilha.aba}", {planilha.linhas.length} linhas depois do cabeçalho.
+              {arquivo?.name}, aba "{planilha.aba}", {planilha.linhas.length} linhas depois do
+              cabeçalho.
             </p>
             <div>
               <p className="mb-2 font-medium text-foreground">Cada coluna "Dança" é qual sessão?</p>
@@ -204,7 +220,11 @@ function Importar({ eventoId }: { eventoId: string }) {
                 <Total key={s} rotulo={s} valor={n} />
               ))}
             </dl>
-            <ListaAvisos titulo="Precisa corrigir antes de gravar" tom="erro" itens={resumo.vermelhos} />
+            <ListaAvisos
+              titulo="Precisa corrigir antes de gravar"
+              tom="erro"
+              itens={resumo.vermelhos}
+            />
             <ListaAvisos titulo="Vale conferir" tom="aviso" itens={resumo.amarelos} />
             <Button
               className="min-h-11"
@@ -214,7 +234,9 @@ function Importar({ eventoId }: { eventoId: string }) {
               {importar.isPending ? "Gravando..." : "Gravar planilha"}
             </Button>
             {!resumo.pode_gravar && (
-              <p className="text-muted-foreground">Corrija as linhas em vermelho na planilha e escolha o arquivo de novo.</p>
+              <p className="text-muted-foreground">
+                Corrija as linhas em vermelho na planilha e escolha o arquivo de novo.
+              </p>
             )}
           </div>
         )}
@@ -330,9 +352,14 @@ function Familias({ eventoId }: { eventoId: string }) {
     if (!q.data) return [];
     const termo = normalizar(s.q);
     return q.data.familias.filter((f) => {
-      if (termo && !normalizar(f.responsavel_nome).includes(termo) && !f.bailarinas.some((b) => normalizar(b.nome).includes(termo)))
+      if (
+        termo &&
+        !normalizar(f.responsavel_nome).includes(termo) &&
+        !f.bailarinas.some((b) => normalizar(b.nome).includes(termo))
+      )
         return false;
-      if (s.sessao && !f.bailarinas.some((b) => b.escalacao.some((e) => e.sessao_id === s.sessao))) return false;
+      if (s.sessao && !f.bailarinas.some((b) => b.escalacao.some((e) => e.sessao_id === s.sessao)))
+        return false;
       if (s.pacote && !f.bailarinas.some((b) => b.pacote === s.pacote)) return false;
       if (s.enviado === "sim" && !f.familia_links?.enviado_em) return false;
       if (s.enviado === "nao" && f.familia_links?.enviado_em) return false;
@@ -368,7 +395,12 @@ function Familias({ eventoId }: { eventoId: string }) {
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="f-sessao">Sessão</Label>
-          <select id="f-sessao" className={classeCampo} value={s.sessao ?? ""} onChange={(e) => filtro({ sessao: e.target.value || undefined })}>
+          <select
+            id="f-sessao"
+            className={classeCampo}
+            value={s.sessao ?? ""}
+            onChange={(e) => filtro({ sessao: e.target.value || undefined })}
+          >
             <option value="">Todas</option>
             {(sessoes.data ?? []).map((x) => (
               <option key={x.id} value={x.id}>
@@ -379,7 +411,12 @@ function Familias({ eventoId }: { eventoId: string }) {
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="f-pacote">Pacote</Label>
-          <select id="f-pacote" className={classeCampo} value={s.pacote ?? ""} onChange={(e) => filtro({ pacote: e.target.value || undefined })}>
+          <select
+            id="f-pacote"
+            className={classeCampo}
+            value={s.pacote ?? ""}
+            onChange={(e) => filtro({ pacote: e.target.value || undefined })}
+          >
             <option value="">Todos</option>
             {pacotes.map((p) => (
               <option key={p} value={p}>
@@ -394,7 +431,9 @@ function Familias({ eventoId }: { eventoId: string }) {
             id="f-env"
             className={classeCampo}
             value={s.enviado ?? ""}
-            onChange={(e) => filtro({ enviado: (e.target.value || undefined) as "sim" | "nao" | undefined })}
+            onChange={(e) =>
+              filtro({ enviado: (e.target.value || undefined) as "sim" | "nao" | undefined })
+            }
           >
             <option value="">Todos</option>
             <option value="sim">Enviado</option>
@@ -409,7 +448,11 @@ function Familias({ eventoId }: { eventoId: string }) {
         <EstadoErro mensagem={mensagemDeErro(q.error)} onTentar={() => q.refetch()} />
       ) : filtradas.length === 0 ? (
         <EstadoVazio
-          titulo={q.data.familias.length === 0 ? "Nenhuma família cadastrada" : "Nenhuma família com esses filtros"}
+          titulo={
+            q.data.familias.length === 0
+              ? "Nenhuma família cadastrada"
+              : "Nenhuma família com esses filtros"
+          }
           {...(q.data.familias.length === 0 ? { texto: "Importe a planilha acima." } : {})}
         />
       ) : (
@@ -448,11 +491,21 @@ function Familias({ eventoId }: { eventoId: string }) {
                         className="flex min-h-11 w-full flex-wrap items-center gap-x-3 py-2 text-left hover:bg-muted/50"
                         onClick={() => navigate({ search: (a) => ({ ...a, bailarina: b.id }) })}
                       >
-                        <span className={b.ativa ? "font-medium text-foreground" : "text-muted-foreground line-through"}>
+                        <span
+                          className={
+                            b.ativa
+                              ? "font-medium text-foreground"
+                              : "text-muted-foreground line-through"
+                          }
+                        >
                           {b.nome}
                         </span>
                         <span className="text-sm text-muted-foreground">
-                          {[b.turma, b.pacote, b.escalacao.map((e) => nomeSessao(e.sessao_id)).join(" e ")]
+                          {[
+                            b.turma,
+                            b.pacote,
+                            b.escalacao.map((e) => nomeSessao(e.sessao_id)).join(" e "),
+                          ]
                             .filter(Boolean)
                             .join(", ")}
                         </span>
@@ -465,7 +518,8 @@ function Familias({ eventoId }: { eventoId: string }) {
                     .filter((x) => x.familia_id === f.id && x.escaladas > 0)
                     .map((x) => (
                       <span key={x.sessao_id}>
-                        {nomeSessao(x.sessao_id)}: saldo <span className="numeros font-medium">{x.saldo}</span> de{" "}
+                        {nomeSessao(x.sessao_id)}: saldo{" "}
+                        <span className="numeros font-medium">{x.saldo}</span> de{" "}
                         <span className="numeros">{x.cota}</span>
                       </span>
                     ))}
@@ -516,7 +570,8 @@ function Familias({ eventoId }: { eventoId: string }) {
           <AlertDialogHeader>
             <AlertDialogTitle>Gerar novo link para {novoLink?.responsavel_nome}?</AlertDialogTitle>
             <AlertDialogDescription>
-              O link antigo para de funcionar na hora. Você vai precisar mandar o novo link pelo WhatsApp.
+              O link antigo para de funcionar na hora. Você vai precisar mandar o novo link pelo
+              WhatsApp.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -566,7 +621,13 @@ function EditarBailarina({
           <SheetTitle>Editar bailarina</SheetTitle>
         </SheetHeader>
         {bailarina && (
-          <FormularioBailarina key={bailarina.id} eventoId={eventoId} bailarina={bailarina} sessoes={sessoes} onFechar={onFechar} />
+          <FormularioBailarina
+            key={bailarina.id}
+            eventoId={eventoId}
+            bailarina={bailarina}
+            sessoes={sessoes}
+            onFechar={onFechar}
+          />
         )}
       </SheetContent>
     </Sheet>
@@ -595,7 +656,10 @@ function FormularioBailarina({
     }),
     [bailarina],
   );
-  const { valor, setValor, limpar, temRascunho } = useRascunho<FormBailarina>(`bailarina:${bailarina.id}`, inicial);
+  const { valor, setValor, limpar, temRascunho } = useRascunho<FormBailarina>(
+    `bailarina:${bailarina.id}`,
+    inicial,
+  );
   const f = { ...inicial, ...(valor ?? {}) };
   const mudar = (p: Partial<FormBailarina>) => setValor({ ...f, ...p });
 
@@ -603,10 +667,18 @@ function FormularioBailarina({
     mutationFn: async () => {
       const { error } = await supabase
         .from("bailarinas")
-        .update({ nome: f.nome.trim(), turma: f.turma.trim() || null, pacote: f.pacote.trim() || null, ativa: f.ativa })
+        .update({
+          nome: f.nome.trim(),
+          turma: f.turma.trim() || null,
+          pacote: f.pacote.trim() || null,
+          ativa: f.ativa,
+        })
         .eq("id", bailarina.id);
       if (error) throw error;
-      const r = await supabase.rpc("definir_escalacao", { p_bailarina: bailarina.id, p_sessoes: f.dias });
+      const r = await supabase.rpc("definir_escalacao", {
+        p_bailarina: bailarina.id,
+        p_sessoes: f.dias,
+      });
       if (r.error) throw r.error;
     },
     onSuccess: () => {
@@ -633,9 +705,25 @@ function FormularioBailarina({
       }}
     >
       {temRascunho && <SeloStatus tom="aviso">Rascunho não salvo</SeloStatus>}
-      <Campo id="b-nome" rotulo="Nome completo" required value={f.nome} onChange={(e) => mudar({ nome: e.target.value })} />
-      <Campo id="b-turma" rotulo="Turma" value={f.turma} onChange={(e) => mudar({ turma: e.target.value })} />
-      <Campo id="b-pacote" rotulo="Pacote" value={f.pacote} onChange={(e) => mudar({ pacote: e.target.value })} />
+      <Campo
+        id="b-nome"
+        rotulo="Nome completo"
+        required
+        value={f.nome}
+        onChange={(e) => mudar({ nome: e.target.value })}
+      />
+      <Campo
+        id="b-turma"
+        rotulo="Turma"
+        value={f.turma}
+        onChange={(e) => mudar({ turma: e.target.value })}
+      />
+      <Campo
+        id="b-pacote"
+        rotulo="Pacote"
+        value={f.pacote}
+        onChange={(e) => mudar({ pacote: e.target.value })}
+      />
       <fieldset className="space-y-1">
         <legend className="text-sm font-medium text-foreground">Dias em que dança</legend>
         {sessoes.map((s) => (
@@ -691,10 +779,15 @@ function EditarFamilia({
       const bruto = String(fd.get("whatsapp"));
       const { data: whatsapp, error: e1 } = await supabase.rpc("normalizar_whatsapp", { p: bruto });
       if (e1) throw e1;
-      if (!whatsapp) throw new Error("WhatsApp inválido. Use DDD e número, por exemplo (91) 98888-7777.");
+      if (!whatsapp)
+        throw new Error("WhatsApp inválido. Use DDD e número, por exemplo (91) 98888-7777.");
       const { error } = await supabase
         .from("familias")
-        .update({ responsavel_nome: String(fd.get("responsavel")).trim(), whatsapp, ativa: fd.get("ativa") === "on" })
+        .update({
+          responsavel_nome: String(fd.get("responsavel")).trim(),
+          whatsapp,
+          ativa: fd.get("ativa") === "on",
+        })
         .eq("id", familia!.id);
       if (error) throw error;
     },
@@ -725,7 +818,13 @@ function EditarFamilia({
             <p className="text-muted-foreground">
               Bailarinas: {familia.bailarinas.map((b) => primeiroNome(b.nome)).join(", ")}
             </p>
-            <Campo id="fa-resp" name="responsavel" rotulo="Responsável" required defaultValue={familia.responsavel_nome} />
+            <Campo
+              id="fa-resp"
+              name="responsavel"
+              rotulo="Responsável"
+              required
+              defaultValue={familia.responsavel_nome}
+            />
             <Campo
               id="fa-whats"
               name="whatsapp"

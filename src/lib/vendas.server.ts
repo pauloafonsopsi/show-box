@@ -13,15 +13,19 @@ export function mensagemBanco(e: unknown): string {
 /** Chama uma função do banco com a chave de serviço. O erro chega em português e é repassado. */
 export async function rpcAdmin<T>(nome: string, args: Record<string, unknown>): Promise<T> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data, error } = await (supabaseAdmin.rpc as unknown as (f: string, a: Record<string, unknown>) => Promise<{ data: T | null; error: ErroBanco | null }>)(
-    nome,
-    args,
-  );
+  const { data, error } = await (
+    supabaseAdmin.rpc as unknown as (
+      f: string,
+      a: Record<string, unknown>,
+    ) => Promise<{ data: T | null; error: ErroBanco | null }>
+  )(nome, args);
   if (error) throw new Error(mensagemBanco(error));
   return data as T;
 }
 
-export async function comChaveServico(): Promise<ReturnType<typeof import("@supabase/supabase-js").createClient<Database>>> {
+export async function comChaveServico(): Promise<
+  ReturnType<typeof import("@supabase/supabase-js").createClient<Database>>
+> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   return supabaseAdmin;
 }
@@ -34,7 +38,8 @@ const PAGARME = "https://api.pagar.me/core/v5";
 
 async function chaves() {
   const chave = process.env["PAGARME_SECRET_KEY"];
-  if (!chave) throw new Error("A chave de pagamento não está configurada. Fale com o administrador.");
+  if (!chave)
+    throw new Error("A chave de pagamento não está configurada. Fale com o administrador.");
   return chave;
 }
 
@@ -77,7 +82,10 @@ export async function pagarmeDelete<T>(caminho: string): Promise<T> {
 export class ErroPagarme extends Error {}
 
 function mensagemPagarme(corpo: unknown, status: number): string {
-  const c = corpo as { message?: string; errors?: Array<{ message?: string; field?: string }> } | null;
+  const c = corpo as {
+    message?: string;
+    errors?: Array<{ message?: string; field?: string }>;
+  } | null;
   const primeira = c?.errors?.[0]?.message;
   return primeira ?? c?.message ?? `A operadora de pagamento respondeu com erro ${status}.`;
 }

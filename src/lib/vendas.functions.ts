@@ -5,7 +5,15 @@ import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 
 import type { MapaSessao } from "@/vendas/tipos";
-import { ErroPagarme, comChaveServico, mensagemBanco, pagarmeDelete, pagarmeGet, pagarmePost, rpcAdmin } from "./vendas.server";
+import {
+  ErroPagarme,
+  comChaveServico,
+  mensagemBanco,
+  pagarmeDelete,
+  pagarmeGet,
+  pagarmePost,
+  rpcAdmin,
+} from "./vendas.server";
 
 export type Json = string | number | boolean | null | Json[] | { [key: string]: Json | undefined };
 
@@ -47,7 +55,9 @@ const Pagador = z.object({
 export const painelFamilia = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ codigo: Acesso }).parse(d))
   .handler(async ({ data }) => {
-    const painel = await rpcAdmin<Record<string, Json> | null>("familia_painel", { p_token: data.codigo });
+    const painel = await rpcAdmin<Record<string, Json> | null>("familia_painel", {
+      p_token: data.codigo,
+    });
     return painel;
   });
 
@@ -76,7 +86,9 @@ export const estadoPagamento = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ acesso: Acesso }).parse(d))
   .handler(async ({ data }) => {
     const supabase = await comChaveServico();
-    const pedido = await rpcAdmin<Record<string, Json> | null>("pedido_publico", { p_acesso: data.acesso });
+    const pedido = await rpcAdmin<Record<string, Json> | null>("pedido_publico", {
+      p_acesso: data.acesso,
+    });
     if (!pedido) return null;
 
     const eventoId = pedido["evento_id"] as string | null;
@@ -85,7 +97,9 @@ export const estadoPagamento = createServerFn({ method: "POST" })
     const [ev, termos, lugaresRes] = await Promise.all([
       supabase
         .from("eventos")
-        .select("id, nome, slug, status, tema, imagem_capa, meia_categorias, parcelamento_min_ingressos, parcelas_max, limite_por_pedido")
+        .select(
+          "id, nome, slug, status, tema, imagem_capa, meia_categorias, parcelamento_min_ingressos, parcelas_max, limite_por_pedido",
+        )
         .eq("id", eventoId)
         .maybeSingle(),
       supabase
@@ -98,18 +112,21 @@ export const estadoPagamento = createServerFn({ method: "POST" })
       supabase.from("pedidos").select("id").eq("acesso_token", data.acesso).maybeSingle(),
     ]);
 
-    const lugares =
-      lugaresRes.data?.id
-        ? await supabase
-            .from("assentos")
-            .select("id, numero, linha, coluna, rotulo_fila, setor_id, sessao_id, acessivel, setores(nome)")
-            .eq("reserva_id", lugaresRes.data.id)
-            .eq("status", "reservado")
-            .order("numero")
-        : { data: [] };
+    const lugares = lugaresRes.data?.id
+      ? await supabase
+          .from("assentos")
+          .select(
+            "id, numero, linha, coluna, rotulo_fila, setor_id, sessao_id, acessivel, setores(nome)",
+          )
+          .eq("reserva_id", lugaresRes.data.id)
+          .eq("status", "reservado")
+          .order("numero")
+      : { data: [] };
 
     // Mapas das sessões deste pedido, para escolher os tipos de ingresso com preço.
-    const sessoesIds = [...new Set(((lugares.data ?? []) as Array<{ sessao_id: string }>).map((l) => l.sessao_id))];
+    const sessoesIds = [
+      ...new Set(((lugares.data ?? []) as Array<{ sessao_id: string }>).map((l) => l.sessao_id)),
+    ];
     const mapas = await Promise.all(
       sessoesIds.map(async (id) => {
         const { data } = await supabase.rpc("mapa_da_sessao", { p_sessao: id });
@@ -148,10 +165,22 @@ export const statusPagamento = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!p) throw new Error("Pedido não encontrado.");
 
+    let pixQr: string | null = null;
     if (p.pagarme_order_id && (p.status === "aguardando_pagamento" || p.status === "reservado")) {
       try {
-        const order = await pagarmeGet<{ status: string }>(`/orders/${p.pagarme_order_id}`);
-        if (order.status === "paid") await rpcAdmin("finalizar_pedido_pago", { p_pagarme_order_id: p.pagarme_order_id });
+        const order = await pagarmeGet<{
+          status: string;
+          charges?: Array<{
+            payment_method?: string;
+            status?: string;
+            last_transaction?: { qr_code?: string };
+          }>;
+        }>(`/orders/${p.pagarme_order_id}`);
+        const c = order.charges?.[0];
+        if (order.status === "pending" && c?.payment_method === "pix")
+          pixQr = c.last_transaction?.qr_code ?? null;
+        if (order.status === "paid")
+          await rpcAdmin("finalizar_pedido_pago", { p_pagarme_order_id: p.pagarme_order_id });
         else if (order.status === "failed" || order.status === "canceled")
           await rpcAdmin("marcar_pagamento_falhou", { p_pagarme_order_id: p.pagarme_order_id });
       } catch (e) {
@@ -159,7 +188,10 @@ export const statusPagamento = createServerFn({ method: "POST" })
         // Falha de rede com a Pagar.me: o estado do banco prevalece.
       }
     }
-    return rpcAdmin<Record<string, Json> | null>("pedido_publico", { p_acesso: data.acesso });
+    const pub = await rpcAdmin<Record<string, Json> | null>("pedido_publico", {
+      p_acesso: data.acesso,
+    });
+    return pub ? { ...pub, pix_qr_code: pixQr } : null;
   });
 
 /** Fecha o pedido no banco e cria a cobrança na Pagar.me. Só o servidor calcula valores. */
@@ -207,10 +239,12 @@ export const iniciarPagamento = createServerFn({ method: "POST" })
     if (anterior?.pagarme_order_id) {
       if (anterior.status === "pago" || anterior.status === "pago_sem_lugar")
         throw new Error("Esta compra já foi paga. Veja os ingressos em Detalhes da compra.");
-      const orderAnterior = await pagarmeGet<{ status: string; charges?: Array<{ id: string; status: string }> }>(
-        `/orders/${anterior.pagarme_order_id}`,
-      );
-      if (orderAnterior.status === "paid") throw new Error("Esta compra já foi paga. Veja os ingressos em Detalhes da compra.");
+      const orderAnterior = await pagarmeGet<{
+        status: string;
+        charges?: Array<{ id: string; status: string }>;
+      }>(`/orders/${anterior.pagarme_order_id}`);
+      if (orderAnterior.status === "paid")
+        throw new Error("Esta compra já foi paga. Veja os ingressos em Detalhes da compra.");
       for (const c of (orderAnterior.charges ?? []).filter((c) => c.status === "pending")) {
         try {
           await pagarmeDelete(`/charges/${c.id}`);
@@ -221,15 +255,39 @@ export const iniciarPagamento = createServerFn({ method: "POST" })
       await rpcAdmin("marcar_pagamento_falhou", { p_pagarme_order_id: anterior.pagarme_order_id });
     }
 
-    if (data.forma === "cartao" && !data.cartaoToken) throw new Error("Cartão não identificado. Preencha os dados de novo.");
+    if (data.forma === "cartao" && !data.cartaoToken)
+      throw new Error("Cartão não identificado. Preencha os dados de novo.");
 
     const pedidoId = comp["pedido_id"] as string;
-    const { data: ev } = await supabase.from("eventos").select("nome").eq("id", (await donoEvento(pedidoId)) as string).maybeSingle();
+    const { data: ev } = await supabase
+      .from("eventos")
+      .select("nome")
+      .eq("id", (await donoEvento(pedidoId)) as string)
+      .maybeSingle();
     const descriptor = await descriptorDe(ev?.nome ?? null);
 
-    const celular = (data.pagador.celular ?? "").replace(/\D/g, "");
+    if (
+      data.forma === "cartao" &&
+      (!data.cidade?.trim() || !data.estado?.trim() || !data.cep?.trim() || !data.numero?.trim())
+    )
+      throw new Error("Preencha CEP, número, cidade e estado do endereço de cobrança.");
+
+    // Celular já normalizado pelo banco: 55 + DDD + 9 dígitos.
+    const { data: pg } = await supabase
+      .from("pedidos")
+      .select("pagador_celular")
+      .eq("id", pedidoId)
+      .maybeSingle();
+    const celular = (pg?.pagador_celular ?? "").replace(/\D/g, "");
     const area = celular.slice(2, 4);
     const numero = celular.slice(4);
+    const endereco = {
+      line_1: `${data.numero ?? ""}, ${data.referencia ?? ""}`.trim(),
+      zip_code: (data.cep ?? "").replace(/\D/g, ""),
+      city: data.cidade ?? "",
+      state: data.estado ?? "",
+      country: "BR",
+    };
     const pagamentos =
       data.forma === "pix"
         ? [
@@ -244,14 +302,8 @@ export const iniciarPagamento = createServerFn({ method: "POST" })
               credit_card: {
                 installments: data.parcelas,
                 statement_descriptor: descriptor,
-                card: { card_token: data.cartaoToken },
-                billing_address: {
-                  line_1: `${data.referencia ?? ""} ${data.numero ?? ""}`.trim(),
-                  zip_code: (data.cep ?? "").replace(/\D/g, ""),
-                  city: data.cidade ?? "Belém",
-                  state: data.estado ?? "PA",
-                  country: "BR",
-                },
+                card_token: data.cartaoToken,
+                card: { billing_address: endereco },
               },
             },
           ];
@@ -259,7 +311,11 @@ export const iniciarPagamento = createServerFn({ method: "POST" })
     const order = await pagarmePost<{
       id: string;
       status: string;
-      charges?: Array<{ id: string; status: string; last_transaction?: { qr_code?: string; qr_code_url?: string } }>;
+      charges?: Array<{
+        id: string;
+        status: string;
+        last_transaction?: { qr_code?: string; qr_code_url?: string };
+      }>;
     }>("/orders", {
       code: comp["codigo"],
       items: comp["itens_pagarme"],
@@ -292,7 +348,11 @@ export const iniciarPagamento = createServerFn({ method: "POST" })
 
 async function donoEvento(pedidoId: string): Promise<string | null> {
   const supabase = await comChaveServico();
-  const { data } = await supabase.from("pedidos").select("evento_id").eq("id", pedidoId).maybeSingle();
+  const { data } = await supabase
+    .from("pedidos")
+    .select("evento_id")
+    .eq("id", pedidoId)
+    .maybeSingle();
   return data?.evento_id ?? null;
 }
 
@@ -332,9 +392,14 @@ export const pedidoPublico = createServerFn({ method: "POST" })
   });
 
 export const desistirDaCompra = createServerFn({ method: "POST" })
-  .inputValidator((d) => z.object({ acesso: Acesso, motivo: z.string().trim().max(500).optional() }).parse(d))
+  .inputValidator((d) =>
+    z.object({ acesso: Acesso, motivo: z.string().trim().max(500).optional() }).parse(d),
+  )
   .handler(async ({ data }) => {
-    await rpcAdmin("solicitar_desistencia", { p_acesso: data.acesso, p_motivo: data.motivo ?? null });
+    await rpcAdmin("solicitar_desistencia", {
+      p_acesso: data.acesso,
+      p_motivo: data.motivo ?? null,
+    });
     return { ok: true };
   });
 
@@ -357,7 +422,12 @@ export const dadosEventoPublico = createServerFn({ method: "POST" })
         .eq("evento_id", ev.id)
         .eq("ativa", true)
         .order("ordem"),
-      supabase.from("janelas").select("tipo, inicio, fim").eq("evento_id", ev.id).eq("tipo", "publico").order("inicio"),
+      supabase
+        .from("janelas")
+        .select("tipo, inicio, fim")
+        .eq("evento_id", ev.id)
+        .eq("tipo", "publico")
+        .order("inicio"),
       supabase
         .from("termos_versoes")
         .select("id, versao, texto")
@@ -368,7 +438,9 @@ export const dadosEventoPublico = createServerFn({ method: "POST" })
       supabase.from("conteudos").select("chave, texto").eq("evento_id", ev.id),
     ]);
     if (sessoes.error || janelas.error || termos.error || conteudos.error)
-      throw new Error(mensagemBanco(sessoes.error ?? janelas.error ?? termos.error ?? conteudos.error));
+      throw new Error(
+        mensagemBanco(sessoes.error ?? janelas.error ?? termos.error ?? conteudos.error),
+      );
     const textos: Record<string, string> = {};
     for (const c of conteudos.data ?? []) if (c.chave) textos[c.chave] = c.texto;
     return {
@@ -383,6 +455,65 @@ export const dadosEventoPublico = createServerFn({ method: "POST" })
 /** Chave pública da Pagar.me para o navegador tokenizar o cartão (nunca a chave secreta). */
 export const chavePublicaPagarme = createServerFn({ method: "GET" }).handler(async () => {
   const chave = process.env["PAGARME_PUBLIC_KEY"];
-  if (!chave) throw new Error("A chave pública de pagamento não está configurada. Fale com o administrador.");
+  if (!chave)
+    throw new Error("A chave pública de pagamento não está configurada. Fale com o administrador.");
   return chave;
 });
+
+/** Evento e textos do pedido pelo código de acesso (página /p). */
+export const contextoPedido = createServerFn({ method: "POST" })
+  .inputValidator((d) => z.object({ acesso: Acesso }).parse(d))
+  .handler(async ({ data }) => {
+    const supabase = await comChaveServico();
+    const { data: p } = await supabase
+      .from("pedidos")
+      .select("evento_id")
+      .eq("acesso_token", data.acesso)
+      .maybeSingle();
+    if (!p) return null;
+    const [ev, cont] = await Promise.all([
+      supabase
+        .from("eventos")
+        .select("nome, slug, limite_por_pedido")
+        .eq("id", p.evento_id)
+        .maybeSingle(),
+      supabase.from("conteudos").select("chave, texto").eq("evento_id", p.evento_id),
+    ]);
+    const conteudos: Record<string, string> = {};
+    for (const c of cont.data ?? []) if (c.chave) conteudos[c.chave] = c.texto;
+    return { evento: ev.data ?? null, conteudos };
+  });
+
+/** Texto vigente dos termos (por evento) ou da política de privacidade. */
+export const textoLegal = createServerFn({ method: "POST" })
+  .inputValidator((d) =>
+    z
+      .object({
+        tipo: z.enum(["termos", "privacidade"]),
+        slug: z.string().trim().max(120).optional(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data }) => {
+    const supabase = await comChaveServico();
+    let eventoId: string | null = null;
+    let nome: string | null = null;
+    if (data.slug) {
+      const { data: ev } = await supabase
+        .from("eventos")
+        .select("id, nome")
+        .eq("slug", data.slug)
+        .maybeSingle();
+      if (!ev) return null;
+      eventoId = ev.id;
+      nome = ev.nome;
+    }
+    let q = supabase
+      .from("termos_versoes")
+      .select("versao, texto, publicada_em")
+      .eq("tipo", data.tipo);
+    if (eventoId) q = q.eq("evento_id", eventoId);
+    const { data: t } = await q.order("publicada_em", { ascending: false }).limit(1);
+    const v = t?.[0];
+    return v ? { evento: nome, versao: v.versao, texto: v.texto } : null;
+  });

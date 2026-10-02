@@ -4,9 +4,28 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { SeloStatus } from "@/design/palco";
-import { mascaraCep, mascaraCelular, mascaraCpf, celularValido, cpfValido, enderecoDoCep, precoDe, tiposDisponiveis, rotuloTipo, type LugarEscolhido, type MapaSessao, type TipoIngresso } from "./tipos";
+import {
+  mascaraCep,
+  mascaraCelular,
+  mascaraCpf,
+  celularValido,
+  cpfValido,
+  enderecoDoCep,
+  precoDe,
+  tiposDisponiveis,
+  rotuloTipo,
+  type LugarEscolhido,
+  type MapaSessao,
+  type TipoIngresso,
+} from "./tipos";
 import { dinheiro } from "@/lib/formato";
 
 /* ------------------------------------------------------------------ */
@@ -25,7 +44,14 @@ export interface EscolhaLugaresProps {
   nomesDosLugares?: Record<number, string>;
 }
 
-export function EscolhaLugares({ mapa, lugares, aoMudar, exigirDeclaracaoMeia = true, categorias, nomesDosLugares = {} }: EscolhaLugaresProps) {
+export function EscolhaLugares({
+  mapa,
+  lugares,
+  aoMudar,
+  exigirDeclaracaoMeia = true,
+  categorias,
+  nomesDosLugares = {},
+}: EscolhaLugaresProps) {
   const tipos = tiposDisponiveis(mapa);
 
   const definir = (numero: number, mudanca: Partial<LugarEscolhido>) =>
@@ -41,10 +67,14 @@ export function EscolhaLugares({ mapa, lugares, aoMudar, exigirDeclaracaoMeia = 
           const setor = mapa.setores.find((s) => s.id === l.setorId);
           const preco = precoDe(mapa.setores, l.setorId, l.tipo);
           return (
-            <li key={l.numero} className="grid gap-2 py-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+            <li
+              key={l.numero}
+              className="grid gap-2 py-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
+            >
               <div>
                 <p className="numeros font-medium text-foreground">
-                  {nomesDosLugares[l.numero] ? `${nomesDosLugares[l.numero]} · ` : ""}Poltrona {l.numero}
+                  {nomesDosLugares[l.numero] ? `${nomesDosLugares[l.numero]} · ` : ""}Poltrona{" "}
+                  {l.numero}
                 </p>
                 <p className="text-sm text-muted-foreground">
                   {setor?.nome ?? "Setor"}
@@ -53,7 +83,14 @@ export function EscolhaLugares({ mapa, lugares, aoMudar, exigirDeclaracaoMeia = 
                       {" · "}
                       <Select
                         value={l.tipo}
-                        onValueChange={(v) => definir(l.numero, v === "meia" && l.categoriaMeia ? { tipo: v as TipoIngresso, categoriaMeia: l.categoriaMeia } : { tipo: v as TipoIngresso })}
+                        onValueChange={(v) =>
+                          definir(
+                            l.numero,
+                            v === "meia" && l.categoriaMeia
+                              ? { tipo: v as TipoIngresso, categoriaMeia: l.categoriaMeia }
+                              : { tipo: v as TipoIngresso },
+                          )
+                        }
                       >
                         <SelectTrigger className="h-8 w-auto min-w-44 border-0 p-0 shadow-none focus:ring-0">
                           <SelectValue />
@@ -75,7 +112,12 @@ export function EscolhaLugares({ mapa, lugares, aoMudar, exigirDeclaracaoMeia = 
                   <label className="mt-1 flex items-start gap-2 text-sm text-muted-foreground">
                     <Checkbox
                       checked={Boolean(l.categoriaMeia)}
-                      onCheckedChange={(v) => definir(l.numero, v ? { categoriaMeia: categorias[0] ?? "Meia-entrada" } : {})}
+                      onCheckedChange={(v) =>
+                        definir(
+                          l.numero,
+                          v ? { categoriaMeia: categorias[0] ?? "Meia-entrada" } : {},
+                        )
+                      }
                       aria-label="Declaro ter direito à meia-entrada"
                       className="mt-0.5"
                     />
@@ -83,7 +125,9 @@ export function EscolhaLugares({ mapa, lugares, aoMudar, exigirDeclaracaoMeia = 
                   </label>
                 ) : null}
               </div>
-              <p className="numeros text-right font-medium text-foreground">{preco === null ? "Sem preço" : dinheiro(preco)}</p>
+              <p className="numeros text-right font-medium text-foreground">
+                {preco === null ? "Sem preço" : dinheiro(preco)}
+              </p>
             </li>
           );
         })}
@@ -152,7 +196,15 @@ export function EscolhaAdicionais({
         return (
           <li key={p.id} className="grid gap-3 py-4 sm:grid-cols-[72px_minmax(0,1fr)_auto]">
             {p.foto_url ? (
-              <img src={p.foto_url} alt={`Foto de ${p.nome}`} width={72} height={72} loading="lazy" decoding="async" className="h-18 w-18 rounded-md object-cover" />
+              <img
+                src={p.foto_url}
+                alt={`Foto de ${p.nome}`}
+                width={72}
+                height={72}
+                loading="lazy"
+                decoding="async"
+                className="h-18 w-18 rounded-md object-cover"
+              />
             ) : null}
             <div className="min-w-0">
               <p className="font-medium text-foreground">{p.nome}</p>
@@ -184,7 +236,10 @@ export function EscolhaAdicionais({
                     {p.datas
                       .filter((d) => d.vagas_livres > 0)
                       .map((d) => (
-                        <label key={d.id} className="inline-flex items-center gap-2 rounded-md border border-input px-3 py-2 text-sm">
+                        <label
+                          key={d.id}
+                          className="inline-flex items-center gap-2 rounded-md border border-input px-3 py-2 text-sm"
+                        >
                           <input
                             type="radio"
                             name={`dia-${p.id}`}
@@ -196,14 +251,18 @@ export function EscolhaAdicionais({
                         </label>
                       ))}
                     {p.datas.every((d) => d.vagas_livres <= 0) ? (
-                      <SeloStatus tom="aviso">Nenhum dia tem vagas livres agora. Fale com a recepção.</SeloStatus>
+                      <SeloStatus tom="aviso">
+                        Nenhum dia tem vagas livres agora. Fale com a recepção.
+                      </SeloStatus>
                     ) : null}
                   </div>
                 </div>
               ) : null}
             </div>
             <div className="flex items-center gap-3 sm:flex-col sm:items-end">
-              <p className="numeros text-sm text-muted-foreground">{p.preco === null ? "Sem preço" : dinheiro(p.preco)}</p>
+              <p className="numeros text-sm text-muted-foreground">
+                {p.preco === null ? "Sem preço" : dinheiro(p.preco)}
+              </p>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
@@ -252,18 +311,35 @@ export interface Pagador {
   estado: string;
 }
 
-export const pagadorVazio: Pagador = { nome: "", cpf: "", email: "", celular: "", cep: "", numero: "", referencia: "", cidade: "", estado: "" };
+export const pagadorVazio: Pagador = {
+  nome: "",
+  cpf: "",
+  email: "",
+  celular: "",
+  cep: "",
+  numero: "",
+  referencia: "",
+  cidade: "",
+  estado: "",
+};
 
 export function pagadorValido(p: Pagador): string | null {
   if (p.nome.trim().length < 2) return "Escreva o nome completo de quem paga.";
   if (!cpfValido(p.cpf)) return "Confira o CPF de quem paga.";
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(p.email.trim())) return "Confira o e-mail: é por ele que o comprovante chega.";
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(p.email.trim()))
+    return "Confira o e-mail: é por ele que o comprovante chega.";
   if (!celularValido(p.celular)) return "Confira o celular com DDD.";
   return null;
 }
 
 /** Campos do pagador, com busca de endereço pelo CEP. */
-export function CamposPagador({ pagador, aoMudar }: { pagador: Pagador; aoMudar: (p: Pagador) => void }) {
+export function CamposPagador({
+  pagador,
+  aoMudar,
+}: {
+  pagador: Pagador;
+  aoMudar: (p: Pagador) => void;
+}) {
   const [buscando, setBuscando] = useState(false);
 
   const campo = (mudanca: Partial<Pagador>) => aoMudar({ ...pagador, ...mudanca });
@@ -272,19 +348,44 @@ export function CamposPagador({ pagador, aoMudar }: { pagador: Pagador; aoMudar:
     <div className="grid gap-3 sm:grid-cols-2">
       <label className="block text-sm text-muted-foreground sm:col-span-2">
         Nome de quem paga
-        <Input className="mt-1 text-[16px]" value={pagador.nome} onChange={(e) => campo({ nome: e.target.value })} autoComplete="name" />
+        <Input
+          className="mt-1 text-[16px]"
+          value={pagador.nome}
+          onChange={(e) => campo({ nome: e.target.value })}
+          autoComplete="name"
+        />
       </label>
       <label className="block text-sm text-muted-foreground">
         CPF
-        <Input className="mt-1 text-[16px]" inputMode="numeric" value={pagador.cpf} onChange={(e) => campo({ cpf: mascaraCpf(e.target.value) })} placeholder="000.000.000-00" autoComplete="off" />
+        <Input
+          className="mt-1 text-[16px]"
+          inputMode="numeric"
+          value={pagador.cpf}
+          onChange={(e) => campo({ cpf: mascaraCpf(e.target.value) })}
+          placeholder="000.000.000-00"
+          autoComplete="off"
+        />
       </label>
       <label className="block text-sm text-muted-foreground">
         Celular
-        <Input className="mt-1 text-[16px]" inputMode="numeric" value={pagador.celular} onChange={(e) => campo({ celular: mascaraCelular(e.target.value) })} placeholder="(93) 90000-0000" autoComplete="off" />
+        <Input
+          className="mt-1 text-[16px]"
+          inputMode="numeric"
+          value={pagador.celular}
+          onChange={(e) => campo({ celular: mascaraCelular(e.target.value) })}
+          placeholder="(93) 90000-0000"
+          autoComplete="off"
+        />
       </label>
       <label className="block text-sm text-muted-foreground sm:col-span-2">
         E-mail
-        <Input className="mt-1 text-[16px]" inputMode="email" value={pagador.email} onChange={(e) => campo({ email: e.target.value })} autoComplete="email" />
+        <Input
+          className="mt-1 text-[16px]"
+          inputMode="email"
+          value={pagador.email}
+          onChange={(e) => campo({ email: e.target.value })}
+          autoComplete="email"
+        />
       </label>
       <label className="block text-sm text-muted-foreground">
         CEP
@@ -298,7 +399,12 @@ export function CamposPagador({ pagador, aoMudar }: { pagador: Pagador; aoMudar:
             if (cep.length === 9) {
               setBuscando(true);
               const end = await enderecoDoCep(cep);
-              if (end) campo({ referencia: end.logradouro ?? pagador.referencia, cidade: end.localidade ?? pagador.cidade, estado: end.uf ?? pagador.estado });
+              if (end)
+                campo({
+                  referencia: end.logradouro ?? pagador.referencia,
+                  cidade: end.localidade ?? pagador.cidade,
+                  estado: end.uf ?? pagador.estado,
+                });
               setBuscando(false);
             }
           }}
@@ -307,22 +413,39 @@ export function CamposPagador({ pagador, aoMudar }: { pagador: Pagador; aoMudar:
       </label>
       <label className="block text-sm text-muted-foreground">
         Número
-        <Input className="mt-1 text-[16px]" value={pagador.numero} onChange={(e) => campo({ numero: e.target.value })} />
+        <Input
+          className="mt-1 text-[16px]"
+          value={pagador.numero}
+          onChange={(e) => campo({ numero: e.target.value })}
+        />
       </label>
       <label className="block text-sm text-muted-foreground sm:col-span-2">
         Endereço
-        <Input className="mt-1 text-[16px]" value={pagador.referencia} onChange={(e) => campo({ referencia: e.target.value })} placeholder="Rua, avenida..." />
+        <Input
+          className="mt-1 text-[16px]"
+          value={pagador.referencia}
+          onChange={(e) => campo({ referencia: e.target.value })}
+          placeholder="Rua, avenida..."
+        />
         {buscando ? <span className="mt-1 block text-sm">Procurando o endereço...</span> : null}
       </label>
       <label className="block text-sm text-muted-foreground">
         Cidade
-        <Input className="mt-1 text-[16px]" value={pagador.cidade} onChange={(e) => campo({ cidade: e.target.value })} />
+        <Input
+          className="mt-1 text-[16px]"
+          value={pagador.cidade}
+          onChange={(e) => campo({ cidade: e.target.value })}
+        />
       </label>
       <label className="block text-sm text-muted-foreground">
         Estado
-        <Input className="mt-1 text-[16px]" value={pagador.estado} onChange={(e) => campo({ estado: e.target.value.toUpperCase().slice(0, 2) })} placeholder="PA" />
+        <Input
+          className="mt-1 text-[16px]"
+          value={pagador.estado}
+          onChange={(e) => campo({ estado: e.target.value.toUpperCase().slice(0, 2) })}
+          placeholder="PA"
+        />
       </label>
     </div>
   );
 }
-

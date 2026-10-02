@@ -68,7 +68,10 @@ function Conteudos() {
 
   const salvar = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from("conteudos").update({ texto: valor }).eq("id", aberto!.id);
+      const { error } = await supabase
+        .from("conteudos")
+        .update({ texto: valor })
+        .eq("id", aberto!.id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -85,7 +88,9 @@ function Conteudos() {
     navigate({ search: (s) => ({ ...s, editar: undefined }) });
   };
 
-  const lista = (q.data ?? []).filter((c) => !termo || c.rotulo.toLowerCase().includes(termo.toLowerCase()));
+  const lista = (q.data ?? []).filter(
+    (c) => !termo || c.rotulo.toLowerCase().includes(termo.toLowerCase()),
+  );
 
   return (
     <div className="space-y-10">
@@ -100,7 +105,9 @@ function Conteudos() {
             placeholder="Buscar texto"
             className="min-h-11 text-base md:text-base"
             value={termo}
-            onChange={(e) => navigate({ search: (s) => ({ ...s, q: e.target.value || undefined }), replace: true })}
+            onChange={(e) =>
+              navigate({ search: (s) => ({ ...s, q: e.target.value || undefined }), replace: true })
+            }
           />
         </div>
         {q.isPending ? (
@@ -138,7 +145,13 @@ function Conteudos() {
             <div className="space-y-4 px-4 pb-6">
               <div className="space-y-1.5">
                 <Label htmlFor="texto">Texto</Label>
-                <textarea id="texto" rows={8} className={classeCampo} value={valor} onChange={(e) => setTexto(e.target.value)} />
+                <textarea
+                  id="texto"
+                  rows={8}
+                  className={classeCampo}
+                  value={valor}
+                  onChange={(e) => setTexto(e.target.value)}
+                />
               </div>
               <div>
                 <p className="text-sm font-medium text-foreground">Variáveis deste texto</p>
@@ -147,7 +160,10 @@ function Conteudos() {
                 ) : (
                   <ul className="mt-1 flex flex-wrap gap-2 text-sm">
                     {variaveisDoTexto(aberto.texto).map((v) => (
-                      <li key={v} className="rounded-sm bg-muted px-2 py-0.5 font-mono">{`{{${v}}}`}</li>
+                      <li
+                        key={v}
+                        className="rounded-sm bg-muted px-2 py-0.5 font-mono"
+                      >{`{{${v}}}`}</li>
                     ))}
                   </ul>
                 )}
@@ -158,12 +174,18 @@ function Conteudos() {
                   {preencher(valor, EXEMPLO)}
                 </pre>
               </div>
-              <p className="text-sm text-muted-foreground">Última mudança em {dataHora(aberto.atualizado_em)}.</p>
+              <p className="text-sm text-muted-foreground">
+                Última mudança em {dataHora(aberto.atualizado_em)}.
+              </p>
               <div className="flex gap-2">
                 <Button variant="outline" className="min-h-11" onClick={fechar}>
                   Cancelar
                 </Button>
-                <Button className="min-h-11" disabled={salvar.isPending} onClick={() => salvar.mutate()}>
+                <Button
+                  className="min-h-11"
+                  disabled={salvar.isPending}
+                  onClick={() => salvar.mutate()}
+                >
                   {salvar.isPending ? "Salvando..." : "Salvar texto"}
                 </Button>
               </div>
@@ -220,7 +242,8 @@ function Termos({ eventoId }: { eventoId: string }) {
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border p-4">
           {q.data ? (
             <p className="text-foreground">
-              Versão <span className="numeros">{q.data.versao}</span>, publicada em {dataHora(q.data.publicada_em)}. Código{" "}
+              Versão <span className="numeros">{q.data.versao}</span>, publicada em{" "}
+              {dataHora(q.data.publicada_em)}. Código{" "}
               <span className="font-mono">{q.data.hash.slice(0, 12)}</span>
             </p>
           ) : (

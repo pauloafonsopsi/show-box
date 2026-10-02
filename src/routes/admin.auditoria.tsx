@@ -30,8 +30,13 @@ const POR_PAGINA = 30;
 const IGNORAR = new Set(["atualizado_em", "criado_em"]);
 
 function diferencas(antes: Json | null, depois: Json | null) {
-  const a = (antes && typeof antes === "object" && !Array.isArray(antes) ? antes : {}) as Record<string, Json>;
-  const d = (depois && typeof depois === "object" && !Array.isArray(depois) ? depois : {}) as Record<string, Json>;
+  const a = (antes && typeof antes === "object" && !Array.isArray(antes) ? antes : {}) as Record<
+    string,
+    Json
+  >;
+  const d = (
+    depois && typeof depois === "object" && !Array.isArray(depois) ? depois : {}
+  ) as Record<string, Json>;
   const campos = new Set([...Object.keys(a), ...Object.keys(d)]);
   return [...campos]
     .filter((k) => !IGNORAR.has(k) && JSON.stringify(a[k]) !== JSON.stringify(d[k]))
@@ -80,7 +85,12 @@ function Auditoria() {
       <div className="mb-4 grid gap-3 sm:grid-cols-3">
         <div className="space-y-1.5">
           <Label htmlFor="a-tab">Cadastro</Label>
-          <select id="a-tab" className={classeCampo} value={s.tabela ?? ""} onChange={(e) => filtro({ tabela: e.target.value || undefined })}>
+          <select
+            id="a-tab"
+            className={classeCampo}
+            value={s.tabela ?? ""}
+            onChange={(e) => filtro({ tabela: e.target.value || undefined })}
+          >
             <option value="">Todos</option>
             {Object.entries(TABELA).map(([k, v]) => (
               <option key={k} value={k}>
@@ -91,11 +101,23 @@ function Auditoria() {
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="a-de">De</Label>
-          <Input id="a-de" type="date" className="min-h-11 text-base md:text-base" value={s.de ?? ""} onChange={(e) => filtro({ de: e.target.value || undefined })} />
+          <Input
+            id="a-de"
+            type="date"
+            className="min-h-11 text-base md:text-base"
+            value={s.de ?? ""}
+            onChange={(e) => filtro({ de: e.target.value || undefined })}
+          />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="a-ate">Até</Label>
-          <Input id="a-ate" type="date" className="min-h-11 text-base md:text-base" value={s.ate ?? ""} onChange={(e) => filtro({ ate: e.target.value || undefined })} />
+          <Input
+            id="a-ate"
+            type="date"
+            className="min-h-11 text-base md:text-base"
+            value={s.ate ?? ""}
+            onChange={(e) => filtro({ ate: e.target.value || undefined })}
+          />
         </div>
       </div>
 
@@ -104,7 +126,10 @@ function Auditoria() {
       ) : q.isError ? (
         <EstadoErro mensagem={mensagemDeErro(q.error)} onTentar={() => q.refetch()} />
       ) : q.data.linhas.length === 0 ? (
-        <EstadoVazio titulo="Nenhuma mudança encontrada" texto="Mude os filtros para ver outro período." />
+        <EstadoVazio
+          titulo="Nenhuma mudança encontrada"
+          texto="Mude os filtros para ver outro período."
+        />
       ) : (
         <>
           <ul className="divide-y divide-border rounded-lg border border-border">
@@ -113,7 +138,9 @@ function Auditoria() {
               return (
                 <li key={l.id} className="px-4 py-3">
                   <p className="text-foreground">
-                    <span className="font-medium">{l.quem ? (q.data.nomes[l.quem] ?? "Pessoa removida") : "Sistema"}</span>{" "}
+                    <span className="font-medium">
+                      {l.quem ? (q.data.nomes[l.quem] ?? "Pessoa removida") : "Sistema"}
+                    </span>{" "}
                     {(ACAO[l.acao] ?? l.acao).toLowerCase()} em {TABELA[l.tabela] ?? l.tabela}
                   </p>
                   <p className="text-sm text-muted-foreground">{dataHora(l.em)}</p>

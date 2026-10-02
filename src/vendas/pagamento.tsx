@@ -8,13 +8,34 @@ import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { SeloStatus } from "@/design/palco";
 import { mensagemDeErro, dinheiro, preencher } from "@/lib/formato";
 import { useRascunho } from "@/lib/rascunho";
 import { QrTexto } from "./qr";
-import { CamposPagador, EscolhaAdicionais, EscolhaLugares, pagadorVazio, pagadorValido, type AdicionalEscolhido, type Pagador, type ProdutoVenda } from "./selecao";
+import {
+  CamposPagador,
+  EscolhaAdicionais,
+  EscolhaLugares,
+  pagadorVazio,
+  pagadorValido,
+  type AdicionalEscolhido,
+  type Pagador,
+  type ProdutoVenda,
+} from "./selecao";
 import { tipoPermitido, type LugarEscolhido, type MapaSessao, type TipoIngresso } from "./tipos";
 import {
   estadoPagamento,
@@ -82,13 +103,14 @@ export function PagamentoOnline({
     queryKey: ["status-pagamento", acesso],
     queryFn: async () => {
       const r = await buscarStatus({ data: { acesso } });
-      return r as { status: string } | null;
+      return r as { status: string; pix_qr_code?: string | null } | null;
     },
-    refetchInterval: 4000,
+    refetchInterval: 5000,
   });
 
   useEffect(() => {
-    if (status.data && (status.data.status === "pago" || status.data.status === "pago_sem_lugar")) vaiParaPedido();
+    if (status.data && (status.data.status === "pago" || status.data.status === "pago_sem_lugar"))
+      vaiParaPedido();
   }, [status.data, vaiParaPedido]);
 
   useEffect(() => {
@@ -96,7 +118,14 @@ export function PagamentoOnline({
   }, [st, vaiParaPedido]);
 
   if (consulta.isLoading) return <Esqueleto />;
-  if (consulta.error) return <Falha mensagem={mensagemDeErro(consulta.error)} voltar={voltarAosLugares} rotuloVoltar={rotuloVoltar} />;
+  if (consulta.error)
+    return (
+      <Falha
+        mensagem={mensagemDeErro(consulta.error)}
+        voltar={voltarAosLugares}
+        rotuloVoltar={rotuloVoltar}
+      />
+    );
   const estado = consulta.data as Estado | null;
   if (!estado || !estado.pedido)
     return (
@@ -109,7 +138,9 @@ export function PagamentoOnline({
   if (st === "expirado")
     return (
       <div className="mx-auto max-w-md py-10 text-center">
-        <p className="text-lg font-medium text-foreground">{conteudos["reserva_expirou"] ?? "O tempo da reserva acabou."}</p>
+        <p className="text-lg font-medium text-foreground">
+          {conteudos["reserva_expirou"] ?? "O tempo da reserva acabou."}
+        </p>
         <Button className="mt-6 min-h-11" onClick={voltarAosLugares}>
           {rotuloVoltar}
         </Button>
@@ -118,7 +149,9 @@ export function PagamentoOnline({
   if (st === "cancelado" || st === "estornado")
     return (
       <div className="mx-auto max-w-md py-10 text-center">
-        <p className="text-lg font-medium text-foreground">Esta compra foi cancelada. Fale com a recepção para resolver.</p>
+        <p className="text-lg font-medium text-foreground">
+          Esta compra foi cancelada. Fale com a recepção para resolver.
+        </p>
         <Button variant="outline" className="mt-6 min-h-11" onClick={voltarAosLugares}>
           {rotuloVoltar}
         </Button>
@@ -126,7 +159,14 @@ export function PagamentoOnline({
     );
 
   if (modoPos || st === "aguardando_pagamento")
-    return <AposEnviar modo={modoPos ?? "esperando"} pix={pix} conteudos={conteudos} voltar={voltarAosLugares} />;
+    return (
+      <AposEnviar
+        modo={modoPos ?? (status.data?.pix_qr_code ? "pix" : "esperando")}
+        pix={pix ?? (status.data?.pix_qr_code ? { qr: "", copia: status.data.pix_qr_code } : null)}
+        conteudos={conteudos}
+        voltar={voltarAosLugares}
+      />
+    );
 
   return (
     <FormularioDePagamento
@@ -161,7 +201,12 @@ type Estado = {
     forma_pagamento: string | null;
     parcelas: number | null;
     expira_em: string;
-    previstos: Array<{ sessao_id: string; numero: number; tipo: string; categoria_meia: string | null }>;
+    previstos: Array<{
+      sessao_id: string;
+      numero: number;
+      tipo: string;
+      categoria_meia: string | null;
+    }>;
     itens: Array<{ produto: string; quantidade: number; valor_unitario_centavos: number }>;
   } | null;
   evento: {
@@ -170,7 +215,13 @@ type Estado = {
     parcelas_max: number;
   } | null;
   termos: { id: string; versao: number; texto: string } | null;
-  lugares: Array<{ numero: number; setor_id: string; sessao_id: string; rotulo_fila: string | null; setores: { nome: string } | null }>;
+  lugares: Array<{
+    numero: number;
+    setor_id: string;
+    sessao_id: string;
+    rotulo_fila: string | null;
+    setores: { nome: string } | null;
+  }>;
   sessoes_mapas: Array<{ sessao_id: string; mapa: MapaSessao | null }>;
 };
 
@@ -184,7 +235,15 @@ function Esqueleto() {
   );
 }
 
-function Falha({ mensagem, voltar, rotuloVoltar }: { mensagem: string; voltar: () => void; rotuloVoltar: string }) {
+function Falha({
+  mensagem,
+  voltar,
+  rotuloVoltar,
+}: {
+  mensagem: string;
+  voltar: () => void;
+  rotuloVoltar: string;
+}) {
   return (
     <div className="mx-auto max-w-md py-10 text-center">
       <SeloStatus tom="erro">{mensagem}</SeloStatus>
@@ -258,9 +317,16 @@ function FormularioDePagamento({
     for (const l of estado.lugares) {
       const mapa = estado.sessoes_mapas.find((s) => s.sessao_id === l.sessao_id)?.mapa;
       if (!mapa) continue;
-      const prev = pedido.previstos.find((p) => p.numero === l.numero && p.sessao_id === l.sessao_id);
-      const tipo = tipoPermitido(mapa, (prev?.tipo as TipoIngresso) ?? (mapa.modo_preco === "unico" ? "meia_todos" : "inteira"));
-      t[chaveDe(l.sessao_id, l.numero)] = prev?.categoria_meia ? { tipo, categoriaMeia: prev.categoria_meia } : { tipo };
+      const prev = pedido.previstos.find(
+        (p) => p.numero === l.numero && p.sessao_id === l.sessao_id,
+      );
+      const tipo = tipoPermitido(
+        mapa,
+        (prev?.tipo as TipoIngresso) ?? (mapa.modo_preco === "unico" ? "meia_todos" : "inteira"),
+      );
+      t[chaveDe(l.sessao_id, l.numero)] = prev?.categoria_meia
+        ? { tipo, categoriaMeia: prev.categoria_meia }
+        : { tipo };
     }
     setTipos(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -269,11 +335,19 @@ function FormularioDePagamento({
   const lugaresEscolhidos: LugarEscolhido[] = estado.lugares.map((l) => {
     const escolha = tipos[chaveDe(l.sessao_id, l.numero)];
     return escolha?.categoriaMeia
-      ? { numero: l.numero, setorId: l.setor_id, tipo: escolha.tipo, categoriaMeia: escolha.categoriaMeia }
+      ? {
+          numero: l.numero,
+          setorId: l.setor_id,
+          tipo: escolha.tipo,
+          categoriaMeia: escolha.categoriaMeia,
+        }
       : { numero: l.numero, setorId: l.setor_id, tipo: escolha?.tipo ?? "meia_todos" };
   });
 
-  const minutos = Math.max(0, Math.ceil((new Date(pedido.expira_em).getTime() - Date.now()) / 60000));
+  const minutos = Math.max(
+    0,
+    Math.ceil((new Date(pedido.expira_em).getTime() - Date.now()) / 60000),
+  );
 
   async function enviar(forma: "pix" | "cartao") {
     if (!rascunho.valor) return;
@@ -287,7 +361,12 @@ function FormularioDePagamento({
       setErro(falhaPagador);
       return;
     }
-    if (forma === "cartao" && (cartao.numero.replace(/\D/g, "").length < 13 || !/^\d{2}\/\d{2}$/.test(cartao.validade) || cartao.cvv.length < 3)) {
+    if (
+      forma === "cartao" &&
+      (cartao.numero.replace(/\D/g, "").length < 13 ||
+        !/^\d{2}\/\d{2}$/.test(cartao.validade) ||
+        cartao.cvv.length < 3)
+    ) {
       setErro("Confira os dados do cartão.");
       return;
     }
@@ -305,8 +384,17 @@ function FormularioDePagamento({
           ingressos: estado.lugares.map((x) => {
             const escolha = tipos[chaveDe(x.sessao_id, x.numero)];
             return escolha?.categoriaMeia
-              ? { numero: x.numero, sessao_id: x.sessao_id, tipo: escolha.tipo, categoria_meia: escolha.categoriaMeia }
-              : { numero: x.numero, sessao_id: x.sessao_id, tipo: escolha?.tipo ?? ("meia_todos" as const) };
+              ? {
+                  numero: x.numero,
+                  sessao_id: x.sessao_id,
+                  tipo: escolha.tipo,
+                  categoria_meia: escolha.categoriaMeia,
+                }
+              : {
+                  numero: x.numero,
+                  sessao_id: x.sessao_id,
+                  tipo: escolha?.tipo ?? ("meia_todos" as const),
+                };
           }),
           adicionais: dados.adicionais.map((a) => ({
             produto_id: a.produtoId,
@@ -356,7 +444,12 @@ function FormularioDePagamento({
       <header className="mb-6">
         <p className="text-sm text-muted-foreground">Pedido {pedido.codigo}</p>
         <h1 className="titulo-palco mt-1 text-2xl font-semibold text-foreground">Pagamento</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{preencher(conteudos["reserva_tempo"] ?? "Seus lugares ficam guardados por {{minutos}} minutos.", { minutos: String(minutos) })}</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {preencher(
+            conteudos["reserva_tempo"] ?? "Seus lugares ficam guardados por {{minutos}} minutos.",
+            { minutos: String(minutos) },
+          )}
+        </p>
       </header>
 
       {porSessao.map(([sessaoId, g]) =>
@@ -365,9 +458,17 @@ function FormularioDePagamento({
             <h2 className="font-medium text-foreground">Ingressos</h2>
             <EscolhaLugares
               mapa={g.mapa}
-              lugares={lugaresEscolhidos.filter((l) => estado.lugares.find((x) => x.numero === l.numero && x.sessao_id === sessaoId))}
+              lugares={lugaresEscolhidos.filter((l) =>
+                estado.lugares.find((x) => x.numero === l.numero && x.sessao_id === sessaoId),
+              )}
               aoMudar={(novos) => {
-                for (const l of novos) setTipos((t) => ({ ...t, [chaveDe(sessaoId, l.numero)]: l.categoriaMeia ? { tipo: l.tipo, categoriaMeia: l.categoriaMeia } : { tipo: l.tipo } }));
+                for (const l of novos)
+                  setTipos((t) => ({
+                    ...t,
+                    [chaveDe(sessaoId, l.numero)]: l.categoriaMeia
+                      ? { tipo: l.tipo, categoriaMeia: l.categoriaMeia }
+                      : { tipo: l.tipo },
+                  }));
               }}
               exigirDeclaracaoMeia
               categorias={categorias}
@@ -382,7 +483,18 @@ function FormularioDePagamento({
           <EscolhaAdicionais
             produtos={produtos}
             escolhas={rascunho.valor?.adicionais ?? []}
-            aoMudar={(a) => rascunho.setValor({ ...(rascunho.valor ?? { tipos: {}, pagador: pagadorVazio, forma: "pix", parcelas: 1, termos: false }), adicionais: a })}
+            aoMudar={(a) =>
+              rascunho.setValor({
+                ...(rascunho.valor ?? {
+                  tipos: {},
+                  pagador: pagadorVazio,
+                  forma: "pix",
+                  parcelas: 1,
+                  termos: false,
+                }),
+                adicionais: a,
+              })
+            }
             sessoes={sessoesEntrega}
           />
         </section>
@@ -391,52 +503,144 @@ function FormularioDePagamento({
       <section className="mb-6 rounded-xl border border-border bg-card p-4">
         <h2 className="font-medium text-foreground">Quem paga</h2>
         <div className="mt-3">
-          <CamposPagador pagador={rascunho.valor?.pagador ?? pagadorVazio} aoMudar={(p) => rascunho.setValor({ ...(rascunho.valor ?? { tipos: {}, adicionais: [], forma: "pix", parcelas: 1, termos: false }), pagador: p })} />
+          <CamposPagador
+            pagador={rascunho.valor?.pagador ?? pagadorVazio}
+            aoMudar={(p) =>
+              rascunho.setValor({
+                ...(rascunho.valor ?? {
+                  tipos: {},
+                  adicionais: [],
+                  forma: "pix",
+                  parcelas: 1,
+                  termos: false,
+                }),
+                pagador: p,
+              })
+            }
+          />
         </div>
       </section>
 
       <section className="mb-6 rounded-xl border border-border bg-card p-4">
         <h2 className="font-medium text-foreground">Como pagar</h2>
         <div className="mt-3 grid gap-2 sm:grid-cols-2">
-          <BotaoForma ativo={(rascunho.valor?.forma ?? "pix") === "pix"} onClick={() => rascunho.setValor({ ...(rascunho.valor ?? { tipos: {}, adicionais: [], pagador: pagadorVazio, parcelas: 1, termos: false }), forma: "pix" })}>
-            <span className="inline-flex items-center gap-2"><PixIcone /> PIX</span>
+          <BotaoForma
+            ativo={(rascunho.valor?.forma ?? "pix") === "pix"}
+            onClick={() =>
+              rascunho.setValor({
+                ...(rascunho.valor ?? {
+                  tipos: {},
+                  adicionais: [],
+                  pagador: pagadorVazio,
+                  parcelas: 1,
+                  termos: false,
+                }),
+                forma: "pix",
+              })
+            }
+          >
+            <span className="inline-flex items-center gap-2">
+              <PixIcone /> PIX
+            </span>
           </BotaoForma>
-          <BotaoForma ativo={(rascunho.valor?.forma ?? "pix") === "cartao"} onClick={() => rascunho.setValor({ ...(rascunho.valor ?? { tipos: {}, adicionais: [], pagador: pagadorVazio, parcelas: 1, termos: false }), forma: "cartao" })}>
-            <span className="inline-flex items-center gap-2"><Cartoes /> Cartão</span>
+          <BotaoForma
+            ativo={(rascunho.valor?.forma ?? "pix") === "cartao"}
+            onClick={() =>
+              rascunho.setValor({
+                ...(rascunho.valor ?? {
+                  tipos: {},
+                  adicionais: [],
+                  pagador: pagadorVazio,
+                  parcelas: 1,
+                  termos: false,
+                }),
+                forma: "cartao",
+              })
+            }
+          >
+            <span className="inline-flex items-center gap-2">
+              <Cartoes /> Cartão
+            </span>
           </BotaoForma>
         </div>
         {(rascunho.valor?.forma ?? "pix") === "cartao" ? (
           <div className="mt-4 grid gap-3">
             <label className="block text-sm text-muted-foreground">
               Número do cartão
-              <Input className="mt-1 text-[16px]" inputMode="numeric" value={cartao.numero} onChange={(e) => setCartao({ ...cartao, numero: mascaraCartao(e.target.value) })} placeholder="0000 0000 0000 0000" autoComplete="off" />
+              <Input
+                className="mt-1 text-[16px]"
+                inputMode="numeric"
+                value={cartao.numero}
+                onChange={(e) => setCartao({ ...cartao, numero: mascaraCartao(e.target.value) })}
+                placeholder="0000 0000 0000 0000"
+                autoComplete="off"
+              />
             </label>
             <label className="block text-sm text-muted-foreground">
               Nome impresso no cartão
-              <Input className="mt-1 text-[16px]" value={cartao.nome} onChange={(e) => setCartao({ ...cartao, nome: e.target.value })} autoComplete="off" />
+              <Input
+                className="mt-1 text-[16px]"
+                value={cartao.nome}
+                onChange={(e) => setCartao({ ...cartao, nome: e.target.value })}
+                autoComplete="off"
+              />
             </label>
             <div className="grid grid-cols-2 gap-3">
               <label className="block text-sm text-muted-foreground">
                 Validade
-                <Input className="mt-1 text-[16px]" inputMode="numeric" value={cartao.validade} onChange={(e) => setCartao({ ...cartao, validade: mascaraValidade(e.target.value) })} placeholder="MM/AA" autoComplete="off" />
+                <Input
+                  className="mt-1 text-[16px]"
+                  inputMode="numeric"
+                  value={cartao.validade}
+                  onChange={(e) =>
+                    setCartao({ ...cartao, validade: mascaraValidade(e.target.value) })
+                  }
+                  placeholder="MM/AA"
+                  autoComplete="off"
+                />
               </label>
               <label className="block text-sm text-muted-foreground">
                 Código de segurança
-                <Input className="mt-1 text-[16px]" inputMode="numeric" value={cartao.cvv} onChange={(e) => setCartao({ ...cartao, cvv: e.target.value.replace(/\D/g, "").slice(0, 4) })} placeholder="000" autoComplete="off" />
+                <Input
+                  className="mt-1 text-[16px]"
+                  inputMode="numeric"
+                  value={cartao.cvv}
+                  onChange={(e) =>
+                    setCartao({ ...cartao, cvv: e.target.value.replace(/\D/g, "").slice(0, 4) })
+                  }
+                  placeholder="000"
+                  autoComplete="off"
+                />
               </label>
             </div>
             <label className="block text-sm text-muted-foreground">
               Parcelas
-              <Select value={String(rascunho.valor?.parcelas ?? 1)} onValueChange={(v) => rascunho.setValor({ ...(rascunho.valor ?? { tipos: {}, adicionais: [], pagador: pagadorVazio, forma: "cartao", termos: false }), parcelas: Number(v) })}>
+              <Select
+                value={String(rascunho.valor?.parcelas ?? 1)}
+                onValueChange={(v) =>
+                  rascunho.setValor({
+                    ...(rascunho.valor ?? {
+                      tipos: {},
+                      adicionais: [],
+                      pagador: pagadorVazio,
+                      forma: "cartao",
+                      termos: false,
+                    }),
+                    parcelas: Number(v),
+                  })
+                }
+              >
                 <SelectTrigger className="mt-1 text-[16px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {Array.from({ length: podeParcelar ? parcelasMax : 1 }, (_, i) => i + 1).map((n) => (
-                    <SelectItem key={n} value={String(n)}>
-                      {n === 1 ? "À vista" : `${n}x sem juros`}
-                    </SelectItem>
-                  ))}
+                  {Array.from({ length: podeParcelar ? parcelasMax : 1 }, (_, i) => i + 1).map(
+                    (n) => (
+                      <SelectItem key={n} value={String(n)}>
+                        {n === 1 ? "À vista" : `${n}x sem juros`}
+                      </SelectItem>
+                    ),
+                  )}
                 </SelectContent>
               </Select>
             </label>
@@ -450,7 +654,18 @@ function FormularioDePagamento({
             <Checkbox
               className="mt-0.5"
               checked={Boolean(rascunho.valor?.termos)}
-              onCheckedChange={(v) => rascunho.setValor({ ...(rascunho.valor ?? { tipos: {}, adicionais: [], pagador: pagadorVazio, forma: "pix", parcelas: 1 }), termos: Boolean(v) })}
+              onCheckedChange={(v) =>
+                rascunho.setValor({
+                  ...(rascunho.valor ?? {
+                    tipos: {},
+                    adicionais: [],
+                    pagador: pagadorVazio,
+                    forma: "pix",
+                    parcelas: 1,
+                  }),
+                  termos: Boolean(v),
+                })
+              }
             />
             <span>
               Aceito os{" "}
@@ -464,7 +679,9 @@ function FormularioDePagamento({
                   <DialogHeader>
                     <DialogTitle>Termos de compra</DialogTitle>
                   </DialogHeader>
-                  <div className="whitespace-pre-wrap text-sm text-foreground">{estado.termos.texto}</div>
+                  <div className="whitespace-pre-wrap text-sm text-foreground">
+                    {estado.termos.texto}
+                  </div>
                 </DialogContent>
               </Dialog>{" "}
               ao fazer o pagamento.
@@ -474,20 +691,37 @@ function FormularioDePagamento({
       ) : null}
 
       {erro ? (
-        <p className="mb-4 rounded-md border border-erro/40 bg-erro/5 px-3 py-2 text-sm text-erro" role="alert">
+        <p
+          className="mb-4 rounded-md border border-erro/40 bg-erro/5 px-3 py-2 text-sm text-erro"
+          role="alert"
+        >
           {erro}
         </p>
       ) : null}
 
       <div className="fixed inset-x-0 bottom-0 border-t border-border bg-background/95 px-4 py-3">
         <div className="mx-auto flex max-w-2xl items-center justify-between gap-3">
-          <button type="button" onClick={() => void liberar()} className="min-h-11 px-2 text-sm text-muted-foreground underline underline-offset-2">
+          <button
+            type="button"
+            onClick={() => void liberar()}
+            className="min-h-11 px-2 text-sm text-muted-foreground underline underline-offset-2"
+          >
             Desistir desta reserva
           </button>
           <div className="flex items-center gap-3">
-            <span className="numeros text-lg font-semibold text-foreground">{dinheiro(pedido.valor_total_centavos)}</span>
-            <Button className="min-h-11" disabled={enviando} onClick={() => void enviar(rascunho.valor?.forma ?? "pix")}>
-              {enviando ? "Perguntando ao banco..." : rascunho.valor?.forma === "cartao" ? "Pagar com o cartão" : "Pagar com PIX"}
+            <span className="numeros text-lg font-semibold text-foreground">
+              {dinheiro(pedido.valor_total_centavos)}
+            </span>
+            <Button
+              className="min-h-11"
+              disabled={enviando}
+              onClick={() => void enviar(rascunho.valor?.forma ?? "pix")}
+            >
+              {enviando
+                ? "Perguntando ao banco..."
+                : rascunho.valor?.forma === "cartao"
+                  ? "Pagar com o cartão"
+                  : "Pagar com PIX"}
             </Button>
           </div>
         </div>
@@ -496,7 +730,15 @@ function FormularioDePagamento({
   );
 }
 
-function BotaoForma({ ativo, onClick, children }: { ativo: boolean; onClick: () => void; children: React.ReactNode }) {
+function BotaoForma({
+  ativo,
+  onClick,
+  children,
+}: {
+  ativo: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
   return (
     <button
       type="button"
@@ -511,7 +753,14 @@ function BotaoForma({ ativo, onClick, children }: { ativo: boolean; onClick: () 
 
 function Cartoes() {
   return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      aria-hidden="true"
+    >
       <rect x="2" y="5" width="20" height="14" rx="2" />
       <path d="M2 10h20" />
     </svg>
@@ -528,7 +777,11 @@ function PixIcone() {
 }
 
 function mascaraCartao(v: string): string {
-  return v.replace(/\D/g, "").slice(0, 16).replace(/(\d{4})(?=\d)/g, "$1 ").trim();
+  return v
+    .replace(/\D/g, "")
+    .slice(0, 16)
+    .replace(/(\d{4})(?=\d)/g, "$1 ")
+    .trim();
 }
 function mascaraValidade(v: string): string {
   const d = v.replace(/\D/g, "").slice(0, 4);
@@ -537,21 +790,31 @@ function mascaraValidade(v: string): string {
 
 async function tokenizarCartao(pk: string, cartao: CartaoTela): Promise<string> {
   const [mm, aa] = cartao.validade.split("/");
-  const corpo = new URLSearchParams({
-    type: "card",
-    "card[number]": cartao.numero.replace(/\s/g, ""),
-    "card[holder_name]": cartao.nome.trim(),
-    "card[exp_month]": mm ?? "",
-    "card[exp_year]": `20${aa ?? "00"}`,
-    "card[cvv]": cartao.cvv,
-  });
-  const res = await fetch("https://api.pagar.me/core/v5/tokens", {
+  const res = await fetch(`https://api.pagar.me/core/v5/tokens?appId=${encodeURIComponent(pk)}`, {
     method: "POST",
-    headers: { apikey: pk, "Content-Type": "application/x-www-form-urlencoded" },
-    body: corpo,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      type: "card",
+      card: {
+        number: cartao.numero.replace(/\s/g, ""),
+        holder_name: cartao.nome.trim(),
+        exp_month: Number(mm ?? 0),
+        exp_year: Number(`20${aa ?? "00"}`),
+        cvv: cartao.cvv,
+      },
+    }),
   });
-  const j = (await res.json().catch(() => null)) as { id?: string; message?: string; errors?: Array<{ message?: string }> } | null;
-  if (!res.ok || !j?.id) throw new Error(j?.errors?.[0]?.message ?? j?.message ?? "Não foi possível validar o cartão. Confira os dados.");
+  const j = (await res.json().catch(() => null)) as {
+    id?: string;
+    message?: string;
+    errors?: Array<{ message?: string }>;
+  } | null;
+  if (!res.ok || !j?.id)
+    throw new Error(
+      j?.errors?.[0]?.message ??
+        j?.message ??
+        "Não foi possível validar o cartão. Confira os dados.",
+    );
   return j.id;
 }
 
@@ -580,29 +843,51 @@ function AposEnviar({
               <QrTexto texto={pix.copia} tamanho={180} rotulo="PIX copia e cola" />
             </div>
             <div className="mt-3 flex items-center gap-2">
-              <Input readOnly value={pix.copia} className="numeros flex-1 text-[13px]" aria-label="Código PIX copia e cola" />
-              <Button variant="outline" className="min-h-11" onClick={() => void navigator.clipboard.writeText(pix.copia).then(() => toast("Código copiado."))}>
+              <Input
+                readOnly
+                value={pix.copia}
+                className="numeros flex-1 text-[13px]"
+                aria-label="Código PIX copia e cola"
+              />
+              <Button
+                variant="outline"
+                className="min-h-11"
+                onClick={() =>
+                  void navigator.clipboard.writeText(pix.copia).then(() => toast("Código copiado."))
+                }
+              >
                 <Copiar /> Copiar
               </Button>
             </div>
           </>
         ) : null}
         <p className="mt-4 text-sm text-muted-foreground">{conteudos["pix_instrucao"] ?? ""}</p>
-        <p className="mt-2 text-sm text-muted-foreground">Esta página atualiza sozinha quando o pagamento chegar.</p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Esta página atualiza sozinha quando o pagamento chegar.
+        </p>
       </div>
     );
   }
   return (
     <div className="mx-auto max-w-md py-8 text-center">
       <SeloStatus tom="neutro">A operadora está confirmando o pagamento.</SeloStatus>
-      <p className="mt-3 text-sm text-muted-foreground">Não feche esta página: ela atualiza sozinha.</p>
+      <p className="mt-3 text-sm text-muted-foreground">
+        Não feche esta página: ela atualiza sozinha.
+      </p>
     </div>
   );
 }
 
 export function Copiar() {
   return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      aria-hidden="true"
+    >
       <rect x="9" y="9" width="11" height="11" rx="2" />
       <path d="M5 15V5a2 2 0 0 1 2-2h8" />
     </svg>
