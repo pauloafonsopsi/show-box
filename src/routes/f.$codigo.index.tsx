@@ -117,7 +117,7 @@ function PaginaFamilia() {
               <section key={s.id} className="superficie-palco p-4">
                 <h2 className="titulo-palco text-2xl text-foreground">{s.nome}</h2>
                 <p className="numeros text-sm text-muted-foreground">
-                  {data(s.data_hora)} às {hora(s.data_hora)}
+                  {s.data_hora ? `${data(s.data_hora)} às ${hora(s.data_hora)}` : "Data a definir"}
                 </p>
                 {c["dia_bloco"] && doDia ? (
                   <p className="mt-2 text-foreground">{preencher(c["dia_bloco"], v)}</p>

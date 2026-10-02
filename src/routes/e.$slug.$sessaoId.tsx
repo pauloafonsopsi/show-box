@@ -31,7 +31,7 @@ function EscolherPublico() {
       </Link>
       <h1 className="titulo-palco mt-2 text-3xl text-foreground">{s.nome}</h1>
       <p className="numeros text-muted-foreground">
-        {data(s.data_hora)} às {hora(s.data_hora)}. Até {limite} lugares por compra.
+        {s.data_hora ? `${data(s.data_hora)} às ${hora(s.data_hora)}` : "Data a definir"}. Até {limite} lugares por compra.
       </p>
       <div className="mt-4">
         <EscolhaOnline
