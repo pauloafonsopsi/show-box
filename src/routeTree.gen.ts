@@ -14,6 +14,9 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as BilheteriaRouteImport } from './routes/bilheteria'
 import { Route as EntrarRouteImport } from './routes/entrar'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminAuditoriaRouteImport } from './routes/admin.auditoria'
+import { Route as AdminConfiguracoesRouteImport } from './routes/admin.configuracoes'
+import { Route as AdminEquipeRouteImport } from './routes/admin.equipe'
 import { Route as AdminEventosIndexRouteImport } from './routes/admin.eventos.index'
 import { Route as AdminEventosEventoIdRouteImport } from './routes/admin.eventos.$eventoId'
 import { Route as AdminLocaisIndexRouteImport } from './routes/admin.locais.index'
@@ -50,6 +53,21 @@ const EntrarRoute = EntrarRouteImport.update({
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAuditoriaRoute = AdminAuditoriaRouteImport.update({
+  id: '/auditoria',
+  path: '/auditoria',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminConfiguracoesRoute = AdminConfiguracoesRouteImport.update({
+  id: '/configuracoes',
+  path: '/configuracoes',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminEquipeRoute = AdminEquipeRouteImport.update({
+  id: '/equipe',
+  path: '/equipe',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminEventosIndexRoute = AdminEventosIndexRouteImport.update({
@@ -127,6 +145,9 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/bilheteria': typeof BilheteriaRoute
   '/entrar': typeof EntrarRoute
+  '/admin/auditoria': typeof AdminAuditoriaRoute
+  '/admin/configuracoes': typeof AdminConfiguracoesRoute
+  '/admin/equipe': typeof AdminEquipeRoute
   '/admin/': typeof AdminIndexRoute
   '/admin/eventos/$eventoId': typeof AdminEventosEventoIdRouteWithChildren
   '/admin/eventos/': typeof AdminEventosIndexRoute
@@ -145,6 +166,9 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/bilheteria': typeof BilheteriaRoute
   '/entrar': typeof EntrarRoute
+  '/admin/auditoria': typeof AdminAuditoriaRoute
+  '/admin/configuracoes': typeof AdminConfiguracoesRoute
+  '/admin/equipe': typeof AdminEquipeRoute
   '/admin': typeof AdminIndexRoute
   '/admin/eventos': typeof AdminEventosIndexRoute
   '/admin/locais': typeof AdminLocaisIndexRoute
@@ -164,6 +188,9 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/bilheteria': typeof BilheteriaRoute
   '/entrar': typeof EntrarRoute
+  '/admin/auditoria': typeof AdminAuditoriaRoute
+  '/admin/configuracoes': typeof AdminConfiguracoesRoute
+  '/admin/equipe': typeof AdminEquipeRoute
   '/admin/': typeof AdminIndexRoute
   '/admin/eventos/$eventoId': typeof AdminEventosEventoIdRouteWithChildren
   '/admin/eventos/': typeof AdminEventosIndexRoute
@@ -185,6 +212,9 @@ export interface FileRouteTypes {
     | '/admin'
     | '/bilheteria'
     | '/entrar'
+    | '/admin/auditoria'
+    | '/admin/configuracoes'
+    | '/admin/equipe'
     | '/admin/'
     | '/admin/eventos/$eventoId'
     | '/admin/eventos/'
@@ -203,6 +233,9 @@ export interface FileRouteTypes {
     | '/'
     | '/bilheteria'
     | '/entrar'
+    | '/admin/auditoria'
+    | '/admin/configuracoes'
+    | '/admin/equipe'
     | '/admin'
     | '/admin/eventos'
     | '/admin/locais'
@@ -221,6 +254,9 @@ export interface FileRouteTypes {
     | '/admin'
     | '/bilheteria'
     | '/entrar'
+    | '/admin/auditoria'
+    | '/admin/configuracoes'
+    | '/admin/equipe'
     | '/admin/'
     | '/admin/eventos/$eventoId'
     | '/admin/eventos/'
@@ -278,6 +314,27 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/auditoria': {
+      id: '/admin/auditoria'
+      path: '/auditoria'
+      fullPath: '/admin/auditoria'
+      preLoaderRoute: typeof AdminAuditoriaRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/configuracoes': {
+      id: '/admin/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/admin/configuracoes'
+      preLoaderRoute: typeof AdminConfiguracoesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/equipe': {
+      id: '/admin/equipe'
+      path: '/equipe'
+      fullPath: '/admin/equipe'
+      preLoaderRoute: typeof AdminEquipeRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/eventos/': {
@@ -393,6 +450,9 @@ const AdminEventosEventoIdRouteWithChildren =
   AdminEventosEventoIdRoute._addFileChildren(AdminEventosEventoIdRouteChildren)
 
 interface AdminRouteChildren {
+  AdminAuditoriaRoute: typeof AdminAuditoriaRoute
+  AdminConfiguracoesRoute: typeof AdminConfiguracoesRoute
+  AdminEquipeRoute: typeof AdminEquipeRoute
   AdminIndexRoute: typeof AdminIndexRoute
   AdminEventosEventoIdRoute: typeof AdminEventosEventoIdRouteWithChildren
   AdminEventosIndexRoute: typeof AdminEventosIndexRoute
@@ -401,6 +461,9 @@ interface AdminRouteChildren {
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminAuditoriaRoute: AdminAuditoriaRoute,
+  AdminConfiguracoesRoute: AdminConfiguracoesRoute,
+  AdminEquipeRoute: AdminEquipeRoute,
   AdminIndexRoute: AdminIndexRoute,
   AdminEventosEventoIdRoute: AdminEventosEventoIdRouteWithChildren,
   AdminEventosIndexRoute: AdminEventosIndexRoute,
