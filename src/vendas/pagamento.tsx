@@ -537,18 +537,19 @@ function mascaraValidade(v: string): string {
 
 async function tokenizarCartao(pk: string, cartao: CartaoTela): Promise<string> {
   const [mm, aa] = cartao.validade.split("/");
-  const corpo = new URLSearchParams({
-    type: "card",
-    "card[number]": cartao.numero.replace(/\s/g, ""),
-    "card[holder_name]": cartao.nome.trim(),
-    "card[exp_month]": mm ?? "",
-    "card[exp_year]": `20${aa ?? "00"}`,
-    "card[cvv]": cartao.cvv,
-  });
-  const res = await fetch("https://api.pagar.me/core/v5/tokens", {
+  const res = await fetch(`https://api.pagar.me/core/v5/tokens?appId=${encodeURIComponent(pk)}`, {
     method: "POST",
-    headers: { apikey: pk, "Content-Type": "application/x-www-form-urlencoded" },
-    body: corpo,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      type: "card",
+      card: {
+        number: cartao.numero.replace(/\s/g, ""),
+        holder_name: cartao.nome.trim(),
+        exp_month: Number(mm ?? 0),
+        exp_year: Number(`20${aa ?? "00"}`),
+        cvv: cartao.cvv,
+      },
+    }),
   });
   const j = (await res.json().catch(() => null)) as { id?: string; message?: string; errors?: Array<{ message?: string }> } | null;
   if (!res.ok || !j?.id) throw new Error(j?.errors?.[0]?.message ?? j?.message ?? "Não foi possível validar o cartão. Confira os dados.");
