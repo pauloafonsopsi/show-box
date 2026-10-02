@@ -1357,6 +1357,10 @@ export type Database = {
         Returns: number
       }
       congelar_mapa_da_sessao: { Args: { p_sessao: string }; Returns: number }
+      definir_escalacao: {
+        Args: { p_bailarina: string; p_sessoes: string[] }
+        Returns: number
+      }
       estoque_disponivel: { Args: { p_estoque: string }; Returns: number }
       existe_admin: { Args: never; Returns: boolean }
       gerar_link_familia: { Args: { p_familia: string }; Returns: string }

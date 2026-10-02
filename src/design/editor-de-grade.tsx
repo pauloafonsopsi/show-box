@@ -122,6 +122,12 @@ export function EditorDeGrade({
   const problemas = useMemo(() => validar(grade, setores), [grade, setores]);
   const temErro = problemas.some((p) => p.gravidade === "erro");
 
+  // Se o setor do pincel deixou de existir (ou ainda não havia setores), usa o primeiro disponível.
+  useEffect(() => {
+    if (!setorAtivo || !setores.some((s) => s.id === setorAtivo))
+      setSetorAtivo(setores[0]?.id ?? null);
+  }, [setores, setorAtivo]);
+
   // Aviso ao sair com alterações não salvas.
   useEffect(() => {
     if (!alterado) return;
