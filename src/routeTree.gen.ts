@@ -10,33 +10,273 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as BilheteriaRouteImport } from './routes/bilheteria'
+import { Route as EntrarRouteImport } from './routes/entrar'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminAuditoriaRouteImport } from './routes/admin.auditoria'
+import { Route as AdminConfiguracoesRouteImport } from './routes/admin.configuracoes'
+import { Route as AdminEquipeRouteImport } from './routes/admin.equipe'
+import { Route as AdminEventosIndexRouteImport } from './routes/admin.eventos.index'
+import { Route as AdminEventosEventoIdRouteImport } from './routes/admin.eventos.$eventoId'
+import { Route as AdminLocaisIndexRouteImport } from './routes/admin.locais.index'
+import { Route as AdminEventosEventoIdIndexRouteImport } from './routes/admin.eventos.$eventoId.index'
+import { Route as AdminEventosEventoIdAdicionaisRouteImport } from './routes/admin.eventos.$eventoId.adicionais'
+import { Route as AdminEventosEventoIdConteudosRouteImport } from './routes/admin.eventos.$eventoId.conteudos'
+import { Route as AdminEventosEventoIdElencoRouteImport } from './routes/admin.eventos.$eventoId.elenco'
+import { Route as AdminEventosEventoIdEnvioRouteImport } from './routes/admin.eventos.$eventoId.envio'
+import { Route as AdminEventosEventoIdPrecosRouteImport } from './routes/admin.eventos.$eventoId.precos'
+import { Route as AdminEventosEventoIdSessoesRouteImport } from './routes/admin.eventos.$eventoId.sessoes'
+import { Route as AdminEventosEventoIdVisaoGeralRouteImport } from './routes/admin.eventos.$eventoId.visao-geral'
+import { Route as AdminLocaisLocalIdMapasMapaIdRouteImport } from './routes/admin.locais.$localId.mapas.$mapaId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BilheteriaRoute = BilheteriaRouteImport.update({
+  id: '/bilheteria',
+  path: '/bilheteria',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EntrarRoute = EntrarRouteImport.update({
+  id: '/entrar',
+  path: '/entrar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAuditoriaRoute = AdminAuditoriaRouteImport.update({
+  id: '/auditoria',
+  path: '/auditoria',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminConfiguracoesRoute = AdminConfiguracoesRouteImport.update({
+  id: '/configuracoes',
+  path: '/configuracoes',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminEquipeRoute = AdminEquipeRouteImport.update({
+  id: '/equipe',
+  path: '/equipe',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminEventosIndexRoute = AdminEventosIndexRouteImport.update({
+  id: '/eventos/',
+  path: '/eventos/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminEventosEventoIdRoute = AdminEventosEventoIdRouteImport.update({
+  id: '/eventos/$eventoId',
+  path: '/eventos/$eventoId',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminLocaisIndexRoute = AdminLocaisIndexRouteImport.update({
+  id: '/locais/',
+  path: '/locais/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminEventosEventoIdIndexRoute =
+  AdminEventosEventoIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AdminEventosEventoIdRoute,
+  } as any)
+const AdminEventosEventoIdAdicionaisRoute =
+  AdminEventosEventoIdAdicionaisRouteImport.update({
+    id: '/adicionais',
+    path: '/adicionais',
+    getParentRoute: () => AdminEventosEventoIdRoute,
+  } as any)
+const AdminEventosEventoIdConteudosRoute =
+  AdminEventosEventoIdConteudosRouteImport.update({
+    id: '/conteudos',
+    path: '/conteudos',
+    getParentRoute: () => AdminEventosEventoIdRoute,
+  } as any)
+const AdminEventosEventoIdElencoRoute =
+  AdminEventosEventoIdElencoRouteImport.update({
+    id: '/elenco',
+    path: '/elenco',
+    getParentRoute: () => AdminEventosEventoIdRoute,
+  } as any)
+const AdminEventosEventoIdEnvioRoute =
+  AdminEventosEventoIdEnvioRouteImport.update({
+    id: '/envio',
+    path: '/envio',
+    getParentRoute: () => AdminEventosEventoIdRoute,
+  } as any)
+const AdminEventosEventoIdPrecosRoute =
+  AdminEventosEventoIdPrecosRouteImport.update({
+    id: '/precos',
+    path: '/precos',
+    getParentRoute: () => AdminEventosEventoIdRoute,
+  } as any)
+const AdminEventosEventoIdSessoesRoute =
+  AdminEventosEventoIdSessoesRouteImport.update({
+    id: '/sessoes',
+    path: '/sessoes',
+    getParentRoute: () => AdminEventosEventoIdRoute,
+  } as any)
+const AdminEventosEventoIdVisaoGeralRoute =
+  AdminEventosEventoIdVisaoGeralRouteImport.update({
+    id: '/visao-geral',
+    path: '/visao-geral',
+    getParentRoute: () => AdminEventosEventoIdRoute,
+  } as any)
+const AdminLocaisLocalIdMapasMapaIdRoute =
+  AdminLocaisLocalIdMapasMapaIdRouteImport.update({
+    id: '/locais/$localId/mapas/$mapaId',
+    path: '/locais/$localId/mapas/$mapaId',
+    getParentRoute: () => AdminRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/bilheteria': typeof BilheteriaRoute
+  '/entrar': typeof EntrarRoute
+  '/admin/auditoria': typeof AdminAuditoriaRoute
+  '/admin/configuracoes': typeof AdminConfiguracoesRoute
+  '/admin/equipe': typeof AdminEquipeRoute
+  '/admin/': typeof AdminIndexRoute
+  '/admin/eventos/$eventoId': typeof AdminEventosEventoIdRouteWithChildren
+  '/admin/eventos/': typeof AdminEventosIndexRoute
+  '/admin/locais/': typeof AdminLocaisIndexRoute
+  '/admin/eventos/$eventoId/adicionais': typeof AdminEventosEventoIdAdicionaisRoute
+  '/admin/eventos/$eventoId/conteudos': typeof AdminEventosEventoIdConteudosRoute
+  '/admin/eventos/$eventoId/elenco': typeof AdminEventosEventoIdElencoRoute
+  '/admin/eventos/$eventoId/envio': typeof AdminEventosEventoIdEnvioRoute
+  '/admin/eventos/$eventoId/precos': typeof AdminEventosEventoIdPrecosRoute
+  '/admin/eventos/$eventoId/sessoes': typeof AdminEventosEventoIdSessoesRoute
+  '/admin/eventos/$eventoId/visao-geral': typeof AdminEventosEventoIdVisaoGeralRoute
+  '/admin/eventos/$eventoId/': typeof AdminEventosEventoIdIndexRoute
+  '/admin/locais/$localId/mapas/$mapaId': typeof AdminLocaisLocalIdMapasMapaIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/bilheteria': typeof BilheteriaRoute
+  '/entrar': typeof EntrarRoute
+  '/admin/auditoria': typeof AdminAuditoriaRoute
+  '/admin/configuracoes': typeof AdminConfiguracoesRoute
+  '/admin/equipe': typeof AdminEquipeRoute
+  '/admin': typeof AdminIndexRoute
+  '/admin/eventos': typeof AdminEventosIndexRoute
+  '/admin/locais': typeof AdminLocaisIndexRoute
+  '/admin/eventos/$eventoId/adicionais': typeof AdminEventosEventoIdAdicionaisRoute
+  '/admin/eventos/$eventoId/conteudos': typeof AdminEventosEventoIdConteudosRoute
+  '/admin/eventos/$eventoId/elenco': typeof AdminEventosEventoIdElencoRoute
+  '/admin/eventos/$eventoId/envio': typeof AdminEventosEventoIdEnvioRoute
+  '/admin/eventos/$eventoId/precos': typeof AdminEventosEventoIdPrecosRoute
+  '/admin/eventos/$eventoId/sessoes': typeof AdminEventosEventoIdSessoesRoute
+  '/admin/eventos/$eventoId/visao-geral': typeof AdminEventosEventoIdVisaoGeralRoute
+  '/admin/eventos/$eventoId': typeof AdminEventosEventoIdIndexRoute
+  '/admin/locais/$localId/mapas/$mapaId': typeof AdminLocaisLocalIdMapasMapaIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/bilheteria': typeof BilheteriaRoute
+  '/entrar': typeof EntrarRoute
+  '/admin/auditoria': typeof AdminAuditoriaRoute
+  '/admin/configuracoes': typeof AdminConfiguracoesRoute
+  '/admin/equipe': typeof AdminEquipeRoute
+  '/admin/': typeof AdminIndexRoute
+  '/admin/eventos/$eventoId': typeof AdminEventosEventoIdRouteWithChildren
+  '/admin/eventos/': typeof AdminEventosIndexRoute
+  '/admin/locais/': typeof AdminLocaisIndexRoute
+  '/admin/eventos/$eventoId/adicionais': typeof AdminEventosEventoIdAdicionaisRoute
+  '/admin/eventos/$eventoId/conteudos': typeof AdminEventosEventoIdConteudosRoute
+  '/admin/eventos/$eventoId/elenco': typeof AdminEventosEventoIdElencoRoute
+  '/admin/eventos/$eventoId/envio': typeof AdminEventosEventoIdEnvioRoute
+  '/admin/eventos/$eventoId/precos': typeof AdminEventosEventoIdPrecosRoute
+  '/admin/eventos/$eventoId/sessoes': typeof AdminEventosEventoIdSessoesRoute
+  '/admin/eventos/$eventoId/visao-geral': typeof AdminEventosEventoIdVisaoGeralRoute
+  '/admin/eventos/$eventoId/': typeof AdminEventosEventoIdIndexRoute
+  '/admin/locais/$localId/mapas/$mapaId': typeof AdminLocaisLocalIdMapasMapaIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/bilheteria'
+    | '/entrar'
+    | '/admin/auditoria'
+    | '/admin/configuracoes'
+    | '/admin/equipe'
+    | '/admin/'
+    | '/admin/eventos/$eventoId'
+    | '/admin/eventos/'
+    | '/admin/locais/'
+    | '/admin/eventos/$eventoId/adicionais'
+    | '/admin/eventos/$eventoId/conteudos'
+    | '/admin/eventos/$eventoId/elenco'
+    | '/admin/eventos/$eventoId/envio'
+    | '/admin/eventos/$eventoId/precos'
+    | '/admin/eventos/$eventoId/sessoes'
+    | '/admin/eventos/$eventoId/visao-geral'
+    | '/admin/eventos/$eventoId/'
+    | '/admin/locais/$localId/mapas/$mapaId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/bilheteria'
+    | '/entrar'
+    | '/admin/auditoria'
+    | '/admin/configuracoes'
+    | '/admin/equipe'
+    | '/admin'
+    | '/admin/eventos'
+    | '/admin/locais'
+    | '/admin/eventos/$eventoId/adicionais'
+    | '/admin/eventos/$eventoId/conteudos'
+    | '/admin/eventos/$eventoId/elenco'
+    | '/admin/eventos/$eventoId/envio'
+    | '/admin/eventos/$eventoId/precos'
+    | '/admin/eventos/$eventoId/sessoes'
+    | '/admin/eventos/$eventoId/visao-geral'
+    | '/admin/eventos/$eventoId'
+    | '/admin/locais/$localId/mapas/$mapaId'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/bilheteria'
+    | '/entrar'
+    | '/admin/auditoria'
+    | '/admin/configuracoes'
+    | '/admin/equipe'
+    | '/admin/'
+    | '/admin/eventos/$eventoId'
+    | '/admin/eventos/'
+    | '/admin/locais/'
+    | '/admin/eventos/$eventoId/adicionais'
+    | '/admin/eventos/$eventoId/conteudos'
+    | '/admin/eventos/$eventoId/elenco'
+    | '/admin/eventos/$eventoId/envio'
+    | '/admin/eventos/$eventoId/precos'
+    | '/admin/eventos/$eventoId/sessoes'
+    | '/admin/eventos/$eventoId/visao-geral'
+    | '/admin/eventos/$eventoId/'
+    | '/admin/locais/$localId/mapas/$mapaId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
+  BilheteriaRoute: typeof BilheteriaRoute
+  EntrarRoute: typeof EntrarRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +288,196 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bilheteria': {
+      id: '/bilheteria'
+      path: '/bilheteria'
+      fullPath: '/bilheteria'
+      preLoaderRoute: typeof BilheteriaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/entrar': {
+      id: '/entrar'
+      path: '/entrar'
+      fullPath: '/entrar'
+      preLoaderRoute: typeof EntrarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/auditoria': {
+      id: '/admin/auditoria'
+      path: '/auditoria'
+      fullPath: '/admin/auditoria'
+      preLoaderRoute: typeof AdminAuditoriaRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/configuracoes': {
+      id: '/admin/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/admin/configuracoes'
+      preLoaderRoute: typeof AdminConfiguracoesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/equipe': {
+      id: '/admin/equipe'
+      path: '/equipe'
+      fullPath: '/admin/equipe'
+      preLoaderRoute: typeof AdminEquipeRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/eventos/': {
+      id: '/admin/eventos/'
+      path: '/eventos'
+      fullPath: '/admin/eventos/'
+      preLoaderRoute: typeof AdminEventosIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/eventos/$eventoId': {
+      id: '/admin/eventos/$eventoId'
+      path: '/eventos/$eventoId'
+      fullPath: '/admin/eventos/$eventoId'
+      preLoaderRoute: typeof AdminEventosEventoIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/locais/': {
+      id: '/admin/locais/'
+      path: '/locais'
+      fullPath: '/admin/locais/'
+      preLoaderRoute: typeof AdminLocaisIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/eventos/$eventoId/': {
+      id: '/admin/eventos/$eventoId/'
+      path: '/'
+      fullPath: '/admin/eventos/$eventoId/'
+      preLoaderRoute: typeof AdminEventosEventoIdIndexRouteImport
+      parentRoute: typeof AdminEventosEventoIdRoute
+    }
+    '/admin/eventos/$eventoId/adicionais': {
+      id: '/admin/eventos/$eventoId/adicionais'
+      path: '/adicionais'
+      fullPath: '/admin/eventos/$eventoId/adicionais'
+      preLoaderRoute: typeof AdminEventosEventoIdAdicionaisRouteImport
+      parentRoute: typeof AdminEventosEventoIdRoute
+    }
+    '/admin/eventos/$eventoId/conteudos': {
+      id: '/admin/eventos/$eventoId/conteudos'
+      path: '/conteudos'
+      fullPath: '/admin/eventos/$eventoId/conteudos'
+      preLoaderRoute: typeof AdminEventosEventoIdConteudosRouteImport
+      parentRoute: typeof AdminEventosEventoIdRoute
+    }
+    '/admin/eventos/$eventoId/elenco': {
+      id: '/admin/eventos/$eventoId/elenco'
+      path: '/elenco'
+      fullPath: '/admin/eventos/$eventoId/elenco'
+      preLoaderRoute: typeof AdminEventosEventoIdElencoRouteImport
+      parentRoute: typeof AdminEventosEventoIdRoute
+    }
+    '/admin/eventos/$eventoId/envio': {
+      id: '/admin/eventos/$eventoId/envio'
+      path: '/envio'
+      fullPath: '/admin/eventos/$eventoId/envio'
+      preLoaderRoute: typeof AdminEventosEventoIdEnvioRouteImport
+      parentRoute: typeof AdminEventosEventoIdRoute
+    }
+    '/admin/eventos/$eventoId/precos': {
+      id: '/admin/eventos/$eventoId/precos'
+      path: '/precos'
+      fullPath: '/admin/eventos/$eventoId/precos'
+      preLoaderRoute: typeof AdminEventosEventoIdPrecosRouteImport
+      parentRoute: typeof AdminEventosEventoIdRoute
+    }
+    '/admin/eventos/$eventoId/sessoes': {
+      id: '/admin/eventos/$eventoId/sessoes'
+      path: '/sessoes'
+      fullPath: '/admin/eventos/$eventoId/sessoes'
+      preLoaderRoute: typeof AdminEventosEventoIdSessoesRouteImport
+      parentRoute: typeof AdminEventosEventoIdRoute
+    }
+    '/admin/eventos/$eventoId/visao-geral': {
+      id: '/admin/eventos/$eventoId/visao-geral'
+      path: '/visao-geral'
+      fullPath: '/admin/eventos/$eventoId/visao-geral'
+      preLoaderRoute: typeof AdminEventosEventoIdVisaoGeralRouteImport
+      parentRoute: typeof AdminEventosEventoIdRoute
+    }
+    '/admin/locais/$localId/mapas/$mapaId': {
+      id: '/admin/locais/$localId/mapas/$mapaId'
+      path: '/locais/$localId/mapas/$mapaId'
+      fullPath: '/admin/locais/$localId/mapas/$mapaId'
+      preLoaderRoute: typeof AdminLocaisLocalIdMapasMapaIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
+interface AdminEventosEventoIdRouteChildren {
+  AdminEventosEventoIdAdicionaisRoute: typeof AdminEventosEventoIdAdicionaisRoute
+  AdminEventosEventoIdConteudosRoute: typeof AdminEventosEventoIdConteudosRoute
+  AdminEventosEventoIdElencoRoute: typeof AdminEventosEventoIdElencoRoute
+  AdminEventosEventoIdEnvioRoute: typeof AdminEventosEventoIdEnvioRoute
+  AdminEventosEventoIdPrecosRoute: typeof AdminEventosEventoIdPrecosRoute
+  AdminEventosEventoIdSessoesRoute: typeof AdminEventosEventoIdSessoesRoute
+  AdminEventosEventoIdVisaoGeralRoute: typeof AdminEventosEventoIdVisaoGeralRoute
+  AdminEventosEventoIdIndexRoute: typeof AdminEventosEventoIdIndexRoute
+}
+
+const AdminEventosEventoIdRouteChildren: AdminEventosEventoIdRouteChildren = {
+  AdminEventosEventoIdAdicionaisRoute: AdminEventosEventoIdAdicionaisRoute,
+  AdminEventosEventoIdConteudosRoute: AdminEventosEventoIdConteudosRoute,
+  AdminEventosEventoIdElencoRoute: AdminEventosEventoIdElencoRoute,
+  AdminEventosEventoIdEnvioRoute: AdminEventosEventoIdEnvioRoute,
+  AdminEventosEventoIdPrecosRoute: AdminEventosEventoIdPrecosRoute,
+  AdminEventosEventoIdSessoesRoute: AdminEventosEventoIdSessoesRoute,
+  AdminEventosEventoIdVisaoGeralRoute: AdminEventosEventoIdVisaoGeralRoute,
+  AdminEventosEventoIdIndexRoute: AdminEventosEventoIdIndexRoute,
+}
+
+const AdminEventosEventoIdRouteWithChildren =
+  AdminEventosEventoIdRoute._addFileChildren(AdminEventosEventoIdRouteChildren)
+
+interface AdminRouteChildren {
+  AdminAuditoriaRoute: typeof AdminAuditoriaRoute
+  AdminConfiguracoesRoute: typeof AdminConfiguracoesRoute
+  AdminEquipeRoute: typeof AdminEquipeRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+  AdminEventosEventoIdRoute: typeof AdminEventosEventoIdRouteWithChildren
+  AdminEventosIndexRoute: typeof AdminEventosIndexRoute
+  AdminLocaisIndexRoute: typeof AdminLocaisIndexRoute
+  AdminLocaisLocalIdMapasMapaIdRoute: typeof AdminLocaisLocalIdMapasMapaIdRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminAuditoriaRoute: AdminAuditoriaRoute,
+  AdminConfiguracoesRoute: AdminConfiguracoesRoute,
+  AdminEquipeRoute: AdminEquipeRoute,
+  AdminIndexRoute: AdminIndexRoute,
+  AdminEventosEventoIdRoute: AdminEventosEventoIdRouteWithChildren,
+  AdminEventosIndexRoute: AdminEventosIndexRoute,
+  AdminLocaisIndexRoute: AdminLocaisIndexRoute,
+  AdminLocaisLocalIdMapasMapaIdRoute: AdminLocaisLocalIdMapasMapaIdRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
+  BilheteriaRoute: BilheteriaRoute,
+  EntrarRoute: EntrarRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
