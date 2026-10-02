@@ -86,7 +86,7 @@ export const estadoPagamento = createServerFn({ method: "POST" })
         .maybeSingle(),
       supabase
         .from("termos_versoes")
-        .select("id, versao")
+        .select("id, versao, texto")
         .eq("evento_id", eventoId)
         .eq("tipo", "termos")
         .order("versao", { ascending: false })
