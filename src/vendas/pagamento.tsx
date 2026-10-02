@@ -11,9 +11,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SeloStatus } from "@/design/palco";
-import { mensagemDeErro, dinheiro, dataHora, preencher, centavosDeTexto, textoDeCentavos } from "@/lib/formato";
+import { mensagemDeErro, dinheiro, preencher } from "@/lib/formato";
 import { useRascunho } from "@/lib/rascunho";
-import { Cartoes, Copiar } from "./icones";
 import { QrTexto } from "./qr";
 import { CamposPagador, EscolhaAdicionais, EscolhaLugares, pagadorVazio, pagadorValido, type AdicionalEscolhido, type Pagador, type ProdutoVenda } from "./selecao";
 import { tipoPermitido, type LugarEscolhido, type MapaSessao, type TipoIngresso } from "./tipos";
@@ -214,9 +213,9 @@ function FormularioDePagamento({
   sessoesEntrega: Array<{ id: string; nome: string }>;
   onPix: (p: { qr: string; copia: string }) => void;
   onCartao: () => void;
-  pagar: ReturnType<typeof useServerFn<typeof iniciarPagamento>>;
+  pagar: typeof iniciarPagamento;
   liberar: () => Promise<void>;
-  buscarChave: ReturnType<typeof useServerFn<typeof chavePublicaPagarme>>;
+  buscarChave: typeof chavePublicaPagarme;
   rotuloVoltar: string;
 }) {
   const pedido = estado.pedido!;
