@@ -348,7 +348,7 @@ export const dadosEventoPublico = createServerFn({ method: "POST" })
       .maybeSingle();
     if (error) throw new Error(mensagemBanco(error));
     if (!ev) return null;
-    const [sessoes, janelas, termos] = await Promise.all([
+    const [sessoes, janelas, termos, conteudos] = await Promise.all([
       supabase
         .from("sessoes")
         .select("id, nome, data_hora, abertura_portas")
@@ -358,14 +358,24 @@ export const dadosEventoPublico = createServerFn({ method: "POST" })
       supabase.from("janelas").select("tipo, inicio, fim").eq("evento_id", ev.id).eq("tipo", "publico").order("inicio"),
       supabase
         .from("termos_versoes")
-        .select("id, versao")
+        .select("id, versao, texto")
         .eq("evento_id", ev.id)
         .eq("tipo", "termos")
         .order("versao", { ascending: false })
         .limit(1),
+      supabase.from("conteudos").select("chave, texto").eq("evento_id", ev.id),
     ]);
-    if (sessoes.error || janelas.error || termos.error) throw new Error(mensagemBanco(sessoes.error ?? janelas.error ?? termos.error));
-    return { evento: ev, sessoes: sessoes.data ?? [], janelas: janelas.data ?? [], termos: termos.data?.[0] ?? null };
+    if (sessoes.error || janelas.error || termos.error || conteudos.error)
+      throw new Error(mensagemBanco(sessoes.error ?? janelas.error ?? termos.error ?? conteudos.error));
+    const textos: Record<string, string> = {};
+    for (const c of conteudos.data ?? []) if (c.chave) textos[c.chave] = c.texto;
+    return {
+      evento: ev,
+      sessoes: sessoes.data ?? [],
+      janelas: janelas.data ?? [],
+      termos: termos.data?.[0] ?? null,
+      conteudos: textos,
+    };
   });
 
 /** Chave pública da Pagar.me para o navegador tokenizar o cartão (nunca a chave secreta). */
