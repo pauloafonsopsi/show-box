@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Proscenio, GradeDePoltronas, SeloStatus, type CelulaGrade, type EstadoPoltrona } from "@/design/palco";
-import { useMediaQuery } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { celulasDoMapa, type MapaSessao } from "./tipos";
 
 export function chaveMapa(sessaoId: string) {
