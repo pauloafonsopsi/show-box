@@ -88,9 +88,13 @@ export function MapaPoltronas({
 
   const conjunto = useMemo(() => new Set(perdidos), [perdidos]);
 
+  // Estado no banco -> estado na poltrona.
+  const estadoDe = (e: string): EstadoPoltrona =>
+    e === "bloqueado" ? "bloqueada" : e === "vendido" ? "ocupada" : e === "reservado" ? "outra-pessoa" : "livre";
+
   const contagens = useMemo(() => {
     const c: Record<EstadoPoltrona, number> = { livre: 0, escolhida: 0, ocupada: 0, "outra-pessoa": 0, bloqueada: 0 };
-    for (const a of mapa.assentos) c[a.estado]++;
+    for (const a of mapa.assentos) c[estadoDe(a.estado)]++;
     c.escolhida = escolhidos.size;
     if (c.livre > 0) c.livre -= escolhidos.size;
     return c;
@@ -99,13 +103,8 @@ export function MapaPoltronas({
   const celulas: CelulaGrade[] = useMemo(() => {
     return celulasDoMapa(mapa, (a) => {
       const escolhida = escolhidos.has(a.numero);
-      const estado: EstadoPoltrona = escolhida
-        ? "escolhida"
-        : a.estado === "reservado"
-          ? "outra-pessoa"
-          : a.estado;
       return {
-        estado,
+        estado: escolhida ? "escolhida" : estadoDe(a.estado),
         destaque: piscando && conjunto.has(a.numero),
       };
     }).filter((c) => {
