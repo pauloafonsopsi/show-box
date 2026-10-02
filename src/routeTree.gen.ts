@@ -13,14 +13,20 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as BilheteriaRouteImport } from './routes/bilheteria'
 import { Route as EntrarRouteImport } from './routes/entrar'
+import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminAuditoriaRouteImport } from './routes/admin.auditoria'
 import { Route as AdminConfiguracoesRouteImport } from './routes/admin.configuracoes'
 import { Route as AdminEquipeRouteImport } from './routes/admin.equipe'
+import { Route as ESlugRouteImport } from './routes/e.$slug'
 import { Route as FCodigoRouteImport } from './routes/f.$codigo'
+import { Route as PAcessoRouteImport } from './routes/p.$acesso'
+import { Route as TermosSlugRouteImport } from './routes/termos.$slug'
 import { Route as AdminEventosIndexRouteImport } from './routes/admin.eventos.index'
 import { Route as AdminEventosEventoIdRouteImport } from './routes/admin.eventos.$eventoId'
 import { Route as AdminLocaisIndexRouteImport } from './routes/admin.locais.index'
+import { Route as ESlugIndexRouteImport } from './routes/e.$slug.index'
+import { Route as ESlugSessaoIdRouteImport } from './routes/e.$slug.$sessaoId'
 import { Route as FCodigoIndexRouteImport } from './routes/f.$codigo.index'
 import { Route as FCodigoSessaoIdRouteImport } from './routes/f.$codigo.$sessaoId'
 import { Route as AdminEventosEventoIdIndexRouteImport } from './routes/admin.eventos.$eventoId.index'
@@ -56,6 +62,11 @@ const EntrarRoute = EntrarRouteImport.update({
   path: '/entrar',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacidadeRoute = PrivacidadeRouteImport.update({
+  id: '/privacidade',
+  path: '/privacidade',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -76,9 +87,24 @@ const AdminEquipeRoute = AdminEquipeRouteImport.update({
   path: '/equipe',
   getParentRoute: () => AdminRoute,
 } as any)
+const ESlugRoute = ESlugRouteImport.update({
+  id: '/e/$slug',
+  path: '/e/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FCodigoRoute = FCodigoRouteImport.update({
   id: '/f/$codigo',
   path: '/f/$codigo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PAcessoRoute = PAcessoRouteImport.update({
+  id: '/p/$acesso',
+  path: '/p/$acesso',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermosSlugRoute = TermosSlugRouteImport.update({
+  id: '/termos/$slug',
+  path: '/termos/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminEventosIndexRoute = AdminEventosIndexRouteImport.update({
@@ -95,6 +121,16 @@ const AdminLocaisIndexRoute = AdminLocaisIndexRouteImport.update({
   id: '/locais/',
   path: '/locais/',
   getParentRoute: () => AdminRoute,
+} as any)
+const ESlugIndexRoute = ESlugIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ESlugRoute,
+} as any)
+const ESlugSessaoIdRoute = ESlugSessaoIdRouteImport.update({
+  id: '/$sessaoId',
+  path: '/$sessaoId',
+  getParentRoute: () => ESlugRoute,
 } as any)
 const FCodigoIndexRoute = FCodigoIndexRouteImport.update({
   id: '/',
@@ -182,15 +218,21 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/bilheteria': typeof BilheteriaRoute
   '/entrar': typeof EntrarRoute
+  '/privacidade': typeof PrivacidadeRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
   '/admin/configuracoes': typeof AdminConfiguracoesRoute
   '/admin/equipe': typeof AdminEquipeRoute
+  '/e/$slug': typeof ESlugRouteWithChildren
   '/f/$codigo': typeof FCodigoRouteWithChildren
+  '/p/$acesso': typeof PAcessoRoute
+  '/termos/$slug': typeof TermosSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/admin/eventos/$eventoId': typeof AdminEventosEventoIdRouteWithChildren
+  '/e/$slug/$sessaoId': typeof ESlugSessaoIdRoute
   '/f/$codigo/$sessaoId': typeof FCodigoSessaoIdRoute
   '/admin/eventos/': typeof AdminEventosIndexRoute
   '/admin/locais/': typeof AdminLocaisIndexRoute
+  '/e/$slug/': typeof ESlugIndexRoute
   '/f/$codigo/': typeof FCodigoIndexRoute
   '/admin/eventos/$eventoId/adicionais': typeof AdminEventosEventoIdAdicionaisRoute
   '/admin/eventos/$eventoId/conteudos': typeof AdminEventosEventoIdConteudosRoute
@@ -209,13 +251,18 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/bilheteria': typeof BilheteriaRoute
   '/entrar': typeof EntrarRoute
+  '/privacidade': typeof PrivacidadeRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
   '/admin/configuracoes': typeof AdminConfiguracoesRoute
   '/admin/equipe': typeof AdminEquipeRoute
+  '/p/$acesso': typeof PAcessoRoute
+  '/termos/$slug': typeof TermosSlugRoute
   '/admin': typeof AdminIndexRoute
+  '/e/$slug/$sessaoId': typeof ESlugSessaoIdRoute
   '/f/$codigo/$sessaoId': typeof FCodigoSessaoIdRoute
   '/admin/eventos': typeof AdminEventosIndexRoute
   '/admin/locais': typeof AdminLocaisIndexRoute
+  '/e/$slug': typeof ESlugIndexRoute
   '/f/$codigo': typeof FCodigoIndexRoute
   '/admin/eventos/$eventoId/adicionais': typeof AdminEventosEventoIdAdicionaisRoute
   '/admin/eventos/$eventoId/conteudos': typeof AdminEventosEventoIdConteudosRoute
@@ -236,15 +283,21 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/bilheteria': typeof BilheteriaRoute
   '/entrar': typeof EntrarRoute
+  '/privacidade': typeof PrivacidadeRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
   '/admin/configuracoes': typeof AdminConfiguracoesRoute
   '/admin/equipe': typeof AdminEquipeRoute
+  '/e/$slug': typeof ESlugRouteWithChildren
   '/f/$codigo': typeof FCodigoRouteWithChildren
+  '/p/$acesso': typeof PAcessoRoute
+  '/termos/$slug': typeof TermosSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/admin/eventos/$eventoId': typeof AdminEventosEventoIdRouteWithChildren
+  '/e/$slug/$sessaoId': typeof ESlugSessaoIdRoute
   '/f/$codigo/$sessaoId': typeof FCodigoSessaoIdRoute
   '/admin/eventos/': typeof AdminEventosIndexRoute
   '/admin/locais/': typeof AdminLocaisIndexRoute
+  '/e/$slug/': typeof ESlugIndexRoute
   '/f/$codigo/': typeof FCodigoIndexRoute
   '/admin/eventos/$eventoId/adicionais': typeof AdminEventosEventoIdAdicionaisRoute
   '/admin/eventos/$eventoId/conteudos': typeof AdminEventosEventoIdConteudosRoute
@@ -266,15 +319,21 @@ export interface FileRouteTypes {
     | '/admin'
     | '/bilheteria'
     | '/entrar'
+    | '/privacidade'
     | '/admin/auditoria'
     | '/admin/configuracoes'
     | '/admin/equipe'
+    | '/e/$slug'
     | '/f/$codigo'
+    | '/p/$acesso'
+    | '/termos/$slug'
     | '/admin/'
     | '/admin/eventos/$eventoId'
+    | '/e/$slug/$sessaoId'
     | '/f/$codigo/$sessaoId'
     | '/admin/eventos/'
     | '/admin/locais/'
+    | '/e/$slug/'
     | '/f/$codigo/'
     | '/admin/eventos/$eventoId/adicionais'
     | '/admin/eventos/$eventoId/conteudos'
@@ -293,13 +352,18 @@ export interface FileRouteTypes {
     | '/'
     | '/bilheteria'
     | '/entrar'
+    | '/privacidade'
     | '/admin/auditoria'
     | '/admin/configuracoes'
     | '/admin/equipe'
+    | '/p/$acesso'
+    | '/termos/$slug'
     | '/admin'
+    | '/e/$slug/$sessaoId'
     | '/f/$codigo/$sessaoId'
     | '/admin/eventos'
     | '/admin/locais'
+    | '/e/$slug'
     | '/f/$codigo'
     | '/admin/eventos/$eventoId/adicionais'
     | '/admin/eventos/$eventoId/conteudos'
@@ -319,15 +383,21 @@ export interface FileRouteTypes {
     | '/admin'
     | '/bilheteria'
     | '/entrar'
+    | '/privacidade'
     | '/admin/auditoria'
     | '/admin/configuracoes'
     | '/admin/equipe'
+    | '/e/$slug'
     | '/f/$codigo'
+    | '/p/$acesso'
+    | '/termos/$slug'
     | '/admin/'
     | '/admin/eventos/$eventoId'
+    | '/e/$slug/$sessaoId'
     | '/f/$codigo/$sessaoId'
     | '/admin/eventos/'
     | '/admin/locais/'
+    | '/e/$slug/'
     | '/f/$codigo/'
     | '/admin/eventos/$eventoId/adicionais'
     | '/admin/eventos/$eventoId/conteudos'
@@ -348,7 +418,11 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren
   BilheteriaRoute: typeof BilheteriaRoute
   EntrarRoute: typeof EntrarRoute
+  PrivacidadeRoute: typeof PrivacidadeRoute
+  ESlugRoute: typeof ESlugRouteWithChildren
   FCodigoRoute: typeof FCodigoRouteWithChildren
+  PAcessoRoute: typeof PAcessoRoute
+  TermosSlugRoute: typeof TermosSlugRoute
   ApiPagarmeWebhookSegredoRoute: typeof ApiPagarmeWebhookSegredoRoute
 }
 
@@ -382,6 +456,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EntrarRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacidade': {
+      id: '/privacidade'
+      path: '/privacidade'
+      fullPath: '/privacidade'
+      preLoaderRoute: typeof PrivacidadeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/': {
       id: '/admin/'
       path: '/'
@@ -410,11 +491,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminEquipeRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/e/$slug': {
+      id: '/e/$slug'
+      path: '/e/$slug'
+      fullPath: '/e/$slug'
+      preLoaderRoute: typeof ESlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/f/$codigo': {
       id: '/f/$codigo'
       path: '/f/$codigo'
       fullPath: '/f/$codigo'
       preLoaderRoute: typeof FCodigoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/p/$acesso': {
+      id: '/p/$acesso'
+      path: '/p/$acesso'
+      fullPath: '/p/$acesso'
+      preLoaderRoute: typeof PAcessoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/termos/$slug': {
+      id: '/termos/$slug'
+      path: '/termos/$slug'
+      fullPath: '/termos/$slug'
+      preLoaderRoute: typeof TermosSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/eventos/': {
@@ -437,6 +539,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/locais/'
       preLoaderRoute: typeof AdminLocaisIndexRouteImport
       parentRoute: typeof AdminRoute
+    }
+    '/e/$slug/': {
+      id: '/e/$slug/'
+      path: '/'
+      fullPath: '/e/$slug/'
+      preLoaderRoute: typeof ESlugIndexRouteImport
+      parentRoute: typeof ESlugRoute
+    }
+    '/e/$slug/$sessaoId': {
+      id: '/e/$slug/$sessaoId'
+      path: '/$sessaoId'
+      fullPath: '/e/$slug/$sessaoId'
+      preLoaderRoute: typeof ESlugSessaoIdRouteImport
+      parentRoute: typeof ESlugRoute
     }
     '/f/$codigo/': {
       id: '/f/$codigo/'
@@ -588,6 +704,18 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
+interface ESlugRouteChildren {
+  ESlugSessaoIdRoute: typeof ESlugSessaoIdRoute
+  ESlugIndexRoute: typeof ESlugIndexRoute
+}
+
+const ESlugRouteChildren: ESlugRouteChildren = {
+  ESlugSessaoIdRoute: ESlugSessaoIdRoute,
+  ESlugIndexRoute: ESlugIndexRoute,
+}
+
+const ESlugRouteWithChildren = ESlugRoute._addFileChildren(ESlugRouteChildren)
+
 interface FCodigoRouteChildren {
   FCodigoSessaoIdRoute: typeof FCodigoSessaoIdRoute
   FCodigoIndexRoute: typeof FCodigoIndexRoute
@@ -610,7 +738,11 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRouteWithChildren,
   BilheteriaRoute: BilheteriaRoute,
   EntrarRoute: EntrarRoute,
+  PrivacidadeRoute: PrivacidadeRoute,
+  ESlugRoute: ESlugRouteWithChildren,
   FCodigoRoute: FCodigoRouteWithChildren,
+  PAcessoRoute: PAcessoRoute,
+  TermosSlugRoute: TermosSlugRoute,
   ApiPagarmeWebhookSegredoRoute: ApiPagarmeWebhookSegredoRoute,
 }
 export const routeTree = rootRouteImport
