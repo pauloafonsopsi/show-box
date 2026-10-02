@@ -174,11 +174,25 @@ export function EditorDeGrade({
     setAlterado(true);
   }, [passado, futuro, celulas]);
 
+  const [lote, setLote] = useState<Set<string>>(new Set());
+  const moverLoteRef = useRef<(dl: number, dc: number) => boolean>(() => false);
+
   useEffect(() => {
     const teclas = (e: KeyboardEvent) => {
       const alvo = e.target as HTMLElement | null;
       if (alvo && ["INPUT", "SELECT", "TEXTAREA"].includes(alvo.tagName)) return;
-      if (e.key === "Escape") setMenu(null);
+      if (e.key === "Escape") {
+        setMenu(null);
+        setLote(new Set());
+      }
+      const setas: Record<string, [number, number]> = {
+        ArrowLeft: [0, -1],
+        ArrowRight: [0, 1],
+        ArrowUp: [-1, 0],
+        ArrowDown: [1, 0],
+      };
+      const d = setas[e.key];
+      if (d && moverLoteRef.current(d[0], d[1])) e.preventDefault();
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "z") {
         e.preventDefault();
         if (e.shiftKey) refazer();
@@ -268,18 +282,34 @@ export function EditorDeGrade({
     if (!pos) return;
     setMensagem(null);
 
-    if (modo === "mover") {
+    if (modo === "mover" || modo === "inspecionar") {
       const k = chave(pos[0], pos[1]);
-      if (celulas.get(k)?.tipo === "assento") {
+      const ehAssento = celulas.get(k)?.tipo === "assento";
+      if (e.shiftKey || e.metaKey || e.ctrlKey) {
+        // Seleção múltipla, como arquivos no computador.
+        if (!ehAssento) return;
+        setMenu(null);
+        setLote((atual) => {
+          const novo = new Set(atual);
+          if (novo.size === 0 && selecionada && selecionada !== k) novo.add(selecionada);
+          if (novo.has(k)) novo.delete(k);
+          else novo.add(k);
+          return novo;
+        });
+        setSelecionada(null);
+        return;
+      }
+      if (ehAssento && lote.size > 0 && !lote.has(k)) setLote(new Set());
+      if (!ehAssento) setLote(new Set());
+      if (modo === "inspecionar") {
+        if (lote.size === 0 || !lote.has(k)) setSelecionada(ehAssento ? k : null);
+        return;
+      }
+      if (ehAssento) {
         origemArraste.current = k;
         setAlvoArraste(k);
         (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId);
       } else setMenu(null);
-      return;
-    }
-    if (modo === "inspecionar") {
-      const k = chave(pos[0], pos[1]);
-      setSelecionada(celulas.get(k)?.tipo === "assento" ? k : null);
       return;
     }
     if (modo === "area") {
@@ -340,11 +370,18 @@ export function EditorDeGrade({
       origemArraste.current = null;
       setAlvoArraste(null);
       if (!alvo || alvo === origem) {
+        if (lote.size > 0) return; // clique simples com lote ativo: não abre menu
         const el = gradeRef.current?.querySelector<HTMLElement>(
           `[data-l="${origem.split(":")[0]}"][data-c="${origem.split(":")[1]}"]`,
         );
         setSelecionada(origem);
         if (el) setMenu({ k: origem, x: el.offsetLeft + el.offsetWidth / 2, y: el.offsetTop + el.offsetHeight });
+        return;
+      }
+      if (lote.size > 1 && lote.has(origem)) {
+        const [ol, oc] = origem.split(":").map(Number) as [number, number];
+        const [al, ac] = alvo.split(":").map(Number) as [number, number];
+        moverConjunto(lote, al - ol, ac - oc);
         return;
       }
       if (celulas.has(alvo)) {
@@ -449,6 +486,66 @@ export function EditorDeGrade({
       setSelecionada(eixo === "coluna" ? chave(sel.linha, pos) : chave(pos, sel.coluna));
     }
     setMenu(null);
+  };
+
+  /**
+   * Move um conjunto de assentos juntos. Se passar da borda, a grade cresce
+   * (abrindo vão como corredor); nada é apagado. Recusa se bater em outro assento.
+   */
+  const moverConjunto = (chaves: Set<string>, dl: number, dc: number): Set<string> | null => {
+    const grupo = [...chaves].map((k) => celulas.get(k)).filter((c): c is Celula => !!c);
+    if (!grupo.length || (dl === 0 && dc === 0)) return null;
+    const restantes = new Map(celulas);
+    for (const c of grupo) restantes.delete(chave(c.linha, c.coluna));
+    const minL = Math.min(...grupo.map((c) => c.linha + dl));
+    const minC = Math.min(...grupo.map((c) => c.coluna + dc));
+    // Se passou da borda de cima/esquerda, empurra o mapa todo para abrir espaço.
+    const offL = minL < 1 ? 1 - minL : 0;
+    const offC = minC < 1 ? 1 - minC : 0;
+    const base = new Map<string, Celula>();
+    for (const c of restantes.values()) {
+      const m = { ...c, linha: c.linha + offL, coluna: c.coluna + offC };
+      base.set(chave(m.linha, m.coluna), m);
+    }
+    const movidos = grupo.map((c) => ({
+      ...c,
+      linha: c.linha + dl + offL,
+      coluna: c.coluna + dc + offC,
+    }));
+    for (const m of movidos) {
+      if (base.has(chave(m.linha, m.coluna))) {
+        setMensagem({ tom: "aviso", texto: "Há outro assento no caminho. Abra um corredor antes." });
+        return null;
+      }
+    }
+    const usados = [...base.values(), ...movidos];
+    const novasFilas = Math.max(filas + offL, ...usados.map((c) => c.linha));
+    const novasColunas = Math.max(colunas + offC, ...usados.map((c) => c.coluna));
+    if (novasFilas > LIMITE_FILAS || novasColunas > LIMITE_COLUNAS) {
+      setMensagem({ tom: "aviso", texto: "A grade chegou ao tamanho máximo." });
+      return null;
+    }
+    for (const m of movidos) base.set(chave(m.linha, m.coluna), m);
+    setFilas(novasFilas);
+    setColunas(novasColunas);
+    registrar(base);
+    const novoLote = new Set(movidos.map((m) => chave(m.linha, m.coluna)));
+    setLote(novoLote);
+    setSelecionada(null);
+    setMenu(null);
+    return novoLote;
+  };
+
+  const alterarLote = (mudanca: Partial<Celula> | "apagar") => {
+    const novo = new Map(celulas);
+    for (const k of lote) {
+      const atual = novo.get(k);
+      if (!atual) continue;
+      if (mudanca === "apagar") novo.delete(k);
+      else novo.set(k, { ...atual, ...mudanca });
+    }
+    registrar(novo);
+    if (mudanca === "apagar") setLote(new Set());
   };
 
   /** Move todos os assentos de uma fileira juntos, sem desalinhar. */
@@ -562,6 +659,11 @@ export function EditorDeGrade({
     }
   };
 
+  moverLoteRef.current = (dl, dc) => {
+    if (lote.size === 0) return false;
+    moverConjunto(lote, dl, dc);
+    return true;
+  };
   const celulaSelecionada = selecionada ? (celulas.get(selecionada) ?? null) : null;
   const dicaModo = MODOS.find((m) => m.id === modo)?.dica ?? "";
 
@@ -735,7 +837,65 @@ export function EditorDeGrade({
               </p>
             </div>
           ) : null}
-          {celulaSelecionada ? (
+          {lote.size > 0 ? (
+            <div
+              className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-md border border-primary/50 bg-background p-2 text-sm"
+              aria-label="Poltronas selecionadas"
+            >
+              <span className="font-semibold">
+                {lote.size} {lote.size === 1 ? "poltrona selecionada" : "poltronas selecionadas"}
+              </span>
+              <div className="flex flex-wrap items-center gap-1">
+                <span className="text-muted-foreground">Mover juntas:</span>
+                {(
+                  [
+                    ["←", 0, -1, "para a esquerda"],
+                    ["→", 0, 1, "para a direita"],
+                    ["↑", -1, 0, "para a frente"],
+                    ["↓", 1, 0, "para trás"],
+                  ] as const
+                ).map(([seta, dl, dc, nome]) => (
+                  <Button
+                    key={nome}
+                    variant="outline"
+                    size="sm"
+                    className="min-h-11 min-w-11"
+                    aria-label={`Mover seleção ${nome}`}
+                    onClick={() => moverConjunto(lote, dl, dc)}
+                  >
+                    {seta}
+                  </Button>
+                ))}
+              </div>
+              {setores.length ? (
+                <label className="flex items-center gap-2">
+                  <span className="text-muted-foreground">Setor:</span>
+                  <select
+                    className="min-h-11 rounded-md border bg-background px-2 text-base"
+                    defaultValue=""
+                    onChange={(e) => {
+                      if (e.target.value) alterarLote({ setorId: e.target.value });
+                      e.target.value = "";
+                    }}
+                  >
+                    <option value="">Trocar para...</option>
+                    {setores.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.nome}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
+              <Button variant="ghost" size="sm" className="min-h-11" onClick={() => alterarLote("apagar")}>
+                Apagar
+              </Button>
+              <Button variant="ghost" size="sm" className="min-h-11" onClick={() => setLote(new Set())}>
+                Limpar seleção
+              </Button>
+            </div>
+          ) : null}
+          {lote.size > 0 ? null : celulaSelecionada ? (
             <div
               className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-md border bg-background p-2 text-sm"
               aria-label="Corredores e fileira"
@@ -846,6 +1006,8 @@ export function EditorDeGrade({
                       origemArraste.current === k && alvoArraste !== k && "opacity-40",
                       marcada && "ring-2 ring-ring",
                       selecionada === k && "ring-2 ring-primary",
+                      lote.has(k) && "ring-2 ring-primary bg-primary/25",
+                      alvoArraste === k && c && lote.size > 1 && "ring-2 ring-primary",
                     )}
                   >
                     {c?.tipo === "assento" ? (
