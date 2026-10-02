@@ -402,6 +402,83 @@ export function EditorDeGrade({
     registrar(novo);
   };
 
+  /** Abre um vão empurrando tudo que está depois de `depoisDe` uma posição adiante. Nada é apagado. */
+  const abrirVao = (eixo: "coluna" | "linha", depoisDe: number) => {
+    const limite = eixo === "coluna" ? LIMITE_COLUNAS : LIMITE_FILAS;
+    const total = eixo === "coluna" ? colunas : filas;
+    const ultimoUsado = Math.max(0, ...[...celulas.values()].map((c) => c[eixo]));
+    const novoTotal = ultimoUsado >= total ? total + 1 : total;
+    if (novoTotal > limite) {
+      setMensagem({ tom: "aviso", texto: "A grade chegou ao tamanho máximo." });
+      return;
+    }
+    const novo = new Map<string, Celula>();
+    for (const c of celulas.values()) {
+      const m = c[eixo] > depoisDe ? { ...c, [eixo]: c[eixo] + 1 } : c;
+      novo.set(chave(m.linha, m.coluna), m);
+    }
+    if (eixo === "coluna") setColunas(novoTotal);
+    else setFilas(novoTotal);
+    registrar(novo);
+    const sel = selecionada ? celulas.get(selecionada) : null;
+    if (sel) {
+      const pos = sel[eixo] > depoisDe ? sel[eixo] + 1 : sel[eixo];
+      setSelecionada(eixo === "coluna" ? chave(sel.linha, pos) : chave(pos, sel.coluna));
+    }
+    setMenu(null);
+  };
+
+  /** Fecha um vão: remove a coluna/linha `indice` (só se não tiver assento) e puxa o resto de volta. */
+  const fecharVao = (eixo: "coluna" | "linha", indice: number) => {
+    const total = eixo === "coluna" ? colunas : filas;
+    if (indice < 1 || indice > total) return;
+    if ([...celulas.values()].some((c) => c[eixo] === indice && c.tipo !== "corredor")) {
+      setMensagem({ tom: "aviso", texto: "Ali não é um vão vazio: há assentos ou palco nessa linha." });
+      return;
+    }
+    const novo = new Map<string, Celula>();
+    for (const c of celulas.values()) {
+      if (c[eixo] === indice) continue;
+      const m = c[eixo] > indice ? { ...c, [eixo]: c[eixo] - 1 } : c;
+      novo.set(chave(m.linha, m.coluna), m);
+    }
+    registrar(novo);
+    const sel = selecionada ? celulas.get(selecionada) : null;
+    if (sel) {
+      const pos = sel[eixo] > indice ? sel[eixo] - 1 : sel[eixo];
+      setSelecionada(eixo === "coluna" ? chave(sel.linha, pos) : chave(pos, sel.coluna));
+    }
+    setMenu(null);
+  };
+
+  /** Move todos os assentos de uma fileira juntos, sem desalinhar. */
+  const moverFileira = (linha: number, dl: number, dc: number) => {
+    const daFila = [...celulas.values()].filter((c) => c.linha === linha && c.tipo === "assento");
+    if (!daFila.length) return;
+    const restantes = new Map(celulas);
+    for (const c of daFila) restantes.delete(chave(c.linha, c.coluna));
+    for (const c of daFila) {
+      const l = c.linha + dl;
+      const col = c.coluna + dc;
+      if (l < 1 || l > filas || col < 1 || col > colunas) {
+        setMensagem({ tom: "aviso", texto: "A fileira encostou na borda da grade." });
+        return;
+      }
+      if (restantes.has(chave(l, col))) {
+        setMensagem({ tom: "aviso", texto: "Há outro assento no caminho. Abra um corredor antes." });
+        return;
+      }
+    }
+    for (const c of daFila) {
+      const m = { ...c, linha: c.linha + dl, coluna: c.coluna + dc };
+      restantes.set(chave(m.linha, m.coluna), m);
+    }
+    registrar(restantes);
+    const sel = selecionada ? celulas.get(selecionada) : null;
+    if (sel && sel.linha === linha) setSelecionada(chave(sel.linha + dl, sel.coluna + dc));
+    setMenu(null);
+  };
+
   const renumerar = (regra: RegraNumeracao, sentido: Sentido) => {
     const ok = window.confirm(
       "Renumerar muda o número de todos os assentos deste mapa. Sessões já congeladas não mudam. Continuar?",
@@ -658,6 +735,73 @@ export function EditorDeGrade({
               </p>
             </div>
           ) : null}
+          {celulaSelecionada ? (
+            <div
+              className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-md border bg-background p-2 text-sm"
+              aria-label="Corredores e fileira"
+            >
+              <span className="font-semibold">
+                Fila {celulaSelecionada.rotuloFila ?? celulaSelecionada.linha}, lugar{" "}
+                {celulaSelecionada.numero ?? ""}
+              </span>
+              <div className="flex flex-wrap items-center gap-1">
+                <span className="text-muted-foreground">Abrir corredor:</span>
+                <Button variant="outline" size="sm" className="min-h-11" onClick={() => abrirVao("coluna", celulaSelecionada.coluna - 1)}>
+                  à esquerda
+                </Button>
+                <Button variant="outline" size="sm" className="min-h-11" onClick={() => abrirVao("coluna", celulaSelecionada.coluna)}>
+                  à direita
+                </Button>
+                <Button variant="outline" size="sm" className="min-h-11" onClick={() => abrirVao("linha", celulaSelecionada.linha - 1)}>
+                  na frente
+                </Button>
+                <Button variant="outline" size="sm" className="min-h-11" onClick={() => abrirVao("linha", celulaSelecionada.linha)}>
+                  atrás
+                </Button>
+              </div>
+              <div className="flex flex-wrap items-center gap-1">
+                <span className="text-muted-foreground">Fechar vão vazio:</span>
+                <Button variant="ghost" size="sm" className="min-h-11" onClick={() => fecharVao("coluna", celulaSelecionada.coluna - 1)}>
+                  esquerda
+                </Button>
+                <Button variant="ghost" size="sm" className="min-h-11" onClick={() => fecharVao("coluna", celulaSelecionada.coluna + 1)}>
+                  direita
+                </Button>
+                <Button variant="ghost" size="sm" className="min-h-11" onClick={() => fecharVao("linha", celulaSelecionada.linha - 1)}>
+                  frente
+                </Button>
+                <Button variant="ghost" size="sm" className="min-h-11" onClick={() => fecharVao("linha", celulaSelecionada.linha + 1)}>
+                  trás
+                </Button>
+              </div>
+              <div className="flex flex-wrap items-center gap-1">
+                <span className="text-muted-foreground">Mover a fileira toda:</span>
+                {(
+                  [
+                    ["←", 0, -1, "para a esquerda"],
+                    ["→", 0, 1, "para a direita"],
+                    ["↑", -1, 0, "para a frente"],
+                    ["↓", 1, 0, "para trás"],
+                  ] as const
+                ).map(([seta, dl, dc, nome]) => (
+                  <Button
+                    key={nome}
+                    variant="outline"
+                    size="sm"
+                    className="min-h-11 min-w-11"
+                    aria-label={`Mover fileira ${nome}`}
+                    onClick={() => moverFileira(celulaSelecionada.linha, dl, dc)}
+                  >
+                    {seta}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <p className="mb-3 text-sm text-muted-foreground">
+              Toque num assento (modo Mover e editar ou Inspecionar) para abrir corredores ao lado dele ou mover a fileira inteira.
+            </p>
+          )}
           <div className="relative w-max" ref={gradeRef}>
           <div
             className="proscenio mb-4 h-12 text-sm"
