@@ -13,7 +13,7 @@ export function mensagemBanco(e: unknown): string {
 /** Chama uma função do banco com a chave de serviço. O erro chega em português e é repassado. */
 export async function rpcAdmin<T>(nome: string, args: Record<string, unknown>): Promise<T> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data, error } = await (supabaseAdmin.rpc as (f: string, a: Record<string, unknown>) => Promise<{ data: T | null; error: ErroBanco | null }>)(
+  const { data, error } = await (supabaseAdmin.rpc as unknown as (f: string, a: Record<string, unknown>) => Promise<{ data: T | null; error: ErroBanco | null }>)(
     nome,
     args,
   );

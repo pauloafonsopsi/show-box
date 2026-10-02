@@ -18,7 +18,7 @@ export function useMapaSessao(sessaoId: string | null | undefined) {
     enabled: Boolean(sessaoId),
     queryKey: chaveMapa(sessaoId ?? ""),
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("mapa_da_sessao", { p_sessao: sessaoId });
+      const { data, error } = await supabase.rpc("mapa_da_sessao", { p_sessao: sessaoId as string });
       if (error) throw new Error(error.message);
       return (data ?? null) as MapaSessao | null;
     },
@@ -184,7 +184,7 @@ export function MapaPoltronas({
           colunas={mapa.colunas}
           filas={mapa.filas}
           celulas={celulas}
-          onEscolher={onEscolher}
+          onEscolher={onEscolher ?? (() => undefined)}
           tamanhoMaximo={vista === "tudo" ? (pequeno ? 22 : 30) : 44}
           className={vista === "tudo" ? undefined : "overflow-x-auto pb-2"}
         />

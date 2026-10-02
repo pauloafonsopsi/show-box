@@ -7,7 +7,7 @@ import { z } from "zod";
 import type { MapaSessao } from "@/vendas/tipos";
 import { ErroPagarme, comChaveServico, mensagemBanco, pagarmeDelete, pagarmeGet, pagarmePost, rpcAdmin } from "./vendas.server";
 
-export type Json = string | number | boolean | null | Json[] | { [key: string]: Json };
+export type Json = string | number | boolean | null | Json[] | { [key: string]: Json | undefined };
 
 const Acesso = z.string().trim().min(10).max(64);
 type MapaDaSessao = MapaSessao | null;
