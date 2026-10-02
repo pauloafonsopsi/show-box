@@ -189,10 +189,13 @@ export function normalizarBusca(texto: string): string {
 
 export function celulasDoMapa(
   mapa: MapaSessao,
-  estados: (numero: number, assento: AssentoMapa) => CelulaGrade,
+  estadoDe: (assento: AssentoMapa) => Pick<CelulaGrade, "estado" | "destaque"> = () => ({ estado: "livre" }),
 ): CelulaGrade[] {
   const palco = new Set(mapa.palco.map(([l, c]) => `${l}:${c}`));
   const corredor = new Set(mapa.corredor.map(([l, c]) => `${l}:${c}`));
+  const porPosicao = new Map(mapa.assentos.map((a) => [`${a.linha}:${a.coluna}`, a] as const));
+  const setorDe = new Map(mapa.setores.map((s) => [s.id, s] as const));
+
   const celulas: CelulaGrade[] = [];
   for (let l = 1; l <= mapa.filas; l++)
     for (let c = 1; c <= mapa.colunas; c++) {
@@ -204,26 +207,20 @@ export function celulasDoMapa(
         celulas.push({ linha: l, coluna: c, tipo: "corredor" });
         continue;
       }
-      celulas.push({ linha: l, coluna: c, tipo: "assento" });
+      const assento = porPosicao.get(`${l}:${c}`);
+      if (!assento) continue;
+      const setor = setorDe.get(assento.setor_id);
+      celulas.push({
+        linha: l,
+        coluna: c,
+        tipo: "assento",
+        numero: assento.numero,
+        rotuloFila: assento.fila,
+        setor: setor?.nome ?? null,
+        corSetor: setor?.cor ?? null,
+        acessivel: assento.acessivel,
+        ...estadoDe(assento),
+      });
     }
-  const porNumero = new Map(mapa.assentos.map((a) => [a.numero, a]));
-  for (const c of celulas) {
-    if (c.tipo !== "assento") continue;
-    const assento = porNumero.get(celulaParaNumero(c, porNumero));
-    if (!assento) continue;
-    c.numero = assento.numero;
-    c.rotuloFila = assento.fila;
-    c.setor = mapa.setores.find((s) => s.id === assento.setor_id)?.nome ?? null;
-    c.corSetor = mapa.setores.find((s) => s.id === assento.setor_id)?.cor ?? null;
-    c.acessivel = assento.acessivel;
-    Object.assign(c, estados(assento.numero, assento));
-  }
   return celulas;
-}
-
-/** Encontra o assento da célula (linha:coluna) sem depender da ordem. */
-function celulaParaNumero(c: CelulaGrade, porNumero: Map<number, AssentoMapa>): number {
-  for (const [numero, a] of porNumero)
-    if (a.linha === c.linha && a.coluna === c.coluna) return numero;
-  return 0;
 }
