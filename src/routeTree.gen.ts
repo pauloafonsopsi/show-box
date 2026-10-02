@@ -22,6 +22,7 @@ import { Route as BilheteriaIndexRouteImport } from './routes/bilheteria.index'
 import { Route as BilheteriaAvulsaRouteImport } from './routes/bilheteria.avulsa'
 import { Route as BilheteriaCaixaRouteImport } from './routes/bilheteria.caixa'
 import { Route as BilheteriaImpressaoRouteImport } from './routes/bilheteria.impressao'
+import { Route as BilheteriaPedidosRouteImport } from './routes/bilheteria.pedidos'
 import { Route as BilheteriaRetiradaRouteImport } from './routes/bilheteria.retirada'
 import { Route as ESlugRouteImport } from './routes/e.$slug'
 import { Route as FCodigoRouteImport } from './routes/f.$codigo'
@@ -111,6 +112,11 @@ const BilheteriaCaixaRoute = BilheteriaCaixaRouteImport.update({
 const BilheteriaImpressaoRoute = BilheteriaImpressaoRouteImport.update({
   id: '/impressao',
   path: '/impressao',
+  getParentRoute: () => BilheteriaRoute,
+} as any)
+const BilheteriaPedidosRoute = BilheteriaPedidosRouteImport.update({
+  id: '/pedidos',
+  path: '/pedidos',
   getParentRoute: () => BilheteriaRoute,
 } as any)
 const BilheteriaRetiradaRoute = BilheteriaRetiradaRouteImport.update({
@@ -262,6 +268,7 @@ export interface FileRoutesByFullPath {
   '/bilheteria/avulsa': typeof BilheteriaAvulsaRoute
   '/bilheteria/caixa': typeof BilheteriaCaixaRoute
   '/bilheteria/impressao': typeof BilheteriaImpressaoRoute
+  '/bilheteria/pedidos': typeof BilheteriaPedidosRoute
   '/bilheteria/retirada': typeof BilheteriaRetiradaRoute
   '/e/$slug': typeof ESlugRouteWithChildren
   '/f/$codigo': typeof FCodigoRouteWithChildren
@@ -300,6 +307,7 @@ export interface FileRoutesByTo {
   '/bilheteria/avulsa': typeof BilheteriaAvulsaRoute
   '/bilheteria/caixa': typeof BilheteriaCaixaRoute
   '/bilheteria/impressao': typeof BilheteriaImpressaoRoute
+  '/bilheteria/pedidos': typeof BilheteriaPedidosRoute
   '/bilheteria/retirada': typeof BilheteriaRetiradaRoute
   '/p/$acesso': typeof PAcessoRoute
   '/termos/$slug': typeof TermosSlugRoute
@@ -338,6 +346,7 @@ export interface FileRoutesById {
   '/bilheteria/avulsa': typeof BilheteriaAvulsaRoute
   '/bilheteria/caixa': typeof BilheteriaCaixaRoute
   '/bilheteria/impressao': typeof BilheteriaImpressaoRoute
+  '/bilheteria/pedidos': typeof BilheteriaPedidosRoute
   '/bilheteria/retirada': typeof BilheteriaRetiradaRoute
   '/e/$slug': typeof ESlugRouteWithChildren
   '/f/$codigo': typeof FCodigoRouteWithChildren
@@ -380,6 +389,7 @@ export interface FileRouteTypes {
     | '/bilheteria/avulsa'
     | '/bilheteria/caixa'
     | '/bilheteria/impressao'
+    | '/bilheteria/pedidos'
     | '/bilheteria/retirada'
     | '/e/$slug'
     | '/f/$codigo'
@@ -418,6 +428,7 @@ export interface FileRouteTypes {
     | '/bilheteria/avulsa'
     | '/bilheteria/caixa'
     | '/bilheteria/impressao'
+    | '/bilheteria/pedidos'
     | '/bilheteria/retirada'
     | '/p/$acesso'
     | '/termos/$slug'
@@ -455,6 +466,7 @@ export interface FileRouteTypes {
     | '/bilheteria/avulsa'
     | '/bilheteria/caixa'
     | '/bilheteria/impressao'
+    | '/bilheteria/pedidos'
     | '/bilheteria/retirada'
     | '/e/$slug'
     | '/f/$codigo'
@@ -588,6 +600,13 @@ declare module '@tanstack/react-router' {
       path: '/impressao'
       fullPath: '/bilheteria/impressao'
       preLoaderRoute: typeof BilheteriaImpressaoRouteImport
+      parentRoute: typeof BilheteriaRoute
+    }
+    '/bilheteria/pedidos': {
+      id: '/bilheteria/pedidos'
+      path: '/pedidos'
+      fullPath: '/bilheteria/pedidos'
+      preLoaderRoute: typeof BilheteriaPedidosRouteImport
       parentRoute: typeof BilheteriaRoute
     }
     '/bilheteria/retirada': {
@@ -821,6 +840,7 @@ interface BilheteriaRouteChildren {
   BilheteriaAvulsaRoute: typeof BilheteriaAvulsaRoute
   BilheteriaCaixaRoute: typeof BilheteriaCaixaRoute
   BilheteriaImpressaoRoute: typeof BilheteriaImpressaoRoute
+  BilheteriaPedidosRoute: typeof BilheteriaPedidosRoute
   BilheteriaRetiradaRoute: typeof BilheteriaRetiradaRoute
   BilheteriaIndexRoute: typeof BilheteriaIndexRoute
   BilheteriaFamiliaFamiliaIdRoute: typeof BilheteriaFamiliaFamiliaIdRoute
@@ -830,6 +850,7 @@ const BilheteriaRouteChildren: BilheteriaRouteChildren = {
   BilheteriaAvulsaRoute: BilheteriaAvulsaRoute,
   BilheteriaCaixaRoute: BilheteriaCaixaRoute,
   BilheteriaImpressaoRoute: BilheteriaImpressaoRoute,
+  BilheteriaPedidosRoute: BilheteriaPedidosRoute,
   BilheteriaRetiradaRoute: BilheteriaRetiradaRoute,
   BilheteriaIndexRoute: BilheteriaIndexRoute,
   BilheteriaFamiliaFamiliaIdRoute: BilheteriaFamiliaFamiliaIdRoute,
