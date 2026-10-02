@@ -98,11 +98,20 @@ export const estadoPagamento = createServerFn({ method: "POST" })
       lugaresRes.data?.id
         ? await supabase
             .from("assentos")
-            .select("id, numero, linha, coluna, rotulo_fila, setor_id, acessivel, setores(nome)")
+            .select("id, numero, linha, coluna, rotulo_fila, setor_id, sessao_id, acessivel, setores(nome)")
             .eq("reserva_id", lugaresRes.data.id)
             .eq("status", "reservado")
             .order("numero")
         : { data: [] };
+
+    // Mapas das sessões deste pedido, para escolher os tipos de ingresso com preço.
+    const sessoesIds = [...new Set(((lugares.data ?? []) as Array<{ sessao_id: string }>).map((l) => l.sessao_id))];
+    const mapas = await Promise.all(
+      sessoesIds.map(async (id) => {
+        const { data } = await supabase.rpc("mapa_da_sessao", { p_sessao: id });
+        return { sessao_id: id, mapa: (data ?? null) as MapaDaSessao | null };
+      }),
+    );
 
     return {
       pedido,
@@ -115,9 +124,11 @@ export const estadoPagamento = createServerFn({ method: "POST" })
         coluna: number;
         rotulo_fila: string | null;
         setor_id: string;
+        sessao_id: string;
         acessivel: boolean;
         setores: { nome: string } | null;
       }>,
+      sessoes_mapas: mapas,
     };
   });
 
