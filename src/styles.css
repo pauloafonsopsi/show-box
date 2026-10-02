@@ -5,27 +5,28 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Design system definition.
+ * Design system da Bilheteria de espetáculos. Escrito pelo Claude.
+ * Não crie cores, fontes ou raios fora deste arquivo.
  *
- * The @theme inline block maps CSS custom properties to Tailwind utility
- * classes (e.g. --color-primary -> bg-primary, text-primary).
- *
- * The :root and .dark blocks define the actual color values using oklch.
- * All colors MUST use oklch format.
- *
- * To add a new semantic color:
- * 1. Add the variable to :root (light value) and .dark (dark value)
- * 2. Register it in @theme inline as --color-<name>: var(--<name>)
+ * Dois modos, uma linguagem:
+ *   :root (Coxia)  equipe e admin: claro, alto contraste, sem animação.
+ *   .palco         família e público: escuro, teatral, celular primeiro.
+ * O conceito é o proscênio dourado; a única coreografia é a cortina na primeira visita.
+ * Todas as cores em oklch. Todos os pares de texto e fundo passam AA.
  */
 
 @theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+
+  --radius-sm: 0.1875rem;
+  --radius-md: 0.25rem;
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -59,77 +60,111 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Cores nomeadas da marca */
+  --color-ouro: var(--ouro);
+  --color-bronze: var(--bronze);
+  --color-veludo: var(--veludo);
+  --color-sucesso: var(--sucesso);
+  --color-aviso: var(--aviso);
+  --color-erro: var(--erro);
+
+  /* Poltronas */
+  --color-poltrona-livre: var(--poltrona-livre);
+  --color-poltrona-escolhida: var(--poltrona-escolhida);
+  --color-poltrona-ocupada: var(--poltrona-ocupada);
+  --color-poltrona-texto: var(--poltrona-texto);
 }
 
+/* Coxia: equipe e admin */
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.129 0.042 264.695);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.208 0.042 265.755);
-  --primary-foreground: oklch(0.984 0.003 247.858);
-  --secondary: oklch(0.968 0.007 247.896);
-  --secondary-foreground: oklch(0.208 0.042 265.755);
-  --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
-  --accent: oklch(0.968 0.007 247.896);
-  --accent-foreground: oklch(0.208 0.042 265.755);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(0.929 0.013 255.508);
-  --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.704 0.04 256.788);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.984 0.003 247.858);
-  --sidebar-foreground: oklch(0.129 0.042 264.695);
-  --sidebar-primary: oklch(0.208 0.042 265.755);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.968 0.007 247.896);
-  --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
-  --sidebar-border: oklch(0.929 0.013 255.508);
-  --sidebar-ring: oklch(0.704 0.04 256.788);
+
+  --background: oklch(0.962 0.014 84.6); /* Marfim */
+  --foreground: oklch(0.193 0.02 73.1); /* Tinta */
+  --card: oklch(0.994 0.007 88.6); /* Papel */
+  --card-foreground: oklch(0.193 0.02 73.1);
+  --popover: oklch(0.994 0.007 88.6);
+  --popover-foreground: oklch(0.193 0.02 73.1);
+  --primary: oklch(0.193 0.02 73.1); /* Tinta: ação principal na Coxia */
+  --primary-foreground: oklch(0.962 0.014 84.6);
+  --secondary: oklch(0.928 0.023 82.1);
+  --secondary-foreground: oklch(0.193 0.02 73.1);
+  --muted: oklch(0.928 0.023 82.1);
+  --muted-foreground: oklch(0.501 0.021 72.9); /* Grafite */
+  --accent: oklch(0.927 0.036 87.8);
+  --accent-foreground: oklch(0.193 0.02 73.1);
+  --destructive: oklch(0.443 0.128 10); /* Veludo */
+  --destructive-foreground: oklch(0.994 0.007 88.6);
+  --border: oklch(0.897 0.029 84.6);
+  --input: oklch(0.858 0.037 83.8);
+  --ring: oklch(0.572 0.102 76.3); /* Bronze */
+
+  --ouro: oklch(0.735 0.098 81.2);
+  --bronze: oklch(0.572 0.102 76.3);
+  --veludo: oklch(0.443 0.128 10);
+  --sucesso: oklch(0.485 0.078 147.5);
+  --aviso: oklch(0.572 0.102 76.3);
+  --erro: oklch(0.496 0.138 28.1);
+
+  --poltrona-livre: oklch(0.572 0.102 76.3);
+  --poltrona-escolhida: oklch(0.735 0.098 81.2);
+  --poltrona-ocupada: oklch(0.824 0.029 81.5);
+  --poltrona-texto: oklch(0.193 0.02 73.1);
+
+  --chart-1: oklch(0.572 0.102 76.3);
+  --chart-2: oklch(0.443 0.128 10);
+  --chart-3: oklch(0.485 0.078 147.5);
+  --chart-4: oklch(0.501 0.021 72.9);
+  --chart-5: oklch(0.735 0.098 81.2);
+
+  --sidebar: oklch(0.994 0.007 88.6);
+  --sidebar-foreground: oklch(0.193 0.02 73.1);
+  --sidebar-primary: oklch(0.193 0.02 73.1);
+  --sidebar-primary-foreground: oklch(0.962 0.014 84.6);
+  --sidebar-accent: oklch(0.927 0.036 87.8);
+  --sidebar-accent-foreground: oklch(0.193 0.02 73.1);
+  --sidebar-border: oklch(0.897 0.029 84.6);
+  --sidebar-ring: oklch(0.572 0.102 76.3);
+
+  --sombra-janela: 0 12px 32px -12px oklch(0.193 0.02 73.1 / 0.28);
 }
 
-.dark {
-  --background: oklch(0.129 0.042 264.695);
-  --foreground: oklch(0.984 0.003 247.858);
-  --card: oklch(0.208 0.042 265.755);
-  --card-foreground: oklch(0.984 0.003 247.858);
-  --popover: oklch(0.208 0.042 265.755);
-  --popover-foreground: oklch(0.984 0.003 247.858);
-  --primary: oklch(0.929 0.013 255.508);
-  --primary-foreground: oklch(0.208 0.042 265.755);
-  --secondary: oklch(0.279 0.041 260.031);
-  --secondary-foreground: oklch(0.984 0.003 247.858);
-  --muted: oklch(0.279 0.041 260.031);
-  --muted-foreground: oklch(0.704 0.04 256.788);
-  --accent: oklch(0.279 0.041 260.031);
-  --accent-foreground: oklch(0.984 0.003 247.858);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.551 0.027 264.364);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.208 0.042 265.755);
-  --sidebar-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.279 0.041 260.031);
-  --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.551 0.027 264.364);
+/* Palco: família e público. Aplicar a classe .palco no contêiner da página. */
+.palco {
+  --background: oklch(0.149 0.015 71.5); /* Noite */
+  --foreground: oklch(0.901 0.031 83.6); /* Pergaminho */
+  --card: oklch(0.193 0.02 73.1); /* Palco */
+  --card-foreground: oklch(0.901 0.031 83.6);
+  --popover: oklch(0.193 0.02 73.1);
+  --popover-foreground: oklch(0.901 0.031 83.6);
+  --primary: oklch(0.735 0.098 81.2); /* Dourado */
+  --primary-foreground: oklch(0.149 0.015 71.5);
+  --secondary: oklch(0.252 0.024 66.4);
+  --secondary-foreground: oklch(0.901 0.031 83.6);
+  --muted: oklch(0.252 0.024 66.4);
+  --muted-foreground: oklch(0.749 0.034 80.9);
+  --accent: oklch(0.252 0.024 66.4);
+  --accent-foreground: oklch(0.901 0.031 83.6);
+  --destructive: oklch(0.691 0.129 27.3);
+  --destructive-foreground: oklch(0.149 0.015 71.5);
+  --border: oklch(0.572 0.102 76.3 / 0.35);
+  --input: oklch(0.572 0.102 76.3 / 0.55);
+  --ring: oklch(0.735 0.098 81.2);
+
+  --sucesso: oklch(0.722 0.065 141.4);
+  --aviso: oklch(0.735 0.098 81.2);
+  --erro: oklch(0.691 0.129 27.3);
+
+  --poltrona-livre: oklch(0.572 0.102 76.3);
+  --poltrona-escolhida: oklch(0.735 0.098 81.2);
+  --poltrona-ocupada: oklch(0.311 0.027 66.6);
+  --poltrona-texto: oklch(0.149 0.015 71.5);
+
+  --sombra-janela: none;
+
+  background-color: var(--background);
+  color: var(--foreground);
 }
 
 @layer base {
@@ -137,8 +172,96 @@
     border-color: var(--color-border);
   }
 
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.5;
+    font-feature-settings: "tnum" 0;
+  }
+
+  /* Campos com 16 px evitam o zoom automático do iPhone. */
+  input,
+  select,
+  textarea {
+    font-size: 1rem;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* Títulos do Palco: Cormorant, nunca em caixa alta. */
+  .titulo-palco {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.1;
+  }
+
+  /* Números de preço, saldo e tabela. */
+  .numeros {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Elevação do Palco: linha bronze, sem sombra. */
+  .superficie-palco {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+  }
+
+  /* Ingresso: reto, com picote na borda. */
+  .ingresso {
+    position: relative;
+    background: var(--card);
+    border: 1px solid var(--border);
+    -webkit-mask:
+      radial-gradient(circle 7px at 0 50%, transparent 98%, #000) left / 51% 100% no-repeat,
+      radial-gradient(circle 7px at 100% 50%, transparent 98%, #000) right / 51% 100% no-repeat;
+    mask:
+      radial-gradient(circle 7px at 0 50%, transparent 98%, #000) left / 51% 100% no-repeat,
+      radial-gradient(circle 7px at 100% 50%, transparent 98%, #000) right / 51% 100% no-repeat;
+  }
+}
+
+/* Cortina: só na primeira visita, até 900 ms, nunca segura o conteúdo. */
+@keyframes cortina-abre-esquerda {
+  to {
+    transform: translateX(-101%);
+  }
+}
+@keyframes cortina-abre-direita {
+  to {
+    transform: translateX(101%);
+  }
+}
+
+/* Poltrona sendo escolhida por outra pessoa: pulso lento no contorno. */
+@keyframes poltrona-pulso {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

@@ -1,0 +1,815 @@
+/**
+ * Editor de mapa em grade. Escrito pelo Claude. Aplicar sem alterar.
+ * Interação delicada: pincéis, pintura por arraste, área, fila, inspetor,
+ * numeração, desfazer e refazer, importação e exportação de CSV.
+ * Não acessa o banco: recebe a grade e os setores, e entrega a grade em `onSalvar`.
+ * Quem chama grava com `salvar_mapa` usando `paraSalvarMapa(grade)` de ./grade.
+ */
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type PointerEvent as PointerEventReact,
+} from "react";
+import {
+  Accessibility,
+  Ban,
+  Download,
+  Eraser,
+  Grid3x3,
+  ListOrdered,
+  MousePointerClick,
+  Redo2,
+  Rows3,
+  Save,
+  Square,
+  SquareDashed,
+  Undo2,
+  Upload,
+} from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { Poltrona, SeloStatus } from "./palco";
+import {
+  LIMITE_COLUNAS,
+  LIMITE_FILAS,
+  chave,
+  contar,
+  indexar,
+  lerCsvMapa,
+  novaCelula,
+  novoAssento,
+  numerar,
+  paraCsv,
+  proximoNumero,
+  rotuloDaLinha,
+  validar,
+  type Celula,
+  type Grade,
+  type RegraNumeracao,
+  type Sentido,
+  type Setor,
+} from "./grade";
+
+type Pincel = "assento" | "corredor" | "palco" | "borracha" | "setor" | "acessivel" | "bloqueio";
+type Modo = "livre" | "area" | "fila" | "inspecionar";
+
+const PINCEIS: Array<{ id: Pincel; nome: string; Icone: typeof Square }> = [
+  { id: "assento", nome: "Assento", Icone: Square },
+  { id: "corredor", nome: "Corredor", Icone: SquareDashed },
+  { id: "palco", nome: "Palco", Icone: Rows3 },
+  { id: "borracha", nome: "Borracha", Icone: Eraser },
+  { id: "setor", nome: "Pintar setor", Icone: Grid3x3 },
+  { id: "acessivel", nome: "Acessível", Icone: Accessibility },
+  { id: "bloqueio", nome: "Bloqueado", Icone: Ban },
+];
+
+const MODOS: Array<{ id: Modo; nome: string; dica: string }> = [
+  { id: "livre", nome: "Livre", dica: "Clique ou arraste sobre os quadrados" },
+  { id: "area", nome: "Área", dica: "Arraste de um canto ao outro" },
+  { id: "fila", nome: "Fila", dica: "Clique no começo e no fim da mesma fila" },
+  { id: "inspecionar", nome: "Inspecionar", dica: "Clique num assento para editar" },
+];
+
+const LIMITE_HISTORICO = 60;
+
+export interface EditorDeGradeProps {
+  gradeInicial: Grade;
+  setores: Setor[];
+  onSalvar: (grade: Grade) => Promise<void>;
+  emUsoEmSessoes?: number;
+}
+
+export function EditorDeGrade({
+  gradeInicial,
+  setores,
+  onSalvar,
+  emUsoEmSessoes = 0,
+}: EditorDeGradeProps) {
+  const [colunas, setColunas] = useState(gradeInicial.colunas);
+  const [filas, setFilas] = useState(gradeInicial.filas);
+  const [celulas, setCelulas] = useState<Map<string, Celula>>(() => indexar(gradeInicial.celulas));
+  const [passado, setPassado] = useState<Array<Map<string, Celula>>>([]);
+  const [futuro, setFuturo] = useState<Array<Map<string, Celula>>>([]);
+  const [pincel, setPincel] = useState<Pincel>("assento");
+  const [modo, setModo] = useState<Modo>("livre");
+  const [setorAtivo, setSetorAtivo] = useState<string | null>(setores[0]?.id ?? null);
+  const [tamanho, setTamanho] = useState(26);
+  const [selecionada, setSelecionada] = useState<string | null>(null);
+  const [destaques, setDestaques] = useState<Set<string>>(new Set());
+  const [ancora, setAncora] = useState<[number, number] | null>(null);
+  const [areaAtual, setAreaAtual] = useState<[number, number] | null>(null);
+  const [salvando, setSalvando] = useState(false);
+  const [mensagem, setMensagem] = useState<{
+    tom: "sucesso" | "erro" | "aviso";
+    texto: string;
+  } | null>(null);
+  const [alterado, setAlterado] = useState(false);
+  const pintando = useRef(false);
+  const valorArraste = useRef<boolean | null>(null);
+  const arquivoRef = useRef<HTMLInputElement>(null);
+
+  const setorPorId = useMemo(() => new Map(setores.map((s) => [s.id, s])), [setores]);
+  const grade: Grade = useMemo(
+    () => ({ colunas, filas, celulas: [...celulas.values()] }),
+    [colunas, filas, celulas],
+  );
+  const contagem = useMemo(() => contar(celulas.values()), [celulas]);
+  const problemas = useMemo(() => validar(grade, setores), [grade, setores]);
+  const temErro = problemas.some((p) => p.gravidade === "erro");
+
+  // Aviso ao sair com alterações não salvas.
+  useEffect(() => {
+    if (!alterado) return;
+    const aviso = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+    };
+    window.addEventListener("beforeunload", aviso);
+    return () => window.removeEventListener("beforeunload", aviso);
+  }, [alterado]);
+
+  const registrar = useCallback(
+    (novo: Map<string, Celula>) => {
+      setPassado((p) => [...p.slice(-(LIMITE_HISTORICO - 1)), celulas]);
+      setFuturo([]);
+      setCelulas(novo);
+      setAlterado(true);
+    },
+    [celulas],
+  );
+
+  const desfazer = useCallback(() => {
+    const anterior = passado.at(-1);
+    if (!anterior) return;
+    setPassado(passado.slice(0, -1));
+    setFuturo([celulas, ...futuro]);
+    setCelulas(anterior);
+    setAlterado(true);
+  }, [passado, futuro, celulas]);
+
+  const refazer = useCallback(() => {
+    const proximo = futuro[0];
+    if (!proximo) return;
+    setFuturo(futuro.slice(1));
+    setPassado([...passado, celulas]);
+    setCelulas(proximo);
+    setAlterado(true);
+  }, [passado, futuro, celulas]);
+
+  useEffect(() => {
+    const teclas = (e: KeyboardEvent) => {
+      const alvo = e.target as HTMLElement | null;
+      if (alvo && ["INPUT", "SELECT", "TEXTAREA"].includes(alvo.tagName)) return;
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "z") {
+        e.preventDefault();
+        if (e.shiftKey) refazer();
+        else desfazer();
+      }
+    };
+    window.addEventListener("keydown", teclas);
+    return () => window.removeEventListener("keydown", teclas);
+  }, [desfazer, refazer]);
+
+  /** Aplica o pincel atual num conjunto de posições, sobre uma cópia. */
+  const aplicar = useCallback(
+    (
+      base: Map<string, Celula>,
+      posicoes: Array<[number, number]>,
+      valorAlternado: boolean | null,
+    ): Map<string, Celula> => {
+      const novo = new Map(base);
+      let numero = proximoNumero(novo.values());
+      for (const [linha, coluna] of posicoes) {
+        const k = chave(linha, coluna);
+        const atual = novo.get(k);
+        switch (pincel) {
+          case "assento": {
+            if (atual?.tipo === "assento") break;
+            novo.set(
+              k,
+              novoAssento(linha, coluna, numero, setorAtivo, rotuloDaLinha(novo.values(), linha)),
+            );
+            numero += 1;
+            break;
+          }
+          case "corredor":
+          case "palco":
+            novo.set(k, novaCelula(linha, coluna, pincel));
+            break;
+          case "borracha":
+            novo.delete(k);
+            break;
+          case "setor":
+            if (atual?.tipo === "assento" && setorAtivo)
+              novo.set(k, { ...atual, setorId: setorAtivo });
+            break;
+          case "acessivel":
+            if (atual?.tipo === "assento")
+              novo.set(k, { ...atual, acessivel: valorAlternado ?? !atual.acessivel });
+            break;
+          case "bloqueio":
+            if (atual?.tipo === "assento")
+              novo.set(k, { ...atual, bloqueadoPadrao: valorAlternado ?? !atual.bloqueadoPadrao });
+            break;
+        }
+      }
+      return novo;
+    },
+    [pincel, setorAtivo],
+  );
+
+  const valorInicialAlternado = (linha: number, coluna: number): boolean | null => {
+    const atual = celulas.get(chave(linha, coluna));
+    if (atual?.tipo !== "assento") return null;
+    if (pincel === "acessivel") return !atual.acessivel;
+    if (pincel === "bloqueio") return !atual.bloqueadoPadrao;
+    return null;
+  };
+
+  const posicaoDoEvento = (e: PointerEventReact<HTMLDivElement>): [number, number] | null => {
+    const alvo = (
+      document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null
+    )?.closest<HTMLElement>("[data-l]");
+    if (!alvo) return null;
+    const l = Number(alvo.dataset["l"]);
+    const c = Number(alvo.dataset["c"]);
+    return Number.isFinite(l) && Number.isFinite(c) ? [l, c] : null;
+  };
+
+  const retangulo = (a: [number, number], b: [number, number]): Array<[number, number]> => {
+    const posicoes: Array<[number, number]> = [];
+    for (let l = Math.min(a[0], b[0]); l <= Math.max(a[0], b[0]); l += 1)
+      for (let c = Math.min(a[1], b[1]); c <= Math.max(a[1], b[1]); c += 1) posicoes.push([l, c]);
+    return posicoes;
+  };
+
+  const aoPressionar = (e: PointerEventReact<HTMLDivElement>) => {
+    if (e.button !== 0) return;
+    const pos = posicaoDoEvento(e);
+    if (!pos) return;
+    setMensagem(null);
+
+    if (modo === "inspecionar") {
+      const k = chave(pos[0], pos[1]);
+      setSelecionada(celulas.get(k)?.tipo === "assento" ? k : null);
+      return;
+    }
+    if (modo === "area") {
+      setAncora(pos);
+      setAreaAtual(pos);
+      (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId);
+      return;
+    }
+    if (modo === "fila") {
+      if (!ancora) {
+        setAncora(pos);
+        return;
+      }
+      if (ancora[0] !== pos[0]) {
+        setMensagem({ tom: "aviso", texto: "O começo e o fim precisam estar na mesma fila." });
+        setAncora(null);
+        return;
+      }
+      registrar(aplicar(celulas, retangulo(ancora, pos), valorInicialAlternado(pos[0], pos[1])));
+      setAncora(null);
+      return;
+    }
+    pintando.current = true;
+    valorArraste.current = valorInicialAlternado(pos[0], pos[1]);
+    (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId);
+    registrar(aplicar(celulas, [pos], valorArraste.current));
+  };
+
+  const aoMover = (e: PointerEventReact<HTMLDivElement>) => {
+    const pos = posicaoDoEvento(e);
+    if (!pos) return;
+    if (modo === "area" && ancora) {
+      setAreaAtual(pos);
+      return;
+    }
+    if (!pintando.current) return;
+    const k = chave(pos[0], pos[1]);
+    const atual = celulas.get(k);
+    const jaPintado =
+      (pincel === "assento" && atual?.tipo === "assento") ||
+      ((pincel === "corredor" || pincel === "palco") && atual?.tipo === pincel) ||
+      (pincel === "borracha" && !atual) ||
+      (pincel === "setor" && atual?.setorId === setorAtivo) ||
+      (pincel === "acessivel" && atual?.acessivel === valorArraste.current) ||
+      (pincel === "bloqueio" && atual?.bloqueadoPadrao === valorArraste.current);
+    if (jaPintado) return;
+    setCelulas((c) => aplicar(c, [pos], valorArraste.current));
+  };
+
+  const aoSoltar = () => {
+    if (modo === "area" && ancora && areaAtual) {
+      registrar(
+        aplicar(celulas, retangulo(ancora, areaAtual), valorInicialAlternado(ancora[0], ancora[1])),
+      );
+      setAncora(null);
+      setAreaAtual(null);
+    }
+    pintando.current = false;
+    valorArraste.current = null;
+  };
+
+  const naArea = (linha: number, coluna: number) =>
+    modo === "area" &&
+    ancora !== null &&
+    areaAtual !== null &&
+    linha >= Math.min(ancora[0], areaAtual[0]) &&
+    linha <= Math.max(ancora[0], areaAtual[0]) &&
+    coluna >= Math.min(ancora[1], areaAtual[1]) &&
+    coluna <= Math.max(ancora[1], areaAtual[1]);
+
+  const atualizarSelecionada = (mudanca: Partial<Celula>) => {
+    if (!selecionada) return;
+    const atual = celulas.get(selecionada);
+    if (!atual) return;
+    const novo = new Map(celulas);
+    novo.set(selecionada, { ...atual, ...mudanca });
+    registrar(novo);
+  };
+
+  const aplicarRotuloNaFila = () => {
+    if (!selecionada) return;
+    const atual = celulas.get(selecionada);
+    if (!atual) return;
+    const novo = new Map(celulas);
+    for (const [k, c] of novo)
+      if (c.linha === atual.linha && c.tipo === "assento")
+        novo.set(k, { ...c, rotuloFila: atual.rotuloFila });
+    registrar(novo);
+  };
+
+  const renumerar = (regra: RegraNumeracao, sentido: Sentido) => {
+    const ok = window.confirm(
+      "Renumerar muda o número de todos os assentos deste mapa. Sessões já congeladas não mudam. Continuar?",
+    );
+    if (!ok) return;
+    registrar(indexar(numerar([...celulas.values()], regra, sentido)));
+  };
+
+  const redimensionar = (novasColunas: number, novasFilas: number) => {
+    const c = Math.max(1, Math.min(LIMITE_COLUNAS, novasColunas || 1));
+    const f = Math.max(1, Math.min(LIMITE_FILAS, novasFilas || 1));
+    const fora = [...celulas.values()].filter((x) => x.coluna > c || x.linha > f);
+    if (
+      fora.length &&
+      !window.confirm(
+        `${fora.length} quadrado(s) ficam fora da nova grade e serão apagados. Continuar?`,
+      )
+    )
+      return;
+    const novo = new Map(celulas);
+    for (const x of fora) novo.delete(chave(x.linha, x.coluna));
+    setColunas(c);
+    setFilas(f);
+    registrar(novo);
+  };
+
+  const importarCsv = async (e: ChangeEvent<HTMLInputElement>) => {
+    const arquivo = e.target.files?.[0];
+    e.target.value = "";
+    if (!arquivo) return;
+    const leitura = lerCsvMapa(await arquivo.text(), setores);
+    if (!leitura.grade) {
+      setMensagem({ tom: "erro", texto: leitura.erros.join(" ") });
+      return;
+    }
+    if (leitura.setoresFaltando.length) {
+      setMensagem({
+        tom: "erro",
+        texto: `Crie estes setores antes de importar: ${leitura.setoresFaltando.join(", ")}.`,
+      });
+      return;
+    }
+    if (celulas.size && !window.confirm("A importação substitui todo o desenho atual. Continuar?"))
+      return;
+    setColunas(leitura.grade.colunas);
+    setFilas(leitura.grade.filas);
+    registrar(indexar(leitura.grade.celulas));
+    setMensagem({
+      tom: leitura.erros.length ? "aviso" : "sucesso",
+      texto: leitura.erros.length
+        ? `Importado com avisos: ${leitura.erros.slice(0, 3).join("; ")}`
+        : "Mapa importado. Confira e salve.",
+    });
+  };
+
+  const exportarCsv = () => {
+    const blob = new Blob([paraCsv(grade, setores)], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "mapa.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const salvar = async () => {
+    if (temErro || salvando) return;
+    setSalvando(true);
+    setMensagem(null);
+    try {
+      await onSalvar(grade);
+      setAlterado(false);
+      setMensagem({ tom: "sucesso", texto: "Mapa salvo." });
+    } catch (erro) {
+      setMensagem({
+        tom: "erro",
+        texto: erro instanceof Error ? erro.message : "Não foi possível salvar. Tente de novo.",
+      });
+    } finally {
+      setSalvando(false);
+    }
+  };
+
+  const celulaSelecionada = selecionada ? (celulas.get(selecionada) ?? null) : null;
+  const dicaModo = MODOS.find((m) => m.id === modo)?.dica ?? "";
+
+  return (
+    <div className="flex min-h-0 flex-col gap-4">
+      {/* Barra superior */}
+      <div className="flex flex-wrap items-center gap-3 rounded-md border bg-card p-3">
+        <div className="numeros flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+          <span>
+            <strong>{contagem.total}</strong> assentos
+          </span>
+          {setores.map((s) => (
+            <span key={s.id} className="inline-flex items-center gap-1.5">
+              <span
+                aria-hidden="true"
+                className="inline-block h-2.5 w-2.5 rounded-sm"
+                style={{ background: s.cor }}
+              />
+              {s.nome}: {contagem.porSetor.get(s.id) ?? 0}
+            </span>
+          ))}
+          <span className="text-muted-foreground">Bloqueados: {contagem.bloqueados}</span>
+          <span className="text-muted-foreground">Acessíveis: {contagem.acessiveis}</span>
+        </div>
+        <div className="ml-auto flex flex-wrap items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={desfazer}
+            disabled={!passado.length}
+            aria-label="Desfazer"
+          >
+            <Undo2 className="h-4 w-4" /> Desfazer
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={refazer}
+            disabled={!futuro.length}
+            aria-label="Refazer"
+          >
+            <Redo2 className="h-4 w-4" /> Refazer
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => arquivoRef.current?.click()}>
+            <Upload className="h-4 w-4" /> Importar CSV
+          </Button>
+          <input
+            ref={arquivoRef}
+            type="file"
+            accept=".csv,text/csv"
+            className="hidden"
+            onChange={importarCsv}
+          />
+          <Button variant="outline" size="sm" onClick={exportarCsv} disabled={!celulas.size}>
+            <Download className="h-4 w-4" /> Exportar CSV
+          </Button>
+          <Button size="sm" onClick={salvar} disabled={temErro || salvando || !alterado}>
+            <Save className="h-4 w-4" /> {salvando ? "Salvando..." : "Salvar mapa"}
+          </Button>
+        </div>
+      </div>
+
+      {emUsoEmSessoes > 0 ? (
+        <SeloStatus tom="neutro">
+          Este mapa está em {emUsoEmSessoes} sessão(ões). Mudanças aqui não afetam sessões já
+          congeladas.
+        </SeloStatus>
+      ) : null}
+      {mensagem ? <SeloStatus tom={mensagem.tom}>{mensagem.texto}</SeloStatus> : null}
+
+      <div className="grid min-h-0 gap-4 lg:grid-cols-[13rem_minmax(0,1fr)_17rem]">
+        {/* Ferramentas */}
+        <aside
+          className="flex flex-col gap-4 rounded-md border bg-card p-3"
+          aria-label="Ferramentas"
+        >
+          <fieldset className="flex flex-col gap-1">
+            <legend className="mb-1 text-sm font-semibold">Pincel</legend>
+            {PINCEIS.map(({ id, nome, Icone }) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => {
+                  setPincel(id);
+                  if (modo === "inspecionar") setModo("livre");
+                }}
+                aria-pressed={pincel === id && modo !== "inspecionar"}
+                className={cn(
+                  "flex min-h-11 items-center gap-2 rounded-md px-2 text-left text-sm",
+                  pincel === id && modo !== "inspecionar"
+                    ? "bg-primary text-primary-foreground"
+                    : "hover:bg-accent",
+                )}
+              >
+                <Icone aria-hidden="true" className="h-4 w-4" /> {nome}
+              </button>
+            ))}
+          </fieldset>
+
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="font-semibold">Setor do pincel</span>
+            <select
+              className="min-h-11 rounded-md border bg-background px-2"
+              value={setorAtivo ?? ""}
+              onChange={(e) => setSetorAtivo(e.target.value || null)}
+            >
+              {setores.length === 0 ? <option value="">Crie um setor primeiro</option> : null}
+              {setores.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.nome}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <fieldset className="flex flex-col gap-1">
+            <legend className="mb-1 text-sm font-semibold">Modo</legend>
+            {MODOS.map((m) => (
+              <button
+                key={m.id}
+                type="button"
+                onClick={() => {
+                  setModo(m.id);
+                  setAncora(null);
+                  setAreaAtual(null);
+                }}
+                aria-pressed={modo === m.id}
+                className={cn(
+                  "flex min-h-11 items-center gap-2 rounded-md px-2 text-left text-sm",
+                  modo === m.id ? "bg-secondary font-semibold" : "hover:bg-accent",
+                )}
+              >
+                {m.id === "inspecionar" ? (
+                  <MousePointerClick aria-hidden="true" className="h-4 w-4" />
+                ) : null}
+                {m.nome}
+              </button>
+            ))}
+            <p className="mt-1 text-xs text-muted-foreground">{dicaModo}</p>
+            {modo === "fila" && ancora ? (
+              <p className="text-xs font-medium">
+                Começo marcado na fila {ancora[0]}. Agora clique no fim.
+              </p>
+            ) : null}
+          </fieldset>
+
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="font-semibold">Zoom</span>
+            <input
+              type="range"
+              min={16}
+              max={40}
+              value={tamanho}
+              onChange={(e) => setTamanho(Number(e.target.value))}
+            />
+          </label>
+        </aside>
+
+        {/* Grade */}
+        <section
+          className="min-w-0 overflow-auto rounded-md border bg-card p-3"
+          aria-label="Grade do mapa"
+        >
+          {celulas.size === 0 ? (
+            <div className="flex flex-col items-start gap-2 p-6">
+              <p className="titulo-palco text-2xl">Comece pelo palco</p>
+              <p className="text-sm text-muted-foreground">
+                Escolha o pincel Palco e pinte a primeira linha. Depois desenhe os assentos com o
+                pincel Assento, ou importe um CSV.
+              </p>
+            </div>
+          ) : null}
+          <div
+            role="presentation"
+            className="grid w-max touch-none select-none"
+            style={{
+              gridTemplateColumns: `repeat(${colunas}, ${tamanho}px)`,
+              gridTemplateRows: `repeat(${filas}, ${tamanho}px)`,
+              gap: 2,
+            }}
+            onPointerDown={aoPressionar}
+            onPointerMove={aoMover}
+            onPointerUp={aoSoltar}
+            onPointerCancel={aoSoltar}
+          >
+            {Array.from({ length: filas }, (_, i) => i + 1).flatMap((linha) =>
+              Array.from({ length: colunas }, (_, j) => j + 1).map((coluna) => {
+                const k = chave(linha, coluna);
+                const c = celulas.get(k);
+                const setor = c?.setorId ? setorPorId.get(c.setorId) : undefined;
+                const marcada =
+                  naArea(linha, coluna) ||
+                  (modo === "fila" && ancora?.[0] === linha && ancora[1] === coluna);
+                return (
+                  <div
+                    key={k}
+                    data-l={linha}
+                    data-c={coluna}
+                    title={`Fila ${linha}, coluna ${coluna}`}
+                    className={cn(
+                      "relative flex items-center justify-center rounded-[3px]",
+                      !c && "border border-dashed border-border/70",
+                      c?.tipo === "palco" && "bg-ouro/30",
+                      c?.tipo === "corredor" && "bg-muted/60",
+                      marcada && "ring-2 ring-ring",
+                      selecionada === k && "ring-2 ring-primary",
+                    )}
+                  >
+                    {c?.tipo === "assento" ? (
+                      <Poltrona
+                        numero={c.numero ?? 0}
+                        estado={c.bloqueadoPadrao ? "bloqueada" : "livre"}
+                        tamanho={tamanho - 2}
+                        fila={c.rotuloFila}
+                        setor={setor?.nome ?? null}
+                        corSetor={setor?.cor ?? null}
+                        acessivel={c.acessivel}
+                        destaque={destaques.has(k)}
+                      />
+                    ) : null}
+                  </div>
+                );
+              }),
+            )}
+          </div>
+        </section>
+
+        {/* Inspetor, problemas e numeração */}
+        <aside className="flex flex-col gap-4 rounded-md border bg-card p-3" aria-label="Detalhes">
+          <section className="flex flex-col gap-2">
+            <h3 className="text-sm font-semibold">Assento selecionado</h3>
+            {celulaSelecionada ? (
+              <>
+                <label className="flex flex-col gap-1 text-sm">
+                  Número
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    min={1}
+                    className="min-h-11 rounded-md border bg-background px-2"
+                    value={celulaSelecionada.numero ?? ""}
+                    onChange={(e) =>
+                      atualizarSelecionada({
+                        numero: e.target.value ? Number(e.target.value) : null,
+                      })
+                    }
+                  />
+                </label>
+                <label className="flex flex-col gap-1 text-sm">
+                  Rótulo da fila
+                  <input
+                    className="min-h-11 rounded-md border bg-background px-2"
+                    value={celulaSelecionada.rotuloFila ?? ""}
+                    onChange={(e) => atualizarSelecionada({ rotuloFila: e.target.value || null })}
+                  />
+                </label>
+                <Button variant="ghost" size="sm" onClick={aplicarRotuloNaFila}>
+                  Usar este rótulo na fila inteira
+                </Button>
+                <label className="flex flex-col gap-1 text-sm">
+                  Setor
+                  <select
+                    className="min-h-11 rounded-md border bg-background px-2"
+                    value={celulaSelecionada.setorId ?? ""}
+                    onChange={(e) => atualizarSelecionada({ setorId: e.target.value || null })}
+                  >
+                    <option value="">Sem setor</option>
+                    {setores.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.nome}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="flex min-h-11 items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={celulaSelecionada.acessivel}
+                    onChange={(e) => atualizarSelecionada({ acessivel: e.target.checked })}
+                  />
+                  Lugar acessível
+                </label>
+                <label className="flex min-h-11 items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={celulaSelecionada.bloqueadoPadrao}
+                    onChange={(e) => atualizarSelecionada({ bloqueadoPadrao: e.target.checked })}
+                  />
+                  Começa bloqueado nas sessões
+                </label>
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Use o modo Inspecionar e clique num assento.
+              </p>
+            )}
+          </section>
+
+          <section className="flex flex-col gap-2">
+            <h3 className="text-sm font-semibold">Conferência</h3>
+            {problemas.length === 0 ? (
+              <SeloStatus tom="sucesso">Tudo certo para salvar</SeloStatus>
+            ) : (
+              <ul className="flex flex-col gap-1">
+                {problemas.map((p) => (
+                  <li key={p.mensagem}>
+                    <button
+                      type="button"
+                      className="text-left"
+                      onClick={() => setDestaques(new Set(p.posicoes.map(([l, c]) => chave(l, c))))}
+                    >
+                      <SeloStatus tom={p.gravidade === "erro" ? "erro" : "aviso"}>
+                        {p.mensagem}
+                      </SeloStatus>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
+          <section className="flex flex-col gap-2">
+            <h3 className="flex items-center gap-2 text-sm font-semibold">
+              <ListOrdered aria-hidden="true" className="h-4 w-4" /> Numeração automática
+            </h3>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => renumerar("continua", "esquerda_direita")}
+            >
+              Contínua, da esquerda para a direita
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => renumerar("por_fila", "esquerda_direita")}
+            >
+              Por fila, da esquerda para a direita
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => renumerar("por_fila", "direita_esquerda")}
+            >
+              Por fila, da direita para a esquerda
+            </Button>
+          </section>
+
+          <section className="flex flex-col gap-2">
+            <h3 className="text-sm font-semibold">Tamanho da grade</h3>
+            <div className="flex items-end gap-2">
+              <label className="flex flex-col gap-1 text-sm">
+                Colunas
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  min={1}
+                  max={LIMITE_COLUNAS}
+                  defaultValue={colunas}
+                  key={`c${colunas}`}
+                  className="min-h-11 w-20 rounded-md border bg-background px-2"
+                  onBlur={(e) => redimensionar(Number(e.target.value), filas)}
+                />
+              </label>
+              <label className="flex flex-col gap-1 text-sm">
+                Filas
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  min={1}
+                  max={LIMITE_FILAS}
+                  defaultValue={filas}
+                  key={`f${filas}`}
+                  className="min-h-11 w-20 rounded-md border bg-background px-2"
+                  onBlur={(e) => redimensionar(colunas, Number(e.target.value))}
+                />
+              </label>
+            </div>
+          </section>
+        </aside>
+      </div>
+    </div>
+  );
+}
