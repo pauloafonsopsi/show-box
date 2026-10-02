@@ -75,7 +75,7 @@ export function PagamentoOnline({
   const [pix, setPix] = useState<{ qr: string; copia: string } | null>(null);
 
   const status = useQuery({
-    enabled: Boolean(modoPos),
+    enabled: Boolean(modoPos) || st === "aguardando_pagamento",
     queryKey: ["status-pagamento", acesso],
     queryFn: async () => {
       const r = await buscarStatus({ data: { acesso } });
@@ -124,7 +124,8 @@ export function PagamentoOnline({
       </div>
     );
 
-  if (modoPos) return <AposEnviar modo={modoPos} pix={pix} conteudos={conteudos} voltar={voltarAosLugares} />;
+  if (modoPos || st === "aguardando_pagamento")
+    return <AposEnviar modo={modoPos ?? "esperando"} pix={pix} conteudos={conteudos} voltar={voltarAosLugares} />;
 
   return (
     <FormularioDePagamento
