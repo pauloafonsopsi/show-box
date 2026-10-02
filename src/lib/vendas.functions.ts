@@ -421,9 +421,9 @@ export const textoLegal = createServerFn({ method: "POST" })
       eventoId = ev.id;
       nome = ev.nome;
     }
-    let q = supabase.from("termos_versoes").select("versao, texto, criado_em").eq("tipo", data.tipo);
+    let q = supabase.from("termos_versoes").select("versao, texto, publicada_em").eq("tipo", data.tipo);
     if (eventoId) q = q.eq("evento_id", eventoId);
-    const { data: t } = await q.order("criado_em", { ascending: false }).limit(1);
+    const { data: t } = await q.order("publicada_em", { ascending: false }).limit(1);
     const v = t?.[0];
     return v ? { evento: nome, versao: v.versao, texto: v.texto } : null;
   });
