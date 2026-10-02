@@ -75,7 +75,7 @@ export function EscolhaLugares({ mapa, lugares, aoMudar, exigirDeclaracaoMeia = 
                   <label className="mt-1 flex items-start gap-2 text-sm text-muted-foreground">
                     <Checkbox
                       checked={Boolean(l.categoriaMeia)}
-                      onCheckedChange={(v) => definir(l.numero, v ? { categoriaMeia: categorias[0] ?? "Meia-entrada" } : { categoriaMeia: undefined })}
+                      onCheckedChange={(v) => definir(l.numero, v ? { categoriaMeia: categorias[0] ?? "Meia-entrada" } : {})}
                       aria-label="Declaro ter direito à meia-entrada"
                       className="mt-0.5"
                     />
@@ -162,7 +162,7 @@ export function EscolhaAdicionais({
                   Entrega
                   <Select
                     value={escolha.sessaoEntregaId ?? ""}
-                    onValueChange={(v) => definir(p.id, v ? { sessaoEntregaId: v } : { sessaoEntregaId: undefined })}
+                    onValueChange={(v) => definir(p.id, v ? { sessaoEntregaId: v } : {})}
                   >
                     <SelectTrigger className="mt-1 h-9 w-full max-w-64 text-[16px]">
                       <SelectValue placeholder="Na sessão de..." />
