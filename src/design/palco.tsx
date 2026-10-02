@@ -162,41 +162,67 @@ export function Poltrona({
     .filter(Boolean)
     .join(", ");
 
+  // Cor base da poltrona: setor quando livre; tokens para os demais estados.
+  const corBase =
+    estado === "escolhida" || estado === "outra-pessoa"
+      ? "var(--poltrona-escolhida)"
+      : estado === "ocupada"
+        ? "var(--poltrona-ocupada)"
+        : estado === "bloqueada"
+          ? "var(--border)"
+          : (corSetor ?? "var(--poltrona-livre)");
+  const escura = `color-mix(in oklab, ${corBase} 62%, black)`;
+  const clara = `color-mix(in oklab, ${corBase} 70%, white)`;
+
   const estilo: CSSProperties = {
     width: tamanho,
     height: tamanho,
-    borderRadius: `${Math.max(3, tamanho * 0.24)}px ${Math.max(3, tamanho * 0.24)}px ${Math.max(2, tamanho * 0.09)}px ${Math.max(2, tamanho * 0.09)}px`,
-    fontSize: Math.max(8, Math.min(13, tamanho * 0.36)),
-    boxShadow:
-      corSetor && estado === "livre"
-        ? `inset 0 -${Math.max(2, tamanho * 0.08)}px 0 ${corSetor}`
-        : undefined,
+    fontSize: Math.max(7, Math.min(12, tamanho * 0.32)),
   };
 
   const classes = cn(
-    "numeros relative inline-flex shrink-0 select-none items-center justify-center font-medium leading-none transition-colors",
-    estado === "livre" && "border-[1.5px] border-poltrona-livre bg-transparent text-foreground",
-    estado === "escolhida" &&
-      "border-[1.5px] border-poltrona-escolhida bg-poltrona-escolhida text-poltrona-texto",
-    estado === "ocupada" && "border border-transparent bg-poltrona-ocupada text-muted-foreground",
-    estado === "outra-pessoa" &&
-      "border-[1.5px] border-dashed border-poltrona-escolhida text-muted-foreground [animation:poltrona-pulso_1.6s_ease-in-out_infinite]",
-    estado === "bloqueada" &&
-      "border border-border text-muted-foreground [background-image:repeating-linear-gradient(135deg,var(--border)_0_2px,transparent_2px_6px)]",
-    destaque && "outline outline-2 outline-offset-1 outline-erro",
-    clicavel && "cursor-pointer hover:border-poltrona-escolhida",
+    "numeros relative inline-flex shrink-0 select-none items-start justify-center font-semibold leading-none transition-transform duration-150",
+    estado === "escolhida" ? "text-poltrona-texto" : "text-foreground",
+    (estado === "ocupada" || estado === "bloqueada") && "opacity-35",
+    estado === "outra-pessoa" && "[animation:poltrona-pulso_1.6s_ease-in-out_infinite]",
+    estado === "escolhida" && "drop-shadow-[0_0_6px_var(--poltrona-escolhida)]",
+    destaque && "outline outline-2 outline-offset-1 outline-erro rounded-sm",
+    clicavel && "cursor-pointer active:scale-95",
   );
 
   const conteudo = (
     <>
+      <svg viewBox="0 0 24 24" aria-hidden="true" className="absolute inset-0 h-full w-full">
+        {/* braços */}
+        <rect x="1" y="9" width="4" height="13" rx="2" style={{ fill: escura }} />
+        <rect x="19" y="9" width="4" height="13" rx="2" style={{ fill: escura }} />
+        {/* encosto estofado */}
+        <rect
+          x="4"
+          y="1.5"
+          width="16"
+          height="15"
+          rx="5"
+          style={{ fill: corBase }}
+          strokeDasharray={estado === "outra-pessoa" ? "2 1.5" : undefined}
+          stroke={estado === "outra-pessoa" ? "var(--poltrona-escolhida)" : "none"}
+        />
+        {/* brilho do veludo no topo */}
+        <path d="M7 3.5 H17 Q18.5 3.5 18.5 5.5 V6.5 H5.5 V5.5 Q5.5 3.5 7 3.5Z" style={{ fill: clara, opacity: 0.45 }} />
+        {/* assento */}
+        <rect x="4.5" y="15" width="15" height="7" rx="2.5" style={{ fill: escura }} />
+        <rect x="5.5" y="15.5" width="13" height="2" rx="1" style={{ fill: clara, opacity: 0.25 }} />
+      </svg>
       {estado === "ocupada" ? (
         <X
           aria-hidden="true"
-          className="opacity-70"
-          style={{ width: tamanho * 0.45, height: tamanho * 0.45 }}
+          className="relative opacity-80"
+          style={{ width: tamanho * 0.4, height: tamanho * 0.4, marginTop: tamanho * 0.12 }}
         />
       ) : mostrarNumero && tamanho >= 18 ? (
-        numero
+        <span className="relative" style={{ marginTop: tamanho * 0.2, textShadow: "0 1px 1px oklch(0 0 0 / 0.5)" }}>
+          {numero}
+        </span>
       ) : null}
       {acessivel ? (
         <Accessibility
