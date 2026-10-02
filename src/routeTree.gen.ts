@@ -20,6 +20,9 @@ import { Route as AdminConfiguracoesRouteImport } from './routes/admin.configura
 import { Route as AdminEquipeRouteImport } from './routes/admin.equipe'
 import { Route as BilheteriaIndexRouteImport } from './routes/bilheteria.index'
 import { Route as BilheteriaAvulsaRouteImport } from './routes/bilheteria.avulsa'
+import { Route as BilheteriaCaixaRouteImport } from './routes/bilheteria.caixa'
+import { Route as BilheteriaImpressaoRouteImport } from './routes/bilheteria.impressao'
+import { Route as BilheteriaRetiradaRouteImport } from './routes/bilheteria.retirada'
 import { Route as ESlugRouteImport } from './routes/e.$slug'
 import { Route as FCodigoRouteImport } from './routes/f.$codigo'
 import { Route as PAcessoRouteImport } from './routes/p.$acesso'
@@ -98,6 +101,21 @@ const BilheteriaIndexRoute = BilheteriaIndexRouteImport.update({
 const BilheteriaAvulsaRoute = BilheteriaAvulsaRouteImport.update({
   id: '/avulsa',
   path: '/avulsa',
+  getParentRoute: () => BilheteriaRoute,
+} as any)
+const BilheteriaCaixaRoute = BilheteriaCaixaRouteImport.update({
+  id: '/caixa',
+  path: '/caixa',
+  getParentRoute: () => BilheteriaRoute,
+} as any)
+const BilheteriaImpressaoRoute = BilheteriaImpressaoRouteImport.update({
+  id: '/impressao',
+  path: '/impressao',
+  getParentRoute: () => BilheteriaRoute,
+} as any)
+const BilheteriaRetiradaRoute = BilheteriaRetiradaRouteImport.update({
+  id: '/retirada',
+  path: '/retirada',
   getParentRoute: () => BilheteriaRoute,
 } as any)
 const ESlugRoute = ESlugRouteImport.update({
@@ -242,6 +260,9 @@ export interface FileRoutesByFullPath {
   '/admin/configuracoes': typeof AdminConfiguracoesRoute
   '/admin/equipe': typeof AdminEquipeRoute
   '/bilheteria/avulsa': typeof BilheteriaAvulsaRoute
+  '/bilheteria/caixa': typeof BilheteriaCaixaRoute
+  '/bilheteria/impressao': typeof BilheteriaImpressaoRoute
+  '/bilheteria/retirada': typeof BilheteriaRetiradaRoute
   '/e/$slug': typeof ESlugRouteWithChildren
   '/f/$codigo': typeof FCodigoRouteWithChildren
   '/p/$acesso': typeof PAcessoRoute
@@ -277,6 +298,9 @@ export interface FileRoutesByTo {
   '/admin/configuracoes': typeof AdminConfiguracoesRoute
   '/admin/equipe': typeof AdminEquipeRoute
   '/bilheteria/avulsa': typeof BilheteriaAvulsaRoute
+  '/bilheteria/caixa': typeof BilheteriaCaixaRoute
+  '/bilheteria/impressao': typeof BilheteriaImpressaoRoute
+  '/bilheteria/retirada': typeof BilheteriaRetiradaRoute
   '/p/$acesso': typeof PAcessoRoute
   '/termos/$slug': typeof TermosSlugRoute
   '/admin': typeof AdminIndexRoute
@@ -312,6 +336,9 @@ export interface FileRoutesById {
   '/admin/configuracoes': typeof AdminConfiguracoesRoute
   '/admin/equipe': typeof AdminEquipeRoute
   '/bilheteria/avulsa': typeof BilheteriaAvulsaRoute
+  '/bilheteria/caixa': typeof BilheteriaCaixaRoute
+  '/bilheteria/impressao': typeof BilheteriaImpressaoRoute
+  '/bilheteria/retirada': typeof BilheteriaRetiradaRoute
   '/e/$slug': typeof ESlugRouteWithChildren
   '/f/$codigo': typeof FCodigoRouteWithChildren
   '/p/$acesso': typeof PAcessoRoute
@@ -351,6 +378,9 @@ export interface FileRouteTypes {
     | '/admin/configuracoes'
     | '/admin/equipe'
     | '/bilheteria/avulsa'
+    | '/bilheteria/caixa'
+    | '/bilheteria/impressao'
+    | '/bilheteria/retirada'
     | '/e/$slug'
     | '/f/$codigo'
     | '/p/$acesso'
@@ -386,6 +416,9 @@ export interface FileRouteTypes {
     | '/admin/configuracoes'
     | '/admin/equipe'
     | '/bilheteria/avulsa'
+    | '/bilheteria/caixa'
+    | '/bilheteria/impressao'
+    | '/bilheteria/retirada'
     | '/p/$acesso'
     | '/termos/$slug'
     | '/admin'
@@ -420,6 +453,9 @@ export interface FileRouteTypes {
     | '/admin/configuracoes'
     | '/admin/equipe'
     | '/bilheteria/avulsa'
+    | '/bilheteria/caixa'
+    | '/bilheteria/impressao'
+    | '/bilheteria/retirada'
     | '/e/$slug'
     | '/f/$codigo'
     | '/p/$acesso'
@@ -538,6 +574,27 @@ declare module '@tanstack/react-router' {
       path: '/avulsa'
       fullPath: '/bilheteria/avulsa'
       preLoaderRoute: typeof BilheteriaAvulsaRouteImport
+      parentRoute: typeof BilheteriaRoute
+    }
+    '/bilheteria/caixa': {
+      id: '/bilheteria/caixa'
+      path: '/caixa'
+      fullPath: '/bilheteria/caixa'
+      preLoaderRoute: typeof BilheteriaCaixaRouteImport
+      parentRoute: typeof BilheteriaRoute
+    }
+    '/bilheteria/impressao': {
+      id: '/bilheteria/impressao'
+      path: '/impressao'
+      fullPath: '/bilheteria/impressao'
+      preLoaderRoute: typeof BilheteriaImpressaoRouteImport
+      parentRoute: typeof BilheteriaRoute
+    }
+    '/bilheteria/retirada': {
+      id: '/bilheteria/retirada'
+      path: '/retirada'
+      fullPath: '/bilheteria/retirada'
+      preLoaderRoute: typeof BilheteriaRetiradaRouteImport
       parentRoute: typeof BilheteriaRoute
     }
     '/e/$slug': {
@@ -762,12 +819,18 @@ const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface BilheteriaRouteChildren {
   BilheteriaAvulsaRoute: typeof BilheteriaAvulsaRoute
+  BilheteriaCaixaRoute: typeof BilheteriaCaixaRoute
+  BilheteriaImpressaoRoute: typeof BilheteriaImpressaoRoute
+  BilheteriaRetiradaRoute: typeof BilheteriaRetiradaRoute
   BilheteriaIndexRoute: typeof BilheteriaIndexRoute
   BilheteriaFamiliaFamiliaIdRoute: typeof BilheteriaFamiliaFamiliaIdRoute
 }
 
 const BilheteriaRouteChildren: BilheteriaRouteChildren = {
   BilheteriaAvulsaRoute: BilheteriaAvulsaRoute,
+  BilheteriaCaixaRoute: BilheteriaCaixaRoute,
+  BilheteriaImpressaoRoute: BilheteriaImpressaoRoute,
+  BilheteriaRetiradaRoute: BilheteriaRetiradaRoute,
   BilheteriaIndexRoute: BilheteriaIndexRoute,
   BilheteriaFamiliaFamiliaIdRoute: BilheteriaFamiliaFamiliaIdRoute,
 }
