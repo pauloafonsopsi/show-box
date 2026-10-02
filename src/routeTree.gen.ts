@@ -17,9 +17,12 @@ import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminAuditoriaRouteImport } from './routes/admin.auditoria'
 import { Route as AdminConfiguracoesRouteImport } from './routes/admin.configuracoes'
 import { Route as AdminEquipeRouteImport } from './routes/admin.equipe'
+import { Route as FCodigoRouteImport } from './routes/f.$codigo'
 import { Route as AdminEventosIndexRouteImport } from './routes/admin.eventos.index'
 import { Route as AdminEventosEventoIdRouteImport } from './routes/admin.eventos.$eventoId'
 import { Route as AdminLocaisIndexRouteImport } from './routes/admin.locais.index'
+import { Route as FCodigoIndexRouteImport } from './routes/f.$codigo.index'
+import { Route as FCodigoSessaoIdRouteImport } from './routes/f.$codigo.$sessaoId'
 import { Route as AdminEventosEventoIdIndexRouteImport } from './routes/admin.eventos.$eventoId.index'
 import { Route as AdminEventosEventoIdAdicionaisRouteImport } from './routes/admin.eventos.$eventoId.adicionais'
 import { Route as AdminEventosEventoIdConteudosRouteImport } from './routes/admin.eventos.$eventoId.conteudos'
@@ -29,6 +32,8 @@ import { Route as AdminEventosEventoIdPrecosRouteImport } from './routes/admin.e
 import { Route as AdminEventosEventoIdSessoesRouteImport } from './routes/admin.eventos.$eventoId.sessoes'
 import { Route as AdminEventosEventoIdVisaoGeralRouteImport } from './routes/admin.eventos.$eventoId.visao-geral'
 import { Route as ApiPagarmeWebhookSegredoRouteImport } from './routes/api/pagarme/webhook.$segredo'
+import { Route as FCodigoPagamentoAcessoRouteImport } from './routes/f.$codigo.pagamento.$acesso'
+import { Route as FCodigoPedidoAcessoRouteImport } from './routes/f.$codigo.pedido.$acesso'
 import { Route as AdminLocaisLocalIdMapasMapaIdRouteImport } from './routes/admin.locais.$localId.mapas.$mapaId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -71,6 +76,11 @@ const AdminEquipeRoute = AdminEquipeRouteImport.update({
   path: '/equipe',
   getParentRoute: () => AdminRoute,
 } as any)
+const FCodigoRoute = FCodigoRouteImport.update({
+  id: '/f/$codigo',
+  path: '/f/$codigo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminEventosIndexRoute = AdminEventosIndexRouteImport.update({
   id: '/eventos/',
   path: '/eventos/',
@@ -85,6 +95,16 @@ const AdminLocaisIndexRoute = AdminLocaisIndexRouteImport.update({
   id: '/locais/',
   path: '/locais/',
   getParentRoute: () => AdminRoute,
+} as any)
+const FCodigoIndexRoute = FCodigoIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => FCodigoRoute,
+} as any)
+const FCodigoSessaoIdRoute = FCodigoSessaoIdRouteImport.update({
+  id: '/$sessaoId',
+  path: '/$sessaoId',
+  getParentRoute: () => FCodigoRoute,
 } as any)
 const AdminEventosEventoIdIndexRoute =
   AdminEventosEventoIdIndexRouteImport.update({
@@ -140,6 +160,16 @@ const ApiPagarmeWebhookSegredoRoute =
     path: '/api/pagarme/webhook/$segredo',
     getParentRoute: () => rootRouteImport,
   } as any)
+const FCodigoPagamentoAcessoRoute = FCodigoPagamentoAcessoRouteImport.update({
+  id: '/pagamento/$acesso',
+  path: '/pagamento/$acesso',
+  getParentRoute: () => FCodigoRoute,
+} as any)
+const FCodigoPedidoAcessoRoute = FCodigoPedidoAcessoRouteImport.update({
+  id: '/pedido/$acesso',
+  path: '/pedido/$acesso',
+  getParentRoute: () => FCodigoRoute,
+} as any)
 const AdminLocaisLocalIdMapasMapaIdRoute =
   AdminLocaisLocalIdMapasMapaIdRouteImport.update({
     id: '/locais/$localId/mapas/$mapaId',
@@ -155,10 +185,13 @@ export interface FileRoutesByFullPath {
   '/admin/auditoria': typeof AdminAuditoriaRoute
   '/admin/configuracoes': typeof AdminConfiguracoesRoute
   '/admin/equipe': typeof AdminEquipeRoute
+  '/f/$codigo': typeof FCodigoRouteWithChildren
   '/admin/': typeof AdminIndexRoute
   '/admin/eventos/$eventoId': typeof AdminEventosEventoIdRouteWithChildren
+  '/f/$codigo/$sessaoId': typeof FCodigoSessaoIdRoute
   '/admin/eventos/': typeof AdminEventosIndexRoute
   '/admin/locais/': typeof AdminLocaisIndexRoute
+  '/f/$codigo/': typeof FCodigoIndexRoute
   '/admin/eventos/$eventoId/adicionais': typeof AdminEventosEventoIdAdicionaisRoute
   '/admin/eventos/$eventoId/conteudos': typeof AdminEventosEventoIdConteudosRoute
   '/admin/eventos/$eventoId/elenco': typeof AdminEventosEventoIdElencoRoute
@@ -167,6 +200,8 @@ export interface FileRoutesByFullPath {
   '/admin/eventos/$eventoId/sessoes': typeof AdminEventosEventoIdSessoesRoute
   '/admin/eventos/$eventoId/visao-geral': typeof AdminEventosEventoIdVisaoGeralRoute
   '/api/pagarme/webhook/$segredo': typeof ApiPagarmeWebhookSegredoRoute
+  '/f/$codigo/pagamento/$acesso': typeof FCodigoPagamentoAcessoRoute
+  '/f/$codigo/pedido/$acesso': typeof FCodigoPedidoAcessoRoute
   '/admin/eventos/$eventoId/': typeof AdminEventosEventoIdIndexRoute
   '/admin/locais/$localId/mapas/$mapaId': typeof AdminLocaisLocalIdMapasMapaIdRoute
 }
@@ -178,8 +213,10 @@ export interface FileRoutesByTo {
   '/admin/configuracoes': typeof AdminConfiguracoesRoute
   '/admin/equipe': typeof AdminEquipeRoute
   '/admin': typeof AdminIndexRoute
+  '/f/$codigo/$sessaoId': typeof FCodigoSessaoIdRoute
   '/admin/eventos': typeof AdminEventosIndexRoute
   '/admin/locais': typeof AdminLocaisIndexRoute
+  '/f/$codigo': typeof FCodigoIndexRoute
   '/admin/eventos/$eventoId/adicionais': typeof AdminEventosEventoIdAdicionaisRoute
   '/admin/eventos/$eventoId/conteudos': typeof AdminEventosEventoIdConteudosRoute
   '/admin/eventos/$eventoId/elenco': typeof AdminEventosEventoIdElencoRoute
@@ -188,6 +225,8 @@ export interface FileRoutesByTo {
   '/admin/eventos/$eventoId/sessoes': typeof AdminEventosEventoIdSessoesRoute
   '/admin/eventos/$eventoId/visao-geral': typeof AdminEventosEventoIdVisaoGeralRoute
   '/api/pagarme/webhook/$segredo': typeof ApiPagarmeWebhookSegredoRoute
+  '/f/$codigo/pagamento/$acesso': typeof FCodigoPagamentoAcessoRoute
+  '/f/$codigo/pedido/$acesso': typeof FCodigoPedidoAcessoRoute
   '/admin/eventos/$eventoId': typeof AdminEventosEventoIdIndexRoute
   '/admin/locais/$localId/mapas/$mapaId': typeof AdminLocaisLocalIdMapasMapaIdRoute
 }
@@ -200,10 +239,13 @@ export interface FileRoutesById {
   '/admin/auditoria': typeof AdminAuditoriaRoute
   '/admin/configuracoes': typeof AdminConfiguracoesRoute
   '/admin/equipe': typeof AdminEquipeRoute
+  '/f/$codigo': typeof FCodigoRouteWithChildren
   '/admin/': typeof AdminIndexRoute
   '/admin/eventos/$eventoId': typeof AdminEventosEventoIdRouteWithChildren
+  '/f/$codigo/$sessaoId': typeof FCodigoSessaoIdRoute
   '/admin/eventos/': typeof AdminEventosIndexRoute
   '/admin/locais/': typeof AdminLocaisIndexRoute
+  '/f/$codigo/': typeof FCodigoIndexRoute
   '/admin/eventos/$eventoId/adicionais': typeof AdminEventosEventoIdAdicionaisRoute
   '/admin/eventos/$eventoId/conteudos': typeof AdminEventosEventoIdConteudosRoute
   '/admin/eventos/$eventoId/elenco': typeof AdminEventosEventoIdElencoRoute
@@ -212,6 +254,8 @@ export interface FileRoutesById {
   '/admin/eventos/$eventoId/sessoes': typeof AdminEventosEventoIdSessoesRoute
   '/admin/eventos/$eventoId/visao-geral': typeof AdminEventosEventoIdVisaoGeralRoute
   '/api/pagarme/webhook/$segredo': typeof ApiPagarmeWebhookSegredoRoute
+  '/f/$codigo/pagamento/$acesso': typeof FCodigoPagamentoAcessoRoute
+  '/f/$codigo/pedido/$acesso': typeof FCodigoPedidoAcessoRoute
   '/admin/eventos/$eventoId/': typeof AdminEventosEventoIdIndexRoute
   '/admin/locais/$localId/mapas/$mapaId': typeof AdminLocaisLocalIdMapasMapaIdRoute
 }
@@ -225,10 +269,13 @@ export interface FileRouteTypes {
     | '/admin/auditoria'
     | '/admin/configuracoes'
     | '/admin/equipe'
+    | '/f/$codigo'
     | '/admin/'
     | '/admin/eventos/$eventoId'
+    | '/f/$codigo/$sessaoId'
     | '/admin/eventos/'
     | '/admin/locais/'
+    | '/f/$codigo/'
     | '/admin/eventos/$eventoId/adicionais'
     | '/admin/eventos/$eventoId/conteudos'
     | '/admin/eventos/$eventoId/elenco'
@@ -237,6 +284,8 @@ export interface FileRouteTypes {
     | '/admin/eventos/$eventoId/sessoes'
     | '/admin/eventos/$eventoId/visao-geral'
     | '/api/pagarme/webhook/$segredo'
+    | '/f/$codigo/pagamento/$acesso'
+    | '/f/$codigo/pedido/$acesso'
     | '/admin/eventos/$eventoId/'
     | '/admin/locais/$localId/mapas/$mapaId'
   fileRoutesByTo: FileRoutesByTo
@@ -248,8 +297,10 @@ export interface FileRouteTypes {
     | '/admin/configuracoes'
     | '/admin/equipe'
     | '/admin'
+    | '/f/$codigo/$sessaoId'
     | '/admin/eventos'
     | '/admin/locais'
+    | '/f/$codigo'
     | '/admin/eventos/$eventoId/adicionais'
     | '/admin/eventos/$eventoId/conteudos'
     | '/admin/eventos/$eventoId/elenco'
@@ -258,6 +309,8 @@ export interface FileRouteTypes {
     | '/admin/eventos/$eventoId/sessoes'
     | '/admin/eventos/$eventoId/visao-geral'
     | '/api/pagarme/webhook/$segredo'
+    | '/f/$codigo/pagamento/$acesso'
+    | '/f/$codigo/pedido/$acesso'
     | '/admin/eventos/$eventoId'
     | '/admin/locais/$localId/mapas/$mapaId'
   id:
@@ -269,10 +322,13 @@ export interface FileRouteTypes {
     | '/admin/auditoria'
     | '/admin/configuracoes'
     | '/admin/equipe'
+    | '/f/$codigo'
     | '/admin/'
     | '/admin/eventos/$eventoId'
+    | '/f/$codigo/$sessaoId'
     | '/admin/eventos/'
     | '/admin/locais/'
+    | '/f/$codigo/'
     | '/admin/eventos/$eventoId/adicionais'
     | '/admin/eventos/$eventoId/conteudos'
     | '/admin/eventos/$eventoId/elenco'
@@ -281,6 +337,8 @@ export interface FileRouteTypes {
     | '/admin/eventos/$eventoId/sessoes'
     | '/admin/eventos/$eventoId/visao-geral'
     | '/api/pagarme/webhook/$segredo'
+    | '/f/$codigo/pagamento/$acesso'
+    | '/f/$codigo/pedido/$acesso'
     | '/admin/eventos/$eventoId/'
     | '/admin/locais/$localId/mapas/$mapaId'
   fileRoutesById: FileRoutesById
@@ -290,6 +348,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren
   BilheteriaRoute: typeof BilheteriaRoute
   EntrarRoute: typeof EntrarRoute
+  FCodigoRoute: typeof FCodigoRouteWithChildren
   ApiPagarmeWebhookSegredoRoute: typeof ApiPagarmeWebhookSegredoRoute
 }
 
@@ -351,6 +410,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminEquipeRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/f/$codigo': {
+      id: '/f/$codigo'
+      path: '/f/$codigo'
+      fullPath: '/f/$codigo'
+      preLoaderRoute: typeof FCodigoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/eventos/': {
       id: '/admin/eventos/'
       path: '/eventos'
@@ -371,6 +437,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/locais/'
       preLoaderRoute: typeof AdminLocaisIndexRouteImport
       parentRoute: typeof AdminRoute
+    }
+    '/f/$codigo/': {
+      id: '/f/$codigo/'
+      path: '/'
+      fullPath: '/f/$codigo/'
+      preLoaderRoute: typeof FCodigoIndexRouteImport
+      parentRoute: typeof FCodigoRoute
+    }
+    '/f/$codigo/$sessaoId': {
+      id: '/f/$codigo/$sessaoId'
+      path: '/$sessaoId'
+      fullPath: '/f/$codigo/$sessaoId'
+      preLoaderRoute: typeof FCodigoSessaoIdRouteImport
+      parentRoute: typeof FCodigoRoute
     }
     '/admin/eventos/$eventoId/': {
       id: '/admin/eventos/$eventoId/'
@@ -435,6 +515,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPagarmeWebhookSegredoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/f/$codigo/pagamento/$acesso': {
+      id: '/f/$codigo/pagamento/$acesso'
+      path: '/pagamento/$acesso'
+      fullPath: '/f/$codigo/pagamento/$acesso'
+      preLoaderRoute: typeof FCodigoPagamentoAcessoRouteImport
+      parentRoute: typeof FCodigoRoute
+    }
+    '/f/$codigo/pedido/$acesso': {
+      id: '/f/$codigo/pedido/$acesso'
+      path: '/pedido/$acesso'
+      fullPath: '/f/$codigo/pedido/$acesso'
+      preLoaderRoute: typeof FCodigoPedidoAcessoRouteImport
+      parentRoute: typeof FCodigoRoute
+    }
     '/admin/locais/$localId/mapas/$mapaId': {
       id: '/admin/locais/$localId/mapas/$mapaId'
       path: '/locais/$localId/mapas/$mapaId'
@@ -494,11 +588,29 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
+interface FCodigoRouteChildren {
+  FCodigoSessaoIdRoute: typeof FCodigoSessaoIdRoute
+  FCodigoIndexRoute: typeof FCodigoIndexRoute
+  FCodigoPagamentoAcessoRoute: typeof FCodigoPagamentoAcessoRoute
+  FCodigoPedidoAcessoRoute: typeof FCodigoPedidoAcessoRoute
+}
+
+const FCodigoRouteChildren: FCodigoRouteChildren = {
+  FCodigoSessaoIdRoute: FCodigoSessaoIdRoute,
+  FCodigoIndexRoute: FCodigoIndexRoute,
+  FCodigoPagamentoAcessoRoute: FCodigoPagamentoAcessoRoute,
+  FCodigoPedidoAcessoRoute: FCodigoPedidoAcessoRoute,
+}
+
+const FCodigoRouteWithChildren =
+  FCodigoRoute._addFileChildren(FCodigoRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   BilheteriaRoute: BilheteriaRoute,
   EntrarRoute: EntrarRoute,
+  FCodigoRoute: FCodigoRouteWithChildren,
   ApiPagarmeWebhookSegredoRoute: ApiPagarmeWebhookSegredoRoute,
 }
 export const routeTree = rootRouteImport
