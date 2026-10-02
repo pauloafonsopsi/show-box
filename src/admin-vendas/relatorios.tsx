@@ -102,7 +102,7 @@ function Ocupacao({ sessaoId, nome }: { sessaoId: string; nome: string }) {
   const { mapa } = useMapaSessao(sessaoId);
   if (!mapa) return null;
   const total = mapa.assentos.filter((a) => a.estado !== "bloqueado").length;
-  const vendidos = mapa.assentos.filter((a) => a.estado === "vendido" || a.estado === "ocupado").length;
+  const vendidos = mapa.assentos.filter((a) => (a.estado as string) === "vendido" || a.estado === "ocupado").length;
   const reservados = mapa.assentos.filter((a) => a.estado === "reservado").length;
   return (
     <li>
