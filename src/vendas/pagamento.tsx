@@ -302,12 +302,12 @@ function FormularioDePagamento({
       const resposta = await pagar({
         data: {
           acesso,
-          ingressos: lugaresEscolhidos.map((l, i) => ({
-            numero: l.numero,
-            sessao_id: estado.lugares[i].sessao_id,
-            tipo: l.tipo,
-            categoria_meia: l.categoriaMeia,
-          })),
+          ingressos: estado.lugares.map((x) => {
+            const escolha = tipos[chaveDe(x.sessao_id, x.numero)];
+            return escolha?.categoriaMeia
+              ? { numero: x.numero, sessao_id: x.sessao_id, tipo: escolha.tipo, categoria_meia: escolha.categoriaMeia }
+              : { numero: x.numero, sessao_id: x.sessao_id, tipo: escolha?.tipo ?? ("meia_todos" as const) };
+          }),
           adicionais: dados.adicionais.map((a) => ({
             produto_id: a.produtoId,
             quantidade: a.quantidade,
