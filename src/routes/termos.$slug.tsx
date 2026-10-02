@@ -14,5 +14,10 @@ export const Route = createFileRoute("/termos/$slug")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
-  component: () => <TextoLegal tipo="termos" slug={Route.useParams().slug} />,
+  component: Termos,
 });
+
+function Termos() {
+  const { slug } = Route.useParams();
+  return <TextoLegal tipo="termos" slug={slug} />;
+}

@@ -8,9 +8,11 @@ export const Route = createFileRoute("/admin/eventos/$eventoId/impressao")({
     z
       .object({ sessao: z.string().uuid().optional(), familia: z.string().uuid().optional() })
       .parse(s),
-  component: () => {
-    const { eventoId } = Route.useParams();
-    const { sessao, familia } = Route.useSearch();
-    return <ImpressaoIngressos eventoId={eventoId} sessao={sessao} familia={familia} />;
-  },
+  component: ImpressaoAdmin,
 });
+
+function ImpressaoAdmin() {
+  const { eventoId } = Route.useParams();
+  const { sessao, familia } = Route.useSearch();
+  return <ImpressaoIngressos eventoId={eventoId} sessao={sessao} familia={familia} />;
+}

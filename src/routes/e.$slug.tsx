@@ -10,12 +10,14 @@ export const Route = createFileRoute("/e/$slug")({
       "Escolha seus lugares e compre os ingressos do espetáculo.",
     ),
   }),
-  component: () => {
-    const { slug } = Route.useParams();
-    return (
-      <PaginaPalco chave={slug}>
-        <Outlet />
-      </PaginaPalco>
-    );
-  },
+  component: LayoutEvento,
 });
+
+function LayoutEvento() {
+  const { slug } = Route.useParams();
+  return (
+    <PaginaPalco chave={slug}>
+      <Outlet />
+    </PaginaPalco>
+  );
+}
