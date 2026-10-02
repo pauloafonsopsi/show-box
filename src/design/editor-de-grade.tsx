@@ -555,7 +555,7 @@ export function EditorDeGrade({
       ) : null}
       {mensagem ? <SeloStatus tom={mensagem.tom}>{mensagem.texto}</SeloStatus> : null}
 
-      <div className="grid min-h-0 gap-4 lg:grid-cols-[13rem_minmax(0,1fr)_17rem]">
+      <div className="grid min-h-0 gap-4 lg:grid-cols-[13rem_minmax(0,1fr)] 2xl:grid-cols-[13rem_minmax(0,1fr)_17rem]">
         {/* Ferramentas */}
         <aside
           className="flex flex-col gap-4 rounded-md border bg-card p-3"
@@ -938,7 +938,7 @@ function MenuAssento({
       role="dialog"
       aria-label={`Assento ${celula.rotuloFila ?? ""}${celula.numero ?? ""}`}
       className="absolute z-20 mt-2 flex w-64 -translate-x-1/2 flex-col gap-3 rounded-xl border bg-popover p-3 text-popover-foreground"
-      style={{ left: x, top: y, boxShadow: "var(--sombra-janela)" }}
+      style={{ left: Math.max(136, x), top: y, boxShadow: "var(--sombra-janela)" }}
       onPointerDown={(e) => e.stopPropagation()}
     >
       <div className="flex items-center justify-between">
