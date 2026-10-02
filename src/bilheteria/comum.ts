@@ -20,7 +20,7 @@ export function useEventosEmVenda() {
       const { data, error } = await supabase
         .from("eventos")
         .select("id, nome, slug, meia_categorias, parcelamento_min_ingressos, parcelas_max")
-        .in("status", ["em_venda", "publicado"])
+        .eq("status", "em_venda")
         .order("criado_em", { ascending: false });
       if (error) throw error;
       return (data ?? []) as EventoBilheteria[];
