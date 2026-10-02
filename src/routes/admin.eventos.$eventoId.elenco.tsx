@@ -501,7 +501,7 @@ function Familias({ eventoId }: { eventoId: string }) {
       <EditarBailarina
         eventoId={eventoId}
         bailarina={bailarinaAberta}
-        dias={bailarinaAberta?.escalacao.map((e) => nomeSessao(e.sessao_id)) ?? []}
+        sessoes={(sessoes.data ?? []).map((s) => ({ id: s.id, nome: s.nome }))}
         onFechar={() => navigate({ search: (a) => ({ ...a, bailarina: undefined }) })}
       />
       <EditarFamilia
@@ -542,17 +542,20 @@ interface FormBailarina {
   turma: string;
   pacote: string;
   ativa: boolean;
+  dias: string[];
 }
+
+type SessaoOpcao = { id: string; nome: string };
 
 function EditarBailarina({
   eventoId,
   bailarina,
-  dias,
+  sessoes,
   onFechar,
 }: {
   eventoId: string;
   bailarina: Bailarina | null;
-  dias: string[];
+  sessoes: SessaoOpcao[];
   onFechar: () => void;
 }) {
   return (
@@ -562,7 +565,7 @@ function EditarBailarina({
           <SheetTitle>Editar bailarina</SheetTitle>
         </SheetHeader>
         {bailarina && (
-          <FormularioBailarina key={bailarina.id} eventoId={eventoId} bailarina={bailarina} dias={dias} onFechar={onFechar} />
+          <FormularioBailarina key={bailarina.id} eventoId={eventoId} bailarina={bailarina} sessoes={sessoes} onFechar={onFechar} />
         )}
       </SheetContent>
     </Sheet>
@@ -572,21 +575,27 @@ function EditarBailarina({
 function FormularioBailarina({
   eventoId,
   bailarina,
-  dias,
+  sessoes,
   onFechar,
 }: {
   eventoId: string;
   bailarina: Bailarina;
-  dias: string[];
+  sessoes: SessaoOpcao[];
   onFechar: () => void;
 }) {
   const qc = useQueryClient();
   const inicial = useMemo<FormBailarina>(
-    () => ({ nome: bailarina.nome, turma: bailarina.turma ?? "", pacote: bailarina.pacote ?? "", ativa: bailarina.ativa }),
+    () => ({
+      nome: bailarina.nome,
+      turma: bailarina.turma ?? "",
+      pacote: bailarina.pacote ?? "",
+      ativa: bailarina.ativa,
+      dias: bailarina.escalacao.map((e) => e.sessao_id),
+    }),
     [bailarina],
   );
   const { valor, setValor, limpar, temRascunho } = useRascunho<FormBailarina>(`bailarina:${bailarina.id}`, inicial);
-  const f = valor ?? inicial;
+  const f = { ...inicial, ...(valor ?? {}) };
   const mudar = (p: Partial<FormBailarina>) => setValor({ ...f, ...p });
 
   const salvar = useMutation({
@@ -596,6 +605,8 @@ function FormularioBailarina({
         .update({ nome: f.nome.trim(), turma: f.turma.trim() || null, pacote: f.pacote.trim() || null, ativa: f.ativa })
         .eq("id", bailarina.id);
       if (error) throw error;
+      const r = await supabase.rpc("definir_escalacao", { p_bailarina: bailarina.id, p_sessoes: f.dias });
+      if (r.error) throw r.error;
     },
     onSuccess: () => {
       toast.success("Bailarina salva.");
@@ -606,11 +617,17 @@ function FormularioBailarina({
     onError: (e) => toast.error(mensagemDeErro(e)),
   });
 
+  const semDia = f.dias.length === 0;
+
   return (
     <form
       className="space-y-4 px-4 pb-6"
       onSubmit={(e) => {
         e.preventDefault();
+        if (semDia) {
+          toast.error("Marque pelo menos um dia.");
+          return;
+        }
         if (!salvar.isPending) salvar.mutate();
       }}
     >
@@ -618,11 +635,22 @@ function FormularioBailarina({
       <Campo id="b-nome" rotulo="Nome completo" required value={f.nome} onChange={(e) => mudar({ nome: e.target.value })} />
       <Campo id="b-turma" rotulo="Turma" value={f.turma} onChange={(e) => mudar({ turma: e.target.value })} />
       <Campo id="b-pacote" rotulo="Pacote" value={f.pacote} onChange={(e) => mudar({ pacote: e.target.value })} />
-      <div>
-        <p className="text-sm font-medium text-foreground">Dias</p>
-        <p className="text-foreground">{dias.length ? dias.join(" e ") : "Nenhum dia"}</p>
-        <p className="text-sm text-muted-foreground">Para mudar os dias, corrija a planilha e importe de novo.</p>
-      </div>
+      <fieldset className="space-y-1">
+        <legend className="text-sm font-medium text-foreground">Dias em que dança</legend>
+        {sessoes.map((s) => (
+          <div key={s.id} className="flex min-h-11 items-center gap-3">
+            <Checkbox
+              id={`b-dia-${s.id}`}
+              checked={f.dias.includes(s.id)}
+              onCheckedChange={(v) =>
+                mudar({ dias: v === true ? [...f.dias, s.id] : f.dias.filter((d) => d !== s.id) })
+              }
+            />
+            <Label htmlFor={`b-dia-${s.id}`}>{s.nome}</Label>
+          </div>
+        ))}
+        {semDia && <p className="text-sm text-destructive">Marque pelo menos um dia.</p>}
+      </fieldset>
       <div className="flex min-h-11 items-center gap-3">
         <Switch id="b-ativa" checked={f.ativa} onCheckedChange={(v) => mudar({ ativa: v })} />
         <Label htmlFor="b-ativa">Bailarina ativa</Label>

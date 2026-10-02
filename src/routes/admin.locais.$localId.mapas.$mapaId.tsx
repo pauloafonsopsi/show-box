@@ -204,7 +204,6 @@ function TelaMapa() {
           </aside>
           <Suspense fallback={<EsqueletoLista linhas={1} altura="h-96" />}>
             <EditorDeGrade
-              key={`${setores.map((s) => s.id + s.cor + s.nome).join()}`}
               gradeInicial={grade}
               setores={setores}
               onSalvar={salvarMapa}
