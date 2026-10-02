@@ -662,6 +662,9 @@ export function EditorDeGrade({
     }
   };
 
+  moverLoteRef.current = (dl, dc) => {
+    if (lote.size > 0) moverConjunto(lote, dl, dc);
+  };
   const celulaSelecionada = selecionada ? (celulas.get(selecionada) ?? null) : null;
   const dicaModo = MODOS.find((m) => m.id === modo)?.dica ?? "";
 
@@ -835,7 +838,65 @@ export function EditorDeGrade({
               </p>
             </div>
           ) : null}
-          {celulaSelecionada ? (
+          {lote.size > 0 ? (
+            <div
+              className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-md border border-primary/50 bg-background p-2 text-sm"
+              aria-label="Poltronas selecionadas"
+            >
+              <span className="font-semibold">
+                {lote.size} {lote.size === 1 ? "poltrona selecionada" : "poltronas selecionadas"}
+              </span>
+              <div className="flex flex-wrap items-center gap-1">
+                <span className="text-muted-foreground">Mover juntas:</span>
+                {(
+                  [
+                    ["←", 0, -1, "para a esquerda"],
+                    ["→", 0, 1, "para a direita"],
+                    ["↑", -1, 0, "para a frente"],
+                    ["↓", 1, 0, "para trás"],
+                  ] as const
+                ).map(([seta, dl, dc, nome]) => (
+                  <Button
+                    key={nome}
+                    variant="outline"
+                    size="sm"
+                    className="min-h-11 min-w-11"
+                    aria-label={`Mover seleção ${nome}`}
+                    onClick={() => moverConjunto(lote, dl, dc)}
+                  >
+                    {seta}
+                  </Button>
+                ))}
+              </div>
+              {setores.length ? (
+                <label className="flex items-center gap-2">
+                  <span className="text-muted-foreground">Setor:</span>
+                  <select
+                    className="min-h-11 rounded-md border bg-background px-2 text-base"
+                    defaultValue=""
+                    onChange={(e) => {
+                      if (e.target.value) alterarLote({ setorId: e.target.value });
+                      e.target.value = "";
+                    }}
+                  >
+                    <option value="">Trocar para...</option>
+                    {setores.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.nome}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
+              <Button variant="ghost" size="sm" className="min-h-11" onClick={() => alterarLote("apagar")}>
+                Apagar
+              </Button>
+              <Button variant="ghost" size="sm" className="min-h-11" onClick={() => setLote(new Set())}>
+                Limpar seleção
+              </Button>
+            </div>
+          ) : null}
+          {lote.size > 0 ? null : celulaSelecionada ? (
             <div
               className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-md border bg-background p-2 text-sm"
               aria-label="Corredores e fileira"
@@ -946,6 +1007,8 @@ export function EditorDeGrade({
                       origemArraste.current === k && alvoArraste !== k && "opacity-40",
                       marcada && "ring-2 ring-ring",
                       selecionada === k && "ring-2 ring-primary",
+                      lote.has(k) && "ring-2 ring-primary bg-primary/25",
+                      alvoArraste === k && c && lote.size > 1 && "ring-2 ring-primary",
                     )}
                   >
                     {c?.tipo === "assento" ? (
