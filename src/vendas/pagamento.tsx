@@ -74,6 +74,9 @@ export function PagamentoOnline({
   const [modoPos, setModoPos] = useState<null | "pix" | "esperando">(null);
   const [pix, setPix] = useState<{ qr: string; copia: string } | null>(null);
 
+  // Pago ou encerrado por outro caminho (webhook): segue direto para o pedido.
+  const st = (consulta.data?.pedido as { status: string } | null)?.status;
+
   const status = useQuery({
     enabled: Boolean(modoPos) || st === "aguardando_pagamento",
     queryKey: ["status-pagamento", acesso],
