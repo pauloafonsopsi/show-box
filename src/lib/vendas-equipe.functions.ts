@@ -1,3 +1,4 @@
+import type { Json } from "./vendas.functions";
 // Server functions da equipe: Bilheteria, trocas, cortesias, caixa, retirada e estorno.
 // Autenticam com o login da atendente ou do admin; o banco confere o papel por dentro.
 import { createServerFn } from "@tanstack/react-start";
@@ -6,10 +7,10 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { mensagemBanco, pagarmeDelete, rpcAdmin } from "./vendas.server";
 
-type Supa = { rpc: (nome: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: { message?: string } | null }> };
+type Supa = { rpc: (nome: string, args: Record<string, Json>) => Promise<{ data: unknown; error: { message?: string } | null }> };
 type Ctx = { supabase: Supa; userId: string };
 
-async function rpcEquipe<T>(context: unknown, nome: string, args: Record<string, unknown>): Promise<T> {
+async function rpcEquipe<T>(context: unknown, nome: string, args: Record<string, Json>): Promise<T> {
   const { supabase } = context as Ctx;
   const { data, error } = await supabase.rpc(nome, args);
   if (error) throw new Error(mensagemBanco(error));
@@ -81,7 +82,7 @@ export const previaPedido = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) =>
-    rpcEquipe<Record<string, unknown>>(context, "previa_pedido", {
+    rpcEquipe<Record<string, Json>>(context, "previa_pedido", {
       p_pedido: data.pedido,
       p_ingressos: data.ingressos,
       p_adicionais: data.adicionais,
@@ -103,7 +104,7 @@ export const registrarVendaPresencial = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) =>
-    rpcEquipe<Record<string, unknown>>(context, "registrar_venda_presencial", {
+    rpcEquipe<Record<string, Json>>(context, "registrar_venda_presencial", {
       p_pedido: data.pedido,
       p_ingressos: data.ingressos,
       p_adicionais: data.adicionais,
@@ -131,7 +132,7 @@ export const trocarLugar = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) =>
-    rpcEquipe<Record<string, unknown>>(context, "trocar_lugar", {
+    rpcEquipe<Record<string, Json>>(context, "trocar_lugar", {
       p_ingresso: data.ingresso,
       p_novo_numero: data.novoNumero,
       p_motivo: data.motivo ?? null,
@@ -162,7 +163,7 @@ export const emitirCortesia = createServerFn({ method: "POST" })
 export const buscarParaRetirada = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => z.object({ codigo: z.string().trim().min(4).max(120) }).parse(d))
-  .handler(async ({ data, context }) => rpcEquipe<Record<string, unknown> | null>(context, "buscar_para_retirada", { p_codigo: data.codigo }));
+  .handler(async ({ data, context }) => rpcEquipe<Record<string, Json> | null>(context, "buscar_para_retirada", { p_codigo: data.codigo }));
 
 export const marcarEntregues = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

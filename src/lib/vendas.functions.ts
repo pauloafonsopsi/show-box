@@ -7,6 +7,8 @@ import { z } from "zod";
 import type { MapaSessao } from "@/vendas/tipos";
 import { ErroPagarme, comChaveServico, mensagemBanco, pagarmeDelete, pagarmeGet, pagarmePost, rpcAdmin } from "./vendas.server";
 
+export type Json = string | number | boolean | null | Json[] | { [key: string]: Json };
+
 const Acesso = z.string().trim().min(10).max(64);
 type MapaDaSessao = MapaSessao | null;
 
@@ -45,7 +47,7 @@ const Pagador = z.object({
 export const painelFamilia = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ codigo: Acesso }).parse(d))
   .handler(async ({ data }) => {
-    const painel = await rpcAdmin<Record<string, unknown> | null>("familia_painel", { p_token: data.codigo });
+    const painel = await rpcAdmin<Record<string, Json> | null>("familia_painel", { p_token: data.codigo });
     return painel;
   });
 
@@ -74,7 +76,7 @@ export const estadoPagamento = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ acesso: Acesso }).parse(d))
   .handler(async ({ data }) => {
     const supabase = await comChaveServico();
-    const pedido = await rpcAdmin<Record<string, unknown> | null>("pedido_publico", { p_acesso: data.acesso });
+    const pedido = await rpcAdmin<Record<string, Json> | null>("pedido_publico", { p_acesso: data.acesso });
     if (!pedido) return null;
 
     const eventoId = pedido["evento_id"] as string | null;
@@ -157,7 +159,7 @@ export const statusPagamento = createServerFn({ method: "POST" })
         // Falha de rede com a Pagar.me: o estado do banco prevalece.
       }
     }
-    return rpcAdmin<Record<string, unknown> | null>("pedido_publico", { p_acesso: data.acesso });
+    return rpcAdmin<Record<string, Json> | null>("pedido_publico", { p_acesso: data.acesso });
   });
 
 /** Fecha o pedido no banco e cria a cobrança na Pagar.me. Só o servidor calcula valores. */
@@ -185,7 +187,7 @@ export const iniciarPagamento = createServerFn({ method: "POST" })
     const ip = ipDeQuemChama();
     const supabase = await comChaveServico();
 
-    const comp = await rpcAdmin<Record<string, unknown>>("fechar_pedido_online", {
+    const comp = await rpcAdmin<Record<string, Json>>("fechar_pedido_online", {
       p_acesso: data.acesso,
       p_ingressos: data.ingressos,
       p_adicionais: data.adicionais,
@@ -326,7 +328,7 @@ export const liberarReservaOnline = createServerFn({ method: "POST" })
 export const pedidoPublico = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ acesso: Acesso }).parse(d))
   .handler(async ({ data }) => {
-    return rpcAdmin<Record<string, unknown> | null>("pedido_publico", { p_acesso: data.acesso });
+    return rpcAdmin<Record<string, Json> | null>("pedido_publico", { p_acesso: data.acesso });
   });
 
 export const desistirDaCompra = createServerFn({ method: "POST" })
