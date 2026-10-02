@@ -19,6 +19,7 @@ import { Route as AdminAuditoriaRouteImport } from './routes/admin.auditoria'
 import { Route as AdminConfiguracoesRouteImport } from './routes/admin.configuracoes'
 import { Route as AdminEquipeRouteImport } from './routes/admin.equipe'
 import { Route as BilheteriaIndexRouteImport } from './routes/bilheteria.index'
+import { Route as BilheteriaAvulsaRouteImport } from './routes/bilheteria.avulsa'
 import { Route as ESlugRouteImport } from './routes/e.$slug'
 import { Route as FCodigoRouteImport } from './routes/f.$codigo'
 import { Route as PAcessoRouteImport } from './routes/p.$acesso'
@@ -26,6 +27,7 @@ import { Route as TermosSlugRouteImport } from './routes/termos.$slug'
 import { Route as AdminEventosIndexRouteImport } from './routes/admin.eventos.index'
 import { Route as AdminEventosEventoIdRouteImport } from './routes/admin.eventos.$eventoId'
 import { Route as AdminLocaisIndexRouteImport } from './routes/admin.locais.index'
+import { Route as BilheteriaFamiliaFamiliaIdRouteImport } from './routes/bilheteria.familia.$familiaId'
 import { Route as ESlugIndexRouteImport } from './routes/e.$slug.index'
 import { Route as ESlugSessaoIdRouteImport } from './routes/e.$slug.$sessaoId'
 import { Route as FCodigoIndexRouteImport } from './routes/f.$codigo.index'
@@ -93,6 +95,11 @@ const BilheteriaIndexRoute = BilheteriaIndexRouteImport.update({
   path: '/',
   getParentRoute: () => BilheteriaRoute,
 } as any)
+const BilheteriaAvulsaRoute = BilheteriaAvulsaRouteImport.update({
+  id: '/avulsa',
+  path: '/avulsa',
+  getParentRoute: () => BilheteriaRoute,
+} as any)
 const ESlugRoute = ESlugRouteImport.update({
   id: '/e/$slug',
   path: '/e/$slug',
@@ -128,6 +135,12 @@ const AdminLocaisIndexRoute = AdminLocaisIndexRouteImport.update({
   path: '/locais/',
   getParentRoute: () => AdminRoute,
 } as any)
+const BilheteriaFamiliaFamiliaIdRoute =
+  BilheteriaFamiliaFamiliaIdRouteImport.update({
+    id: '/familia/$familiaId',
+    path: '/familia/$familiaId',
+    getParentRoute: () => BilheteriaRoute,
+  } as any)
 const ESlugIndexRoute = ESlugIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -228,6 +241,7 @@ export interface FileRoutesByFullPath {
   '/admin/auditoria': typeof AdminAuditoriaRoute
   '/admin/configuracoes': typeof AdminConfiguracoesRoute
   '/admin/equipe': typeof AdminEquipeRoute
+  '/bilheteria/avulsa': typeof BilheteriaAvulsaRoute
   '/e/$slug': typeof ESlugRouteWithChildren
   '/f/$codigo': typeof FCodigoRouteWithChildren
   '/p/$acesso': typeof PAcessoRoute
@@ -235,6 +249,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/bilheteria/': typeof BilheteriaIndexRoute
   '/admin/eventos/$eventoId': typeof AdminEventosEventoIdRouteWithChildren
+  '/bilheteria/familia/$familiaId': typeof BilheteriaFamiliaFamiliaIdRoute
   '/e/$slug/$sessaoId': typeof ESlugSessaoIdRoute
   '/f/$codigo/$sessaoId': typeof FCodigoSessaoIdRoute
   '/admin/eventos/': typeof AdminEventosIndexRoute
@@ -261,10 +276,12 @@ export interface FileRoutesByTo {
   '/admin/auditoria': typeof AdminAuditoriaRoute
   '/admin/configuracoes': typeof AdminConfiguracoesRoute
   '/admin/equipe': typeof AdminEquipeRoute
+  '/bilheteria/avulsa': typeof BilheteriaAvulsaRoute
   '/p/$acesso': typeof PAcessoRoute
   '/termos/$slug': typeof TermosSlugRoute
   '/admin': typeof AdminIndexRoute
   '/bilheteria': typeof BilheteriaIndexRoute
+  '/bilheteria/familia/$familiaId': typeof BilheteriaFamiliaFamiliaIdRoute
   '/e/$slug/$sessaoId': typeof ESlugSessaoIdRoute
   '/f/$codigo/$sessaoId': typeof FCodigoSessaoIdRoute
   '/admin/eventos': typeof AdminEventosIndexRoute
@@ -294,6 +311,7 @@ export interface FileRoutesById {
   '/admin/auditoria': typeof AdminAuditoriaRoute
   '/admin/configuracoes': typeof AdminConfiguracoesRoute
   '/admin/equipe': typeof AdminEquipeRoute
+  '/bilheteria/avulsa': typeof BilheteriaAvulsaRoute
   '/e/$slug': typeof ESlugRouteWithChildren
   '/f/$codigo': typeof FCodigoRouteWithChildren
   '/p/$acesso': typeof PAcessoRoute
@@ -301,6 +319,7 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/bilheteria/': typeof BilheteriaIndexRoute
   '/admin/eventos/$eventoId': typeof AdminEventosEventoIdRouteWithChildren
+  '/bilheteria/familia/$familiaId': typeof BilheteriaFamiliaFamiliaIdRoute
   '/e/$slug/$sessaoId': typeof ESlugSessaoIdRoute
   '/f/$codigo/$sessaoId': typeof FCodigoSessaoIdRoute
   '/admin/eventos/': typeof AdminEventosIndexRoute
@@ -331,6 +350,7 @@ export interface FileRouteTypes {
     | '/admin/auditoria'
     | '/admin/configuracoes'
     | '/admin/equipe'
+    | '/bilheteria/avulsa'
     | '/e/$slug'
     | '/f/$codigo'
     | '/p/$acesso'
@@ -338,6 +358,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/bilheteria/'
     | '/admin/eventos/$eventoId'
+    | '/bilheteria/familia/$familiaId'
     | '/e/$slug/$sessaoId'
     | '/f/$codigo/$sessaoId'
     | '/admin/eventos/'
@@ -364,10 +385,12 @@ export interface FileRouteTypes {
     | '/admin/auditoria'
     | '/admin/configuracoes'
     | '/admin/equipe'
+    | '/bilheteria/avulsa'
     | '/p/$acesso'
     | '/termos/$slug'
     | '/admin'
     | '/bilheteria'
+    | '/bilheteria/familia/$familiaId'
     | '/e/$slug/$sessaoId'
     | '/f/$codigo/$sessaoId'
     | '/admin/eventos'
@@ -396,6 +419,7 @@ export interface FileRouteTypes {
     | '/admin/auditoria'
     | '/admin/configuracoes'
     | '/admin/equipe'
+    | '/bilheteria/avulsa'
     | '/e/$slug'
     | '/f/$codigo'
     | '/p/$acesso'
@@ -403,6 +427,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/bilheteria/'
     | '/admin/eventos/$eventoId'
+    | '/bilheteria/familia/$familiaId'
     | '/e/$slug/$sessaoId'
     | '/f/$codigo/$sessaoId'
     | '/admin/eventos/'
@@ -508,6 +533,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BilheteriaIndexRouteImport
       parentRoute: typeof BilheteriaRoute
     }
+    '/bilheteria/avulsa': {
+      id: '/bilheteria/avulsa'
+      path: '/avulsa'
+      fullPath: '/bilheteria/avulsa'
+      preLoaderRoute: typeof BilheteriaAvulsaRouteImport
+      parentRoute: typeof BilheteriaRoute
+    }
     '/e/$slug': {
       id: '/e/$slug'
       path: '/e/$slug'
@@ -556,6 +588,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/locais/'
       preLoaderRoute: typeof AdminLocaisIndexRouteImport
       parentRoute: typeof AdminRoute
+    }
+    '/bilheteria/familia/$familiaId': {
+      id: '/bilheteria/familia/$familiaId'
+      path: '/familia/$familiaId'
+      fullPath: '/bilheteria/familia/$familiaId'
+      preLoaderRoute: typeof BilheteriaFamiliaFamiliaIdRouteImport
+      parentRoute: typeof BilheteriaRoute
     }
     '/e/$slug/': {
       id: '/e/$slug/'
@@ -722,11 +761,15 @@ const AdminRouteChildren: AdminRouteChildren = {
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface BilheteriaRouteChildren {
+  BilheteriaAvulsaRoute: typeof BilheteriaAvulsaRoute
   BilheteriaIndexRoute: typeof BilheteriaIndexRoute
+  BilheteriaFamiliaFamiliaIdRoute: typeof BilheteriaFamiliaFamiliaIdRoute
 }
 
 const BilheteriaRouteChildren: BilheteriaRouteChildren = {
+  BilheteriaAvulsaRoute: BilheteriaAvulsaRoute,
   BilheteriaIndexRoute: BilheteriaIndexRoute,
+  BilheteriaFamiliaFamiliaIdRoute: BilheteriaFamiliaFamiliaIdRoute,
 }
 
 const BilheteriaRouteWithChildren = BilheteriaRoute._addFileChildren(
