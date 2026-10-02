@@ -175,7 +175,7 @@ export function EditorDeGrade({
   }, [passado, futuro, celulas]);
 
   const [lote, setLote] = useState<Set<string>>(new Set());
-  const moverLoteRef = useRef<(dl: number, dc: number) => void>(() => {});
+  const moverLoteRef = useRef<(dl: number, dc: number) => boolean>(() => false);
 
   useEffect(() => {
     const teclas = (e: KeyboardEvent) => {
@@ -192,10 +192,7 @@ export function EditorDeGrade({
         ArrowDown: [1, 0],
       };
       const d = setas[e.key];
-      if (d) {
-        e.preventDefault();
-        moverLoteRef.current(d[0], d[1]);
-      }
+      if (d && moverLoteRef.current(d[0], d[1])) e.preventDefault();
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "z") {
         e.preventDefault();
         if (e.shiftKey) refazer();
@@ -663,7 +660,9 @@ export function EditorDeGrade({
   };
 
   moverLoteRef.current = (dl, dc) => {
-    if (lote.size > 0) moverConjunto(lote, dl, dc);
+    if (lote.size === 0) return false;
+    moverConjunto(lote, dl, dc);
+    return true;
   };
   const celulaSelecionada = selecionada ? (celulas.get(selecionada) ?? null) : null;
   const dicaModo = MODOS.find((m) => m.id === modo)?.dica ?? "";
