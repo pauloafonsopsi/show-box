@@ -887,10 +887,14 @@ function AposEnviar({
             </div>
           </>
         ) : null}
-        <p className="mt-4 text-sm text-muted-foreground">{conteudos["pix_instrucao"] ?? ""}</p>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Esta página atualiza sozinha quando o pagamento chegar.
-        </p>
+        {conteudos["pix_instrucao"] ? (
+          <p className="mt-5 text-sm text-muted-foreground">{conteudos["pix_instrucao"]}</p>
+        ) : null}
+        {!(conteudos["pix_instrucao"] ?? "").toLowerCase().includes("atualiza sozinha") ? (
+          <p className="mt-2 text-sm text-muted-foreground">
+            Esta página atualiza sozinha quando o pagamento chegar.
+          </p>
+        ) : null}
       </div>
     );
   }
