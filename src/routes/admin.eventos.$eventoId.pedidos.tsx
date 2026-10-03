@@ -192,6 +192,7 @@ function PedidosAdmin() {
         valor_total_centavos: number;
         criado_em: string;
         pagador_nome: string | null;
+        pagarme_order_id: string | null;
         familias: { responsavel_nome: string } | null;
       }>;
     },
