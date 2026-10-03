@@ -170,8 +170,8 @@ function PedidosAdmin() {
         .from("pedidos")
         .select(
           busca.sessao
-            ? "id, codigo, canal, status, forma_pagamento, valor_total_centavos, criado_em, pagador_nome, familias(responsavel_nome), ingressos!inner(sessao_id)"
-            : "id, codigo, canal, status, forma_pagamento, valor_total_centavos, criado_em, pagador_nome, familias(responsavel_nome)",
+            ? "id, codigo, canal, status, forma_pagamento, valor_total_centavos, criado_em, pagador_nome, pagarme_order_id, familias(responsavel_nome), ingressos!inner(sessao_id)"
+            : "id, codigo, canal, status, forma_pagamento, valor_total_centavos, criado_em, pagador_nome, pagarme_order_id, familias(responsavel_nome)",
         )
         .eq("evento_id", eventoId)
         .order("criado_em", { ascending: false })
@@ -192,6 +192,7 @@ function PedidosAdmin() {
         valor_total_centavos: number;
         criado_em: string;
         pagador_nome: string | null;
+        pagarme_order_id: string | null;
         familias: { responsavel_nome: string } | null;
       }>;
     },
@@ -291,7 +292,7 @@ function PedidosAdmin() {
                   {p.familias?.responsavel_nome ?? p.pagador_nome ?? "Avulso"}
                 </td>
                 <td className="py-2">{CANAL[p.canal] ?? p.canal}</td>
-                <td className="py-2">{STATUS[p.status] ?? p.status}</td>
+                <td className="py-2">{p.status === "reservado" && p.pagarme_order_id ? <span className="text-destructive">Recusado</span> : (STATUS[p.status] ?? p.status)}</td>
                 <td className="py-2 pr-6 text-right tabular-nums">{dinheiro(p.valor_total_centavos)}</td>
                 <td className="py-2 text-muted-foreground">{dataHora(p.criado_em)}</td>
               </tr>

@@ -23,7 +23,7 @@ export function Carteira({ ingressos }: { ingressos: IngressoCarteira[] }) {
   if (ingressos.length === 0)
     return <p className="text-muted-foreground">Nenhum ingresso ainda.</p>;
   return (
-    <ul className="grid gap-4 md:grid-cols-2">
+    <ul className="mx-auto grid w-full max-w-2xl gap-4">
       {ingressos.map((i) => (
         <li
           key={i.qr}
