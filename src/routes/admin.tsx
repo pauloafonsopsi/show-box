@@ -64,7 +64,9 @@ function AdminLayout() {
       <SidebarInset>
         <div className="flex min-h-14 items-center gap-2 border-b border-border px-3 md:hidden">
           <SidebarTrigger className="h-11 w-11" aria-label="Abrir menu" />
-          <span className="font-medium text-foreground">Gestão</span>
+          <Link to="/admin" className="inline-flex min-h-11 items-center font-medium text-foreground">
+            Gestão
+          </Link>
           <Link
             to="/bilheteria"
             className="ml-auto inline-flex min-h-11 items-center rounded-md border border-primary/40 px-3 text-sm text-primary"
@@ -89,7 +91,12 @@ function Menu({ email }: { email: string }) {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
-        <div className="flex items-center gap-2 px-2 py-1.5 group-data-[collapsible=icon]:hidden">
+        <Link
+          to="/admin"
+          aria-label="Ir para o Painel"
+          onClick={() => setOpenMobile(false)}
+          className="flex min-h-11 items-center gap-2 rounded-md px-2 py-1.5 group-data-[collapsible=icon]:hidden"
+        >
           <span className="flex h-9 w-9 items-center justify-center rounded-md border border-primary/50 text-primary">
             <Settings className="h-5 w-5" aria-hidden="true" />
           </span>
@@ -97,7 +104,7 @@ function Menu({ email }: { email: string }) {
             <p className="font-semibold text-sidebar-foreground">Gestão</p>
             <p className="text-xs text-muted-foreground">Configuração dos eventos</p>
           </div>
-        </div>
+        </Link>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
