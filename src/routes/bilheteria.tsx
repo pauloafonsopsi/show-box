@@ -2,6 +2,8 @@ import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-rout
 import { useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 
+import { Armchair, ChevronLeft, QrCode, ReceiptText, Search, Ticket, Wallet } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { exigirPapel, sair } from "@/lib/sessao";
 import { useEventoAtual } from "@/bilheteria/comum";
@@ -26,11 +28,11 @@ export const Route = createFileRoute("/bilheteria")({
 });
 
 const ABAS = [
-  { to: "/bilheteria", rotulo: "Busca" },
-  { to: "/bilheteria/avulsa", rotulo: "Venda avulsa" },
-  { to: "/bilheteria/pedidos", rotulo: "Pedidos" },
-  { to: "/bilheteria/retirada", rotulo: "Retirada" },
-  { to: "/bilheteria/caixa", rotulo: "Caixa" },
+  { to: "/bilheteria", rotulo: "Buscar família", Icone: Search },
+  { to: "/bilheteria/avulsa", rotulo: "Venda avulsa", Icone: Armchair },
+  { to: "/bilheteria/pedidos", rotulo: "Pedidos", Icone: ReceiptText },
+  { to: "/bilheteria/retirada", rotulo: "Retirada", Icone: QrCode },
+  { to: "/bilheteria/caixa", rotulo: "Caixa do dia", Icone: Wallet },
 ] as const;
 
 function LayoutBilheteria() {
@@ -41,23 +43,30 @@ function LayoutBilheteria() {
   const search = evento ? { evento: evento.id } : {};
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border print:hidden">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-2 px-4 py-2">
-          <span className="mr-2 font-semibold text-foreground">Frente de Caixa</span>
-          <nav aria-label="Seções da Bilheteria" className="flex flex-wrap gap-1">
-            {ABAS.map((a) => (
-              <Link
-                key={a.to}
-                to={a.to}
-                search={search}
-                activeOptions={{ exact: a.to === "/bilheteria" }}
-                className="inline-flex min-h-11 items-center rounded-md px-3 text-muted-foreground"
-                activeProps={{ className: "bg-secondary font-medium text-foreground" }}
-              >
-                {a.rotulo}
-              </Link>
-            ))}
-          </nav>
+      <header className="sticky top-0 z-30 border-b-2 border-primary/50 bg-card print:hidden">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-3 px-4 py-2">
+          {papeis.includes("admin") ? (
+            <Link
+              to="/admin"
+              aria-label="Voltar à Gestão"
+              className="inline-flex min-h-11 items-center gap-1 rounded-md px-2 text-sm text-muted-foreground"
+            >
+              <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+              Gestão
+            </Link>
+          ) : null}
+          <div className="flex items-center gap-2">
+            <span className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-primary-foreground">
+              <Ticket className="h-5 w-5" aria-hidden="true" />
+            </span>
+            <div className="leading-tight">
+              <p className="font-semibold text-foreground">Frente de Caixa</p>
+              <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <span className="h-2 w-2 rounded-full bg-primary" aria-hidden="true" />
+                {evento ? evento.nome : "Sem evento"}
+              </p>
+            </div>
+          </div>
           <div className="ml-auto flex items-center gap-2">
             {eventos.length > 1 ? (
               <select
@@ -72,16 +81,6 @@ function LayoutBilheteria() {
                   </option>
                 ))}
               </select>
-            ) : evento ? (
-              <span className="text-sm text-muted-foreground">{evento.nome}</span>
-            ) : null}
-            {papeis.includes("admin") ? (
-              <Link
-                to="/admin"
-                className="inline-flex min-h-11 items-center rounded-md border border-primary/40 px-3 text-primary"
-              >
-                Gestão
-              </Link>
             ) : null}
             <Button
               variant="outline"
@@ -95,6 +94,26 @@ function LayoutBilheteria() {
             </Button>
           </div>
         </div>
+        <nav
+          aria-label="Seções da Frente de Caixa"
+          className="mx-auto grid max-w-7xl grid-cols-5 gap-1 px-2 pb-2 sm:gap-2 sm:px-4"
+        >
+          {ABAS.map((a) => (
+            <Link
+              key={a.to}
+              to={a.to}
+              search={search}
+              activeOptions={{ exact: a.to === "/bilheteria" }}
+              className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-lg border border-border bg-background px-1 text-center text-xs text-muted-foreground sm:flex-row sm:gap-2 sm:text-sm"
+              activeProps={{
+                className: "border-primary bg-primary/15 font-semibold text-primary",
+              }}
+            >
+              <a.Icone className="h-5 w-5 shrink-0" aria-hidden="true" />
+              <span>{a.rotulo}</span>
+            </Link>
+          ))}
+        </nav>
       </header>
       <main className="mx-auto max-w-7xl px-4 py-6">
         <Outlet />
