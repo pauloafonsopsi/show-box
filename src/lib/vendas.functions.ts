@@ -341,6 +341,13 @@ export const iniciarPagamento = createServerFn({ method: "POST" })
         "Não foi possível gerar o PIX agora. Tente de novo em instantes ou pague com cartão.",
       );
     }
+    // Cartão recusado na hora: libera a cobrança e devolve o erro para a tela, sem ficar esperando.
+    if (data.forma === "cartao" && (order.status === "failed" || order.status === "canceled")) {
+      await rpcAdmin("marcar_pagamento_falhou", { p_pagarme_order_id: order.id });
+      throw new Error(
+        "O cartão não foi aprovado. Confira os dados, tente outro cartão ou pague com PIX.",
+      );
+    }
     return {
       codigo: comp["codigo"],
       total_centavos: comp["valor_total_centavos"],
@@ -368,8 +375,9 @@ async function descriptorDe(nome: string | null): Promise<string> {
     .toUpperCase()
     .replace(/[^A-Z0-9 ]/g, "")
     .trim()
-    .slice(0, 22);
-  return limpo.length >= 5 ? limpo : "INGRESSOS";
+    .slice(0, 13) // limite da operadora para o nome na fatura
+    .trim();
+  return limpo.length >= 3 ? limpo : "INGRESSOS";
 }
 
 function ipDeQuemChama(): string | null {
