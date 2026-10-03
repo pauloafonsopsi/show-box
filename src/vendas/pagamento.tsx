@@ -409,7 +409,10 @@ function FormularioDePagamento({
             celular: dados.pagador.celular,
           },
           forma,
-          parcelas: dados.parcelas,
+          parcelas:
+            forma === "cartao" && estado.lugares.length >= (evento?.parcelamento_min_ingressos ?? 1)
+              ? Math.min(dados.parcelas ?? 1, Math.max(1, evento?.parcelas_max ?? 1))
+              : 1,
           termosVersao: estado.termos?.id ?? "",
           cartaoToken,
           cep: dados.pagador.cep,
@@ -437,7 +440,8 @@ function FormularioDePagamento({
     }
   }
 
-  const podeParcelar = (pedido.previstos?.length ?? 0) >= (evento?.parcelamento_min_ingressos ?? 0);
+  // Conta os lugares realmente reservados; o banco revalida na hora de cobrar.
+  const podeParcelar = estado.lugares.length >= (evento?.parcelamento_min_ingressos ?? 1);
   const parcelasMax = Math.max(1, Math.min(evento?.parcelas_max ?? 1, 12));
 
   // Total só para mostrar; o valor cobrado é sempre recalculado no servidor.
@@ -662,12 +666,22 @@ function FormularioDePagamento({
                   {Array.from({ length: podeParcelar ? parcelasMax : 1 }, (_, i) => i + 1).map(
                     (n) => (
                       <SelectItem key={n} value={String(n)}>
-                        {n === 1 ? "À vista" : `${n}x sem juros`}
+                        {n === 1
+                          ? `À vista${totalMostrado ? `, ${dinheiro(totalMostrado)}` : ""}`
+                          : totalMostrado
+                            ? `${n}x de ${dinheiro(Math.ceil(totalMostrado / n))} sem juros`
+                            : `${n}x sem juros`}
                       </SelectItem>
                     ),
                   )}
                 </SelectContent>
               </Select>
+              {!podeParcelar && parcelasMax > 1 ? (
+                <span className="mt-1 block text-sm">
+                  Parcelamento em até {parcelasMax}x a partir de{" "}
+                  {evento?.parcelamento_min_ingressos} ingressos.
+                </span>
+              ) : null}
             </label>
           </div>
         ) : null}
