@@ -88,10 +88,10 @@ function cartaoInvalido(c: CartaoTela): string | null {
 
 function enderecoInvalido(p: Pagador): string | null {
   const e = p as unknown as Record<string, string | undefined>;
-  if ((e.cep ?? "").replace(/\D/g, "").length !== 8) return "Para pagar no cartão, informe o CEP com 8 números.";
-  if (!(e.numero ?? "").trim()) return "Para pagar no cartão, informe o número do endereço.";
-  if (!(e.cidade ?? "").trim()) return "Para pagar no cartão, informe a cidade.";
-  if ((e.estado ?? "").trim().length !== 2) return "Para pagar no cartão, informe o estado (UF).";
+  if ((e["cep"] ?? "").replace(/\D/g, "").length !== 8) return "Para pagar no cartão, informe o CEP com 8 números.";
+  if (!(e["numero"] ?? "").trim()) return "Para pagar no cartão, informe o número do endereço.";
+  if (!(e["cidade"] ?? "").trim()) return "Para pagar no cartão, informe a cidade.";
+  if ((e["estado"] ?? "").trim().length !== 2) return "Para pagar no cartão, informe o estado (UF).";
   return null;
 }
 
