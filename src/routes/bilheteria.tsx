@@ -36,13 +36,14 @@ const ABAS = [
 function LayoutBilheteria() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { papeis } = Route.useRouteContext();
   const { evento, eventos } = useEventoAtual();
   const search = evento ? { evento: evento.id } : {};
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border print:hidden">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-2 px-4 py-2">
-          <span className="mr-2 font-semibold text-foreground">Bilheteria</span>
+          <span className="mr-2 font-semibold text-foreground">Frente de Caixa</span>
           <nav aria-label="Seções da Bilheteria" className="flex flex-wrap gap-1">
             {ABAS.map((a) => (
               <Link
@@ -73,6 +74,14 @@ function LayoutBilheteria() {
               </select>
             ) : evento ? (
               <span className="text-sm text-muted-foreground">{evento.nome}</span>
+            ) : null}
+            {papeis.includes("admin") ? (
+              <Link
+                to="/admin"
+                className="inline-flex min-h-11 items-center rounded-md border border-primary/40 px-3 text-primary"
+              >
+                Gestão
+              </Link>
             ) : null}
             <Button
               variant="outline"

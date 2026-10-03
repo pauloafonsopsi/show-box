@@ -7,6 +7,7 @@ import {
   LogOut,
   MapPinned,
   Settings,
+  Ticket,
   Users,
 } from "lucide-react";
 
@@ -16,6 +17,7 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarInset,
   SidebarMenu,
@@ -62,7 +64,13 @@ function AdminLayout() {
       <SidebarInset>
         <div className="flex min-h-14 items-center gap-2 border-b border-border px-3 md:hidden">
           <SidebarTrigger className="h-11 w-11" aria-label="Abrir menu" />
-          <span className="font-medium text-foreground">Bilheteria</span>
+          <span className="font-medium text-foreground">Gestão</span>
+          <Link
+            to="/bilheteria"
+            className="ml-auto inline-flex min-h-11 items-center rounded-md border border-primary/40 px-3 text-sm text-primary"
+          >
+            Frente de Caixa
+          </Link>
         </div>
         <main className="mx-auto w-full max-w-6xl px-4 py-6 md:px-8">
           <Outlet />
@@ -81,8 +89,9 @@ function Menu({ email }: { email: string }) {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
-        <div className="px-2 py-1.5 font-semibold text-sidebar-foreground group-data-[collapsible=icon]:hidden">
-          Bilheteria
+        <div className="px-2 py-1.5 group-data-[collapsible=icon]:hidden">
+          <p className="font-semibold text-sidebar-foreground">Bilheteria</p>
+          <p className="text-sm text-muted-foreground">Gestão</p>
         </div>
       </SidebarHeader>
       <SidebarContent>
@@ -110,6 +119,25 @@ function Menu({ email }: { email: string }) {
                   </SidebarMenuItem>
                 );
               })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        <SidebarGroup>
+          <SidebarGroupLabel>Operação</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  tooltip="Frente de Caixa"
+                  className="min-h-11 border border-primary/40 text-primary"
+                >
+                  <Link to="/bilheteria" onClick={() => setOpenMobile(false)}>
+                    <Ticket aria-hidden="true" />
+                    <span>Frente de Caixa</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
