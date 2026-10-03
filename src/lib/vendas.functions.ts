@@ -336,6 +336,11 @@ export const iniciarPagamento = createServerFn({ method: "POST" })
     });
 
     const pix = order.charges?.[0]?.last_transaction;
+    if (data.forma === "pix" && (!pix?.qr_code || order.status === "failed")) {
+      throw new Error(
+        "Não foi possível gerar o PIX agora. Tente de novo em instantes ou pague com cartão.",
+      );
+    }
     return {
       codigo: comp["codigo"],
       total_centavos: comp["valor_total_centavos"],

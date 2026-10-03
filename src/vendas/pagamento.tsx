@@ -430,7 +430,8 @@ function FormularioDePagamento({
     } catch (e) {
       const msg = mensagemDeErro(e);
       setErro(msg);
-      if (/cart|recus|operadora|pagamento/i.test(msg)) setErro(conteudos["cartao_recusado"] ?? msg);
+      if (forma === "cartao" && /cart|recus|operadora|pagamento/i.test(msg))
+        setErro(conteudos["cartao_recusado"] ?? msg);
     } finally {
       setEnviando(false);
     }
@@ -692,11 +693,11 @@ function FormularioDePagamento({
               }
             />
             <span>
-              Aceito os{" "}
+              Li e concordo com os{" "}
               <Dialog>
                 <DialogTrigger asChild>
                   <button type="button" className="underline underline-offset-2">
-                    termos de compra (versão {estado.termos.versao})
+                    termos de compra
                   </button>
                 </DialogTrigger>
                 <DialogContent className="max-h-[80vh] overflow-y-auto">
@@ -707,8 +708,8 @@ function FormularioDePagamento({
                     {estado.termos.texto}
                   </div>
                 </DialogContent>
-              </Dialog>{" "}
-              ao fazer o pagamento.
+              </Dialog>
+              .
             </span>
           </label>
         </section>
