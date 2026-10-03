@@ -261,10 +261,11 @@ export const iniciarPagamento = createServerFn({ method: "POST" })
     const pedidoId = comp["pedido_id"] as string;
     const { data: ev } = await supabase
       .from("eventos")
-      .select("nome")
+      .select("nome, fatura_cartao")
       .eq("id", (await donoEvento(pedidoId)) as string)
       .maybeSingle();
-    const descriptor = await descriptorDe(ev?.nome ?? null);
+    // Prioridade: nome escolhido no painel; senão, o nome do evento limpo e cortado.
+    const descriptor = await descriptorDe(ev?.fatura_cartao || ev?.nome || null);
 
     if (
       data.forma === "cartao" &&

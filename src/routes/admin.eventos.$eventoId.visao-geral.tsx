@@ -18,8 +18,21 @@ export const Route = createFileRoute("/admin/eventos/$eventoId/visao-geral")({
   component: VisaoGeral,
 });
 
+/** Deixa o texto no formato aceito pelas bandeiras: maiúsculas, sem acento, até 13. */
+function limparFatura(v: string, aparar = true): string {
+  const s = v
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toUpperCase()
+    .replace(/[^A-Z0-9 ]/g, "")
+    .replace(/ {2,}/g, " ")
+    .slice(0, 13);
+  return aparar ? s.trim() : s.trimStart();
+}
+
 interface Form {
   nome: string;
+  fatura: string;
   slug: string;
   status: string;
   cotaLigada: boolean;
@@ -42,6 +55,7 @@ function VisaoGeral() {
     const e = q.data;
     return {
       nome: e.nome,
+      fatura: e.fatura_cartao ?? "",
       slug: e.slug,
       status: e.status,
       cotaLigada: e.cota_por_participante !== null,
@@ -70,6 +84,7 @@ function VisaoGeral() {
         .from("eventos")
         .update({
           nome: v.nome.trim(),
+          fatura_cartao: limparFatura(v.fatura) || null,
           slug: v.slug.trim(),
           status: v.status,
           cota_por_participante: v.cotaLigada ? Number(v.cota) : null,
@@ -141,6 +156,16 @@ function VisaoGeral() {
               <option value="encerrado">Encerrado</option>
             </select>
           </div>
+          <Campo
+            id="fatura"
+            rotulo={`Nome na fatura do cartão (${f.fatura.length}/13)`}
+            maxLength={13}
+            pattern="[A-Z0-9 ]{3,13}"
+            placeholder={limparFatura(f.nome) || "INGRESSOS"}
+            ajuda="Como aparece no extrato do cartão da família. Até 13 letras, sem acento. Em branco, usa o começo do nome do evento."
+            value={f.fatura}
+            onChange={(e) => set({ fatura: limparFatura(e.target.value, false) })}
+          />
         </div>
 
         <fieldset className="space-y-3 rounded-lg border border-border p-4">
