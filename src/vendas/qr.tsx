@@ -30,12 +30,12 @@ export function QrTexto({
   }, [texto, tamanho]);
 
   return (
-    <figure className="inline-block rounded-lg bg-white p-2">
+    <figure className="inline-block overflow-hidden rounded-lg bg-white p-2">
       {svg ? (
         <span
-          className="block"
+          className="block overflow-hidden [&>svg]:block [&>svg]:h-full [&>svg]:w-full"
           style={{ width: tamanho, height: tamanho }}
-          dangerouslySetInnerHTML={{ __html: svg }}
+          dangerouslySetInnerHTML={{ __html: svg.replace(/\swidth="[^"]*"|\sheight="[^"]*"/g, "") }}
           aria-hidden="true"
         />
       ) : (

@@ -864,10 +864,11 @@ function AposEnviar({
         <h1 className="titulo-palco text-2xl font-semibold text-foreground">Pagar com PIX</h1>
         {pix ? (
           <>
-            <div className="mt-4 flex justify-center">
-              <QrTexto texto={pix.copia} tamanho={180} rotulo="PIX copia e cola" />
+            <div className="mt-6 flex justify-center">
+              <QrTexto texto={pix.copia} tamanho={220} />
             </div>
-            <div className="mt-3 flex items-center gap-2">
+            <p className="mt-6 text-left text-sm text-muted-foreground">PIX copia e cola</p>
+            <div className="mt-2 flex items-center gap-2">
               <Input
                 readOnly
                 value={pix.copia}
@@ -886,10 +887,14 @@ function AposEnviar({
             </div>
           </>
         ) : null}
-        <p className="mt-4 text-sm text-muted-foreground">{conteudos["pix_instrucao"] ?? ""}</p>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Esta página atualiza sozinha quando o pagamento chegar.
-        </p>
+        {conteudos["pix_instrucao"] ? (
+          <p className="mt-5 text-sm text-muted-foreground">{conteudos["pix_instrucao"]}</p>
+        ) : null}
+        {!(conteudos["pix_instrucao"] ?? "").toLowerCase().includes("atualiza sozinha") ? (
+          <p className="mt-2 text-sm text-muted-foreground">
+            Esta página atualiza sozinha quando o pagamento chegar.
+          </p>
+        ) : null}
       </div>
     );
   }
