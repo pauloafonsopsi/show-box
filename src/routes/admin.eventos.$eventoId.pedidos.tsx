@@ -279,7 +279,7 @@ function PedidosAdmin() {
               <th className="py-2">Quem</th>
               <th className="py-2">Canal</th>
               <th className="py-2">Situação</th>
-              <th className="py-2 text-right">Valor</th>
+              <th className="py-2 pr-6 text-right">Valor</th>
               <th className="py-2">Criado</th>
             </tr>
           </thead>
@@ -292,7 +292,7 @@ function PedidosAdmin() {
                 </td>
                 <td className="py-2">{CANAL[p.canal] ?? p.canal}</td>
                 <td className="py-2">{STATUS[p.status] ?? p.status}</td>
-                <td className="py-2 text-right">{dinheiro(p.valor_total_centavos)}</td>
+                <td className="py-2 pr-6 text-right tabular-nums">{dinheiro(p.valor_total_centavos)}</td>
                 <td className="py-2 text-muted-foreground">{dataHora(p.criado_em)}</td>
               </tr>
             ))}
