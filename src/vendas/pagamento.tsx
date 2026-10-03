@@ -349,6 +349,17 @@ function FormularioDePagamento({
     Math.ceil((new Date(pedido.expira_em).getTime() - Date.now()) / 60000),
   );
 
+  function rotuloParcela(n: number, total: number | null): string {
+    if (n === 1) return total ? `À vista, ${dinheiro(total)}` : "À vista";
+    if (!total) return `${n}x sem juros`;
+    // Mesma divisão da operadora: parcela base em centavos inteiros, a sobra vai na primeira.
+    const base = Math.floor(total / n);
+    const sobra = total - base * n;
+    return sobra > 0
+      ? `${n}x sem juros: 1ª de ${dinheiro(base + sobra)} e ${n - 1} de ${dinheiro(base)}`
+      : `${n}x de ${dinheiro(base)} sem juros`;
+  }
+
   async function enviar(forma: "pix" | "cartao") {
     if (!rascunho.valor) return;
     const dados: Rascunho = { ...rascunho.valor, forma, tipos };
@@ -361,14 +372,12 @@ function FormularioDePagamento({
       setErro(falhaPagador);
       return;
     }
-    if (
-      forma === "cartao" &&
-      (cartao.numero.replace(/\D/g, "").length < 13 ||
-        !/^\d{2}\/\d{2}$/.test(cartao.validade) ||
-        cartao.cvv.length < 3)
-    ) {
-      setErro("Confira os dados do cartão.");
-      return;
+    if (forma === "cartao") {
+      const falhaCartao = cartaoInvalido(cartao) ?? enderecoInvalido(dados.pagador);
+      if (falhaCartao) {
+        setErro(falhaCartao);
+        return;
+      }
     }
     setErro(null);
     setEnviando(true);
@@ -666,11 +675,7 @@ function FormularioDePagamento({
                   {Array.from({ length: podeParcelar ? parcelasMax : 1 }, (_, i) => i + 1).map(
                     (n) => (
                       <SelectItem key={n} value={String(n)}>
-                        {n === 1
-                          ? `À vista${totalMostrado ? `, ${dinheiro(totalMostrado)}` : ""}`
-                          : totalMostrado
-                            ? `${n}x de ${dinheiro(Math.ceil(totalMostrado / n))} sem juros`
-                            : `${n}x sem juros`}
+                        {rotuloParcela(n, totalMostrado)}
                       </SelectItem>
                     ),
                   )}
