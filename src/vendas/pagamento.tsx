@@ -734,7 +734,7 @@ function FormularioDePagamento({
           </button>
           <div className="flex items-center gap-3">
             <span className="numeros text-lg font-semibold text-foreground">
-              {dinheiro(pedido.valor_total_centavos)}
+              {dinheiro(totalMostrado)}
             </span>
             <Button
               className="min-h-11"
