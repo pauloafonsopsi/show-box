@@ -152,7 +152,13 @@ export function PagamentoOnline({
   useEffect(() => {
     if (status.data && (status.data.status === "pago" || status.data.status === "pago_sem_lugar"))
       vaiParaPedido();
-  }, [status.data, vaiParaPedido]);
+    // Cartão recusado depois do envio: o pedido volta para "reservado". Sai da espera e avisa.
+    if (modoPos === "esperando" && status.data?.status === "reservado") {
+      setModoPos(null);
+      void consulta.refetch();
+      toast.error("O cartão não foi aprovado. Confira os dados, tente outro cartão ou pague com PIX.");
+    }
+  }, [status.data, vaiParaPedido, modoPos, consulta]);
 
   useEffect(() => {
     if (st === "pago" || st === "pago_sem_lugar") vaiParaPedido();
