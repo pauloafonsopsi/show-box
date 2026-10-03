@@ -430,7 +430,8 @@ function FormularioDePagamento({
     } catch (e) {
       const msg = mensagemDeErro(e);
       setErro(msg);
-      if (/cart|recus|operadora|pagamento/i.test(msg)) setErro(conteudos["cartao_recusado"] ?? msg);
+      if (forma === "cartao" && /cart|recus|operadora|pagamento/i.test(msg))
+        setErro(conteudos["cartao_recusado"] ?? msg);
     } finally {
       setEnviando(false);
     }
@@ -707,8 +708,8 @@ function FormularioDePagamento({
                     {estado.termos.texto}
                   </div>
                 </DialogContent>
-              </Dialog>{" "}
-              ao fazer o pagamento.
+              </Dialog>
+              .
             </span>
           </label>
         </section>
