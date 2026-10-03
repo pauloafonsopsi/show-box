@@ -89,9 +89,14 @@ function Menu({ email }: { email: string }) {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
-        <div className="px-2 py-1.5 group-data-[collapsible=icon]:hidden">
-          <p className="font-semibold text-sidebar-foreground">Bilheteria</p>
-          <p className="text-sm text-muted-foreground">Gestão</p>
+        <div className="flex items-center gap-2 px-2 py-1.5 group-data-[collapsible=icon]:hidden">
+          <span className="flex h-9 w-9 items-center justify-center rounded-md border border-primary/50 text-primary">
+            <Settings className="h-5 w-5" aria-hidden="true" />
+          </span>
+          <div className="leading-tight">
+            <p className="font-semibold text-sidebar-foreground">Gestão</p>
+            <p className="text-xs text-muted-foreground">Configuração dos eventos</p>
+          </div>
         </div>
       </SidebarHeader>
       <SidebarContent>
@@ -130,11 +135,11 @@ function Menu({ email }: { email: string }) {
                 <SidebarMenuButton
                   asChild
                   tooltip="Frente de Caixa"
-                  className="min-h-11 border border-primary/40 text-primary"
+                  className="min-h-11 bg-primary font-semibold text-primary-foreground"
                 >
                   <Link to="/bilheteria" onClick={() => setOpenMobile(false)}>
                     <Ticket aria-hidden="true" />
-                    <span>Frente de Caixa</span>
+                    <span>Abrir Frente de Caixa</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
