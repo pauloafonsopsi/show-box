@@ -401,6 +401,7 @@ export function CamposPagador({
               const end = await enderecoDoCep(cep);
               if (end)
                 campo({
+                  cep,
                   referencia: end.logradouro ?? pagador.referencia,
                   cidade: end.localidade ?? pagador.cidade,
                   estado: end.uf ?? pagador.estado,
