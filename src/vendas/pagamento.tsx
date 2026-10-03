@@ -54,6 +54,47 @@ export interface CartaoTela {
 
 const cartaoVazio: CartaoTela = { numero: "", nome: "", validade: "", cvv: "" };
 
+function luhnOk(digitos: string): boolean {
+  let soma = 0;
+  let dobra = false;
+  for (let i = digitos.length - 1; i >= 0; i--) {
+    let d = Number(digitos[i]);
+    if (dobra) {
+      d *= 2;
+      if (d > 9) d -= 9;
+    }
+    soma += d;
+    dobra = !dobra;
+  }
+  return soma % 10 === 0;
+}
+
+function cartaoInvalido(c: CartaoTela): string | null {
+  const num = c.numero.replace(/\D/g, "");
+  if (num.length < 13 || num.length > 19 || !luhnOk(num))
+    return "O número do cartão parece incorreto. Confira os dígitos.";
+  if (c.nome.trim().length < 3) return "Escreva o nome como está impresso no cartão.";
+  const m = /^(\d{2})\/(\d{2})$/.exec(c.validade);
+  if (!m) return "Escreva a validade no formato MM/AA.";
+  const mes = Number(m[1]);
+  const ano = 2000 + Number(m[2]);
+  const agora = new Date();
+  if (mes < 1 || mes > 12) return "O mês da validade vai de 01 a 12.";
+  if (ano < agora.getFullYear() || (ano === agora.getFullYear() && mes < agora.getMonth() + 1))
+    return "Este cartão está vencido.";
+  if (!/^\d{3,4}$/.test(c.cvv)) return "O código de segurança tem 3 ou 4 números.";
+  return null;
+}
+
+function enderecoInvalido(p: Pagador): string | null {
+  const e = p as unknown as Record<string, string | undefined>;
+  if ((e.cep ?? "").replace(/\D/g, "").length !== 8) return "Para pagar no cartão, informe o CEP com 8 números.";
+  if (!(e.numero ?? "").trim()) return "Para pagar no cartão, informe o número do endereço.";
+  if (!(e.cidade ?? "").trim()) return "Para pagar no cartão, informe a cidade.";
+  if ((e.estado ?? "").trim().length !== 2) return "Para pagar no cartão, informe o estado (UF).";
+  return null;
+}
+
 interface Rascunho {
   tipos: Record<string, { tipo: TipoIngresso; categoriaMeia?: string }>;
   adicionais: AdicionalEscolhido[];
