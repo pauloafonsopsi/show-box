@@ -409,7 +409,10 @@ function FormularioDePagamento({
             celular: dados.pagador.celular,
           },
           forma,
-          parcelas: dados.parcelas,
+          parcelas:
+            forma === "cartao" && estado.lugares.length >= (evento?.parcelamento_min_ingressos ?? 1)
+              ? Math.min(dados.parcelas ?? 1, Math.max(1, evento?.parcelas_max ?? 1))
+              : 1,
           termosVersao: estado.termos?.id ?? "",
           cartaoToken,
           cep: dados.pagador.cep,
