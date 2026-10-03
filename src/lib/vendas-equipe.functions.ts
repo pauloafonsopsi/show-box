@@ -241,11 +241,19 @@ export const estornarDesistencia = createServerFn({ method: "POST" })
     try {
       await pagarmeDelete(`/charges/${aprov.pagarme_charge_id}`);
     } catch (e) {
-      throw new Error(
-        mensagemBanco(e) === "A operadora de pagamento respondeu com erro 404."
-          ? "A cobrança não foi encontrada na Pagar.me. Confira o valor recebido antes de continuar."
-          : mensagemBanco(e),
-      );
+      // Reconsulta: se a Pagar.me já está devolvendo ou devolveu, o estorno segue.
+      const { pagarmeGet } = await import("@/lib/vendas.server");
+      const c = await pagarmeGet<{ status?: string; last_transaction?: { status?: string } }>(
+        `/charges/${aprov.pagarme_charge_id}`,
+      ).catch(() => null);
+      const emEstorno =
+        ["canceled", "refunded", "processing"].includes(c?.status ?? "") ||
+        ["pending_refund", "refunded"].includes(c?.last_transaction?.status ?? "");
+      if (!emEstorno)
+        throw new Error(
+          "A Pagar.me não conseguiu devolver esta cobrança agora. Tente de novo em alguns minutos.",
+        );
+      void e;
     }
     await rpcAdmin("concluir_estorno", { p_pedido: data.pedido });
     return { ok: true, valor_total_centavos: aprov.valor_total_centavos };
