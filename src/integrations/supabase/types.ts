@@ -328,6 +328,7 @@ export type Database = {
           atualizado_em: string
           cota_por_participante: number | null
           criado_em: string
+          fatura_cartao: string | null
           id: string
           imagem_capa: string | null
           limite_por_pedido: number
@@ -345,6 +346,7 @@ export type Database = {
           atualizado_em?: string
           cota_por_participante?: number | null
           criado_em?: string
+          fatura_cartao?: string | null
           id?: string
           imagem_capa?: string | null
           limite_por_pedido?: number
@@ -362,6 +364,7 @@ export type Database = {
           atualizado_em?: string
           cota_por_participante?: number | null
           criado_em?: string
+          fatura_cartao?: string | null
           id?: string
           imagem_capa?: string | null
           limite_por_pedido?: number
