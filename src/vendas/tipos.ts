@@ -123,7 +123,9 @@ export function mascaraCpf(v: string): string {
 }
 
 export function celularValido(v: string): boolean {
-  return /^55\d{2}9\d{8}$/.test(v.replace(/\D/g, ""));
+  let d = v.replace(/\D/g, "");
+  if (d.length === 13 && d.startsWith("55")) d = d.slice(2);
+  return /^[1-9]\d9\d{8}$/.test(d);
 }
 
 export function mascaraCelular(v: string): string {

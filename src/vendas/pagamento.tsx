@@ -36,7 +36,7 @@ import {
   type Pagador,
   type ProdutoVenda,
 } from "./selecao";
-import { tipoPermitido, type LugarEscolhido, type MapaSessao, type TipoIngresso } from "./tipos";
+import { estimarTotal, tipoPermitido, type LugarEscolhido, type MapaSessao, type TipoIngresso } from "./tipos";
 import {
   estadoPagamento,
   iniciarPagamento,
@@ -439,6 +439,30 @@ function FormularioDePagamento({
   const podeParcelar = (pedido.previstos?.length ?? 0) >= (evento?.parcelamento_min_ingressos ?? 0);
   const parcelasMax = Math.max(1, Math.min(evento?.parcelas_max ?? 1, 12));
 
+  // Total só para mostrar; o valor cobrado é sempre recalculado no servidor.
+  const precosAdicionais: Record<string, number> = {};
+  for (const p of produtos) if (p.preco !== null) precosAdicionais[p.id] = p.preco;
+  let totalTela: number | null = 0;
+  for (const [sessaoId, g] of porSessao) {
+    if (!g.mapa || totalTela === null) continue;
+    const doGrupo = lugaresEscolhidos.filter((l) =>
+      estado.lugares.some((x) => x.numero === l.numero && x.sessao_id === sessaoId),
+    );
+    const parcial = estimarTotal(g.mapa.setores, doGrupo);
+    totalTela = parcial === null ? null : totalTela + parcial;
+  }
+  if (totalTela !== null) {
+    const adic = estimarTotal(
+      [],
+      [],
+      (rascunho.valor?.adicionais ?? []).map((a) => ({ produtoId: a.produtoId, quantidade: a.quantidade })),
+      precosAdicionais,
+    );
+    totalTela = adic === null ? null : totalTela + adic;
+  }
+  const totalMostrado =
+    pedido.valor_total_centavos > 0 ? pedido.valor_total_centavos : (totalTela ?? 0);
+
   return (
     <div className="mx-auto max-w-2xl pb-24">
       <header className="mb-6">
@@ -710,7 +734,7 @@ function FormularioDePagamento({
           </button>
           <div className="flex items-center gap-3">
             <span className="numeros text-lg font-semibold text-foreground">
-              {dinheiro(pedido.valor_total_centavos)}
+              {dinheiro(totalMostrado)}
             </span>
             <Button
               className="min-h-11"

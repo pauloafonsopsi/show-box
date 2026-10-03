@@ -524,6 +524,11 @@ function Familias({ eventoId }: { eventoId: string }) {
               </option>
             ))}
           </select>
+          <datalist id="lista-pacotes">
+            {pacotes.map((p) => (
+              <option key={p} value={p} />
+            ))}
+          </datalist>
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="f-env">Link</Label>
@@ -833,6 +838,8 @@ function FormularioBailarina({
       <Campo
         id="b-pacote"
         rotulo="Pacote"
+        list="lista-pacotes"
+        autoComplete="off"
         value={f.pacote}
         onChange={(e) => mudar({ pacote: e.target.value })}
       />
@@ -1119,7 +1126,15 @@ function FormNovaBailarina({
       )}
       <Campo id="n-nome" name="nome" rotulo="Nome completo da bailarina" required autoComplete="off" />
       <Campo id="n-turma" name="turma" rotulo="Turma" />
-      <Campo id="n-pacote" name="pacote" rotulo="Pacote" />
+      <Campo
+        id="n-pacote"
+        name="pacote"
+        rotulo="Pacote"
+        list="lista-pacotes"
+        autoComplete="off"
+        ajuda="Toque para escolher um pacote já usado no evento."
+      />
+
       <fieldset className="space-y-1">
         <legend className="text-sm font-medium text-foreground">Dias em que dança</legend>
         {sessoes.map((s) => (
