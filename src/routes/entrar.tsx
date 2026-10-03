@@ -210,10 +210,7 @@ function Entrar() {
             </Button>
             <div className="flex flex-col gap-1">
               {modo === "entrar" ? (
-                <>
-                  <BotaoLink onClick={() => setModo("recuperar")}>Esqueci minha senha</BotaoLink>
-                  <BotaoLink onClick={() => setModo("criar")}>Criar conta</BotaoLink>
-                </>
+                <BotaoLink onClick={() => setModo("recuperar")}>Esqueci minha senha</BotaoLink>
               ) : modo !== "nova-senha" ? (
                 <BotaoLink onClick={() => setModo("entrar")}>Já tenho conta</BotaoLink>
               ) : null}
