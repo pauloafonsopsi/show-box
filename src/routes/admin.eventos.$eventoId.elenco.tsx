@@ -524,6 +524,11 @@ function Familias({ eventoId }: { eventoId: string }) {
               </option>
             ))}
           </select>
+          <datalist id="lista-pacotes">
+            {pacotes.map((p) => (
+              <option key={p} value={p} />
+            ))}
+          </datalist>
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="f-env">Link</Label>
