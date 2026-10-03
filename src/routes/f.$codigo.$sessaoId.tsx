@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 
-import { data, hora } from "@/lib/formato";
-import { EscolhaOnline } from "@/vendas/escolha-online";
+import { data } from "@/lib/formato";
+import { EscolhaOnline, type SessaoEscolha } from "@/vendas/escolha-online";
 import { janelaAberta, usePainelFamilia } from "@/vendas/familia";
 import { AvisoPalco, EsqueletoPalco } from "@/vendas/pagina-palco";
 
@@ -25,12 +25,25 @@ function EscolherFamilia() {
         texto="Este link foi substituído. Peça o novo à recepção."
       />
     );
-  const s = p.sessoes.find((x) => x.id === sessaoId);
-  if (!s) return <AvisoPalco titulo="Sessão não encontrada" />;
-  const limite = s.saldo > 0 ? s.saldo : janelaAberta(p.janelas, "publico") ? LIMITE_TELA : 0;
+  if (!p.sessoes.some((x) => x.id === sessaoId))
+    return <AvisoPalco titulo="Sessão não encontrada" />;
+
+  const publico = janelaAberta(p.janelas, "publico");
+  // Todas as sessões em que a família ainda pode escolher entram na mesma compra.
+  const sessoes: SessaoEscolha[] = p.sessoes
+    .map((s) => {
+      const limite = s.saldo > 0 ? s.saldo : publico ? LIMITE_TELA : 0;
+      return {
+        id: s.id,
+        rotulo: s.data_hora ? `${s.nome}, ${data(s.data_hora)}` : s.nome,
+        limite,
+        textoLimite: `Você pode escolher até ${limite} ${limite === 1 ? "lugar" : "lugares"} nesta sessão.`,
+      };
+    })
+    .filter((s) => s.limite > 0);
 
   return (
-    <div>
+    <div className="pb-24">
       <Link
         to="/f/$codigo"
         params={{ codigo }}
@@ -38,19 +51,20 @@ function EscolherFamilia() {
       >
         Voltar
       </Link>
-      <h1 className="titulo-palco mt-2 text-3xl text-foreground">{s.nome}</h1>
-      <p className="numeros text-muted-foreground">
-        {s.data_hora ? `${data(s.data_hora)} às ${hora(s.data_hora)}` : "Data a definir"}. Você pode escolher até {limite}.
-      </p>
+      <h1 className="titulo-palco mt-2 text-3xl text-foreground">Escolha seus lugares</h1>
+      {sessoes.length > 1 ? (
+        <p className="text-muted-foreground">
+          Escolha nas duas sessões e pague tudo de uma vez.
+        </p>
+      ) : null}
       <div className="mt-4">
-        {limite === 0 ? (
+        {sessoes.length === 0 ? (
           <AvisoPalco titulo="Lugares garantidos" texto={p.conteudos["dia_garantido"] ?? ""} />
         ) : (
           <EscolhaOnline
-            sessaoId={sessaoId}
-            limite={limite}
+            sessoes={sessoes}
+            sessaoInicial={sessaoId}
             tokenFamilia={codigo}
-            textoLimite={`Você pode escolher até ${limite} lugares nesta sessão.`}
             aoReservar={(acesso) =>
               navigate({ to: "/f/$codigo/pagamento/$acesso", params: { codigo, acesso } })
             }
