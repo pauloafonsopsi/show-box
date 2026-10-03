@@ -692,11 +692,11 @@ function FormularioDePagamento({
               }
             />
             <span>
-              Aceito os{" "}
+              Li e concordo com os{" "}
               <Dialog>
                 <DialogTrigger asChild>
                   <button type="button" className="underline underline-offset-2">
-                    termos de compra (versão {estado.termos.versao})
+                    termos de compra
                   </button>
                 </DialogTrigger>
                 <DialogContent className="max-h-[80vh] overflow-y-auto">
