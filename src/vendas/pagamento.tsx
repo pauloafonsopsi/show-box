@@ -864,10 +864,11 @@ function AposEnviar({
         <h1 className="titulo-palco text-2xl font-semibold text-foreground">Pagar com PIX</h1>
         {pix ? (
           <>
-            <div className="mt-4 flex justify-center">
-              <QrTexto texto={pix.copia} tamanho={180} rotulo="PIX copia e cola" />
+            <div className="mt-6 flex justify-center">
+              <QrTexto texto={pix.copia} tamanho={220} />
             </div>
-            <div className="mt-3 flex items-center gap-2">
+            <p className="mt-6 text-left text-sm text-muted-foreground">PIX copia e cola</p>
+            <div className="mt-2 flex items-center gap-2">
               <Input
                 readOnly
                 value={pix.copia}
