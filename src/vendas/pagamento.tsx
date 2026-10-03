@@ -36,7 +36,7 @@ import {
   type Pagador,
   type ProdutoVenda,
 } from "./selecao";
-import { tipoPermitido, type LugarEscolhido, type MapaSessao, type TipoIngresso } from "./tipos";
+import { estimarTotal, tipoPermitido, type LugarEscolhido, type MapaSessao, type TipoIngresso } from "./tipos";
 import {
   estadoPagamento,
   iniciarPagamento,
