@@ -7,7 +7,7 @@ export function eventoQuery(eventoId: string) {
       const { data, error } = await supabase
         .from("eventos")
         .select(
-          "id, nome, slug, status, cota_por_participante, limite_por_pedido, tempo_reserva_min, parcelamento_min_ingressos, parcelas_max, meia_percentual, meia_categorias",
+          "id, nome, slug, status, fatura_cartao, cota_por_participante, limite_por_pedido, tempo_reserva_min, parcelamento_min_ingressos, parcelas_max, meia_percentual, meia_categorias",
         )
         .eq("id", eventoId)
         .maybeSingle();
