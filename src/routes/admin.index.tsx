@@ -127,6 +127,28 @@ function Painel() {
                     </dd>
                   </div>
                 </dl>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {(
+                    [
+                      { to: "/bilheteria", rotulo: "Vender na recepção", forte: true },
+                      { to: "/bilheteria/retirada", rotulo: "Retirada de ingressos" },
+                      { to: "/bilheteria/pedidos", rotulo: "Pedidos" },
+                    ] as const
+                  ).map((a) => (
+                    <Link
+                      key={a.to}
+                      to={a.to}
+                      search={{ evento: ev.id }}
+                      className={
+                        "forte" in a
+                          ? "inline-flex min-h-11 items-center rounded-md bg-primary px-4 font-medium text-primary-foreground"
+                          : "inline-flex min-h-11 items-center rounded-md border border-border px-4 text-foreground"
+                      }
+                    >
+                      {a.rotulo}
+                    </Link>
+                  ))}
+                </div>
                 {ev.sessoes.length === 0 ? (
                   <p className="mt-4 text-muted-foreground">Este evento ainda não tem sessões.</p>
                 ) : (

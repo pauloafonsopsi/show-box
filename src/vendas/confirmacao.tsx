@@ -84,10 +84,10 @@ export function ConfirmacaoPedido({
             Link do pedido. Guarde para ver seus ingressos depois.
           </p>
           <p className="mt-1 select-all break-all text-foreground">{linkDoPedido}</p>
-          <div className="mt-3 flex flex-wrap gap-3">
+          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Button
               variant="outline"
-              className="min-h-11"
+              className="min-h-11 w-full"
               onClick={() => {
                 void navigator.clipboard
                   .writeText(linkDoPedido)
@@ -96,7 +96,7 @@ export function ConfirmacaoPedido({
             >
               Copiar link
             </Button>
-            <Button asChild variant="outline" className="min-h-11">
+            <Button asChild variant="outline" className="min-h-11 w-full">
               <a
                 href={`https://wa.me/?text=${encodeURIComponent(linkDoPedido)}`}
                 target="_blank"
