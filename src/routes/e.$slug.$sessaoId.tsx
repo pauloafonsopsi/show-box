@@ -35,9 +35,14 @@ function EscolherPublico() {
       </p>
       <div className="mt-4">
         <EscolhaOnline
-          sessaoId={sessaoId}
-          limite={limite}
-          textoLimite={`Cada compra pode ter até ${limite} lugares.`}
+          sessoes={[
+            {
+              id: sessaoId,
+              rotulo: s.nome,
+              limite,
+              textoLimite: `Cada compra pode ter até ${limite} lugares.`,
+            },
+          ]}
           aoReservar={(acesso) => navigate({ to: "/p/$acesso", params: { acesso } })}
         />
       </div>
